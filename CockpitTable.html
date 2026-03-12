@@ -166,10 +166,10 @@
 
 window.CockpitTable = {
   props: {
-    data: Array, // A prop data é ignorada agora na V5
+    data: Array,
     isMobile: Boolean, 
     isLoading: Boolean,
-    statsPreCalculados: Object // 🚀 V5: A tabela lê direto do Cubo
+    statsPreCalculados: Object
   },
   template: '#cockpit-table-template',
   
@@ -177,47 +177,44 @@ window.CockpitTable = {
       return {
         expandedGroups: {},
         columns: [
-          { key: 'estrategiaId',    label: 'Estratégia', type: 'texto',     desc: 'Nome ou ID do grupo estratégico no qual a operação está inserida.' },
-          { key: 'tickerAtivo',     label: 'Ativo',      type: 'texto',     desc: 'Código do ativo objeto (Ação) na B3. Ex: PETR4.' },
-          { key: 'simboloOpcao',    label: 'Opção',      type: 'texto',     desc: 'Código oficial do contrato de opção. Ex: PETRO280.' },
-          { key: 'tipoOpcao',       label: 'Tipo',       type: 'texto',     desc: 'CALL (Opção de Compra - aposta na alta) ou PUT (Opção de Venda - aposta na baixa).' },
-          { key: 'direcaoTrade',    label: 'Direção',    type: 'texto',     desc: 'COMPRA (Pagou prêmio, risco limitado) ou VENDA (Recebeu prêmio, risco ilimitado).' },
-          { key: 'dataVencimento',  label: 'Venc.',      type: 'data',      desc: 'Data limite em que o contrato expira na bolsa.' },
-          { key: 'dteCorridos',     label: 'DTE',        type: 'numero',    desc: 'Days To Expiration: Quantos dias corridos faltam para o vencimento.' },
-          { key: 'strike',          label: 'Strike',     type: 'currency',  desc: 'Preço de exercício. O valor pré-acordado para a compra/venda da ação.' },
-          { key: 'spotPrice',       label: 'Spot',       type: 'currency',  desc: 'Preço atual da ação no mercado à vista.' },
-          { key: 'quantidade',      label: 'Qtd',        type: 'numero',    desc: 'Número de opções envolvidas nesta perna da estratégia.' },
-          { key: 'premioMedio',     label: 'PM',         type: 'currency',  desc: 'Preço Médio pago ou recebido por opção na abertura da posição.' },
-          { key: 'premioAtual',     label: 'P. Atual',   type: 'currency',  desc: 'Preço de mercado da opção neste momento.' },
-          { key: 'moneynessCode',   label: 'Moneyness',  type: 'texto',     desc: 'OTM (Fora do dinheiro - Seguro), ATM (No dinheiro - Alerta) ou ITM (Dentro do dinheiro - Risco).' },
-          { key: 'nocional',        label: 'Nocional',   type: 'currency',  desc: 'Exposição Financeira Total (Strike x Quantidade). O tamanho real do risco/alavancagem.' },
-          { key: 'ganhoMaximo',     label: 'Ganho Máx.', type: 'currency',  desc: 'Lucro máximo possível se a operação expirar a seu favor.' },
-          { key: 'plTotalValor',    label: 'P/L $',      type: 'currency',  desc: 'Profit/Loss: Lucro ou Prejuízo aberto no momento (em Reais).' },
-          { key: 'plTotalPct',      label: 'P/L %',      type: 'percentage', desc: 'Rentabilidade atual calculada sobre a exposição financeira (Nocional).' },
-          { key: 'delta',           label: 'Delta',      type: 'number',    desc: 'Sensibilidade: Quanto a opção muda de preço para cada R$1 de movimento na ação.' },
-          { key: 'probabilidadeSucesso', label: 'POE',   type: 'percentage', desc: 'Probabilidade Estatística da opção expirar sem valor (OTM).' }
+          { key: 'estrategiaId',   label: 'Estratégia', type: 'texto',      desc: 'Nome ou ID do grupo estratégico no qual a operação está inserida.' },
+          { key: 'tickerAtivo',    label: 'Ativo',      type: 'texto',      desc: 'Código do ativo objeto (Ação) na B3. Ex: PETR4.' },
+          { key: 'simboloOpcao',   label: 'Opção',      type: 'texto',      desc: 'Código oficial do contrato de opção. Ex: PETRO280.' },
+          { key: 'tipoOpcao',      label: 'Tipo',       type: 'texto',      desc: 'CALL (Opção de Compra - aposta na alta) ou PUT (Opção de Venda - aposta na baixa).' },
+          { key: 'direcaoTrade',   label: 'Direção',    type: 'texto',      desc: 'COMPRA (Pagou prêmio, risco limitado) ou VENDA (Recebeu prêmio, risco ilimitado).' },
+          { key: 'dataVencimento', label: 'Venc.',      type: 'data',       desc: 'Data limite em que o contrato expira na bolsa.' },
+          { key: 'dteCorridos',    label: 'DTE',        type: 'numero',     desc: 'Days To Expiration: Quantos dias corridos faltam para o vencimento.' },
+          { key: 'strike',         label: 'Strike',     type: 'currency',   desc: 'Preço de exercício. O valor pré-acordado para a compra/venda da ação.' },
+          { key: 'spotPrice',      label: 'Spot',       type: 'currency',   desc: 'Preço atual da ação no mercado à vista.' },
+          { key: 'quantidade',     label: 'Qtd',        type: 'numero',     desc: 'Número de opções envolvidas nesta perna da estratégia.' },
+          { key: 'premioMedio',    label: 'PM',         type: 'currency',   desc: 'Preço Médio pago ou recebido por opção na abertura da posição.' },
+          { key: 'premioAtual',    label: 'P. Atual',   type: 'currency',   desc: 'Preço de mercado da opção neste momento.' },
+          { key: 'moneynessCode',  label: 'Moneyness',  type: 'texto',      desc: 'OTM (Fora do dinheiro - Seguro), ATM (No dinheiro - Alerta) ou ITM (Dentro do dinheiro - Risco).' },
+          { key: 'nocional',       label: 'Nocional',   type: 'currency',   desc: 'Exposição Financeira Total (Strike x Quantidade). O tamanho real do risco/alavancagem.' },
+          { key: 'ganhoMaximo',    label: 'Ganho Máx.', type: 'currency',   desc: 'Lucro máximo possível se a operação expirar a seu favor.' },
+          { key: 'plTotalValor',   label: 'P/L $',      type: 'currency',   desc: 'Profit/Loss: Lucro ou Prejuízo aberto no momento (em Reais).' },
+          { key: 'plTotalPct',     label: 'P/L %',      type: 'percentage', desc: 'Rentabilidade atual calculada sobre a exposição financeira (Nocional).' },
+          { key: 'delta',          label: 'Delta',      type: 'numero',     desc: 'Sensibilidade: Quanto a opção muda de preço para cada R$1 de movimento na ação.' },
+          { key: 'poe',            label: 'POE',        type: 'percentage', desc: 'Probabilidade Estatística da opção expirar sem valor (OTM).' }
         ]
       };
     },
 
   computed: {
-    // 🚀 Consome a lista mastigada do Agregador
     activeData() {
       return this.statsPreCalculados?.listaAtivas || [];
     },
 
-    // 🚀 CACHE MATEMÁTICO 1: Pré-calcula os grupos e seus totais 1 única vez
     groupedData() {
       if (!this.activeData.length) return {};
       
       const groups = this.activeData.reduce((acc, row) => {
         const group = row.estrategiaId || 'SEM ESTRATÉGIA';
         if (!acc[group]) acc[group] = { rows: [], totals: {} };
-        acc[group].rows.push(row); // Guarda as linhas
+        acc[group].rows.push(row);
         return acc;
       }, {});
 
-      // Calcula os totais de cada grupo sem travar a tela
       Object.keys(groups).forEach(gName => {
         this.columns.forEach(col => {
           if (['currency', 'numero', 'percentage'].includes(col.type)) {
@@ -229,7 +226,6 @@ window.CockpitTable = {
       return groups;
     },
 
-    // 🚀 CACHE MATEMÁTICO 2: Pré-calcula o total geral do portfólio
     portfolioTotals() {
       if (!this.activeData.length) return {};
       const totals = {};
@@ -252,12 +248,11 @@ window.CockpitTable = {
     },
     
     isExpanded(name) {
-      // Por padrão, todos os grupos começam expandidos
       return this.expandedGroups[name] !== false; 
     },
 
     getGroupSum(rows, key) {
-      // 🚨 LISTA DE BLOQUEIO: O que não faz sentido somar matematicamente
+      // 🚨 LISTA DE BLOQUEIO: colunas que não fazem sentido somar matematicamente
       const colunasNaoSomaveis = [
         'dteCorridos', 
         'strike', 
@@ -265,7 +260,7 @@ window.CockpitTable = {
         'premioAtual', 
         'spotPrice', 
         'delta', 
-        'probabilidadeSucesso'
+        'poe'          // ✅ CORRIGIDO: era 'probabilidadeSucesso'
       ];
       
       if (colunasNaoSomaveis.includes(key)) return null;
@@ -276,7 +271,6 @@ window.CockpitTable = {
         return total + (isNaN(val) ? 0 : Number(val));
       }, 0);
 
-      // Recalcula a rentabilidade do grupo (não pode somar porcentagens de lucro de forma linear)
       if (key === 'plTotalPct') {
         const nocionalTotal = rows.reduce((tot, row) => tot + (Number(row.nocional) || 0), 0);
         const plTotal = rows.reduce((tot, row) => tot + (Number(row.plTotalValor) || 0), 0);
@@ -291,14 +285,13 @@ window.CockpitTable = {
       
       if (type === 'data') {
         if (value instanceof Date) return value.toLocaleDateString('pt-BR');
-        return String(value).split(' ')[0]; // Limpa horas se houver
+        return String(value).split(' ')[0];
       }
       
-      // 🚀 USA O CACHE
       if (type === 'currency' || type === 'moeda') return tableCurrencyFormatter.format(value);
       if (type === 'numero' || type === 'number') return tableNumberFormatter.format(value);
       
-      if (type === 'percentage') { return (Number(value)).toFixed(2).replace('.', ',') + '%';}
+      if (type === 'percentage') { return (Number(value)).toFixed(2).replace('.', ',') + '%'; }
       
       return value;
     },
@@ -315,7 +308,6 @@ window.CockpitTable = {
       const valStr = String(value).trim().toUpperCase();
       const colName = String(colKey).toUpperCase();
 
-      // Formatação Visual por Tipo
       if (colName.includes('MONEYNESS')) {
         if (valStr.includes('OTM')) return 'text-emerald-700 font-black bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100';
         if (valStr.includes('ITM')) return 'text-red-700 font-black bg-red-50 px-2 py-0.5 rounded border border-red-100 shadow-sm';
@@ -327,12 +319,11 @@ window.CockpitTable = {
         if (valStr === 'PUT') return 'text-fuchsia-700 font-bold bg-fuchsia-50 px-2 py-0.5 rounded';
       }
       
-      // Cores para valores financeiros Positivos/Negativos
       if (type === 'currency' || type === 'moeda' || type === 'percentage') {
         const num = typeof value === 'string' ? parseFloat(value.replace(/[^\d.-]/g, '')) : Number(value);
         if (num > 0 && colName.includes('PL')) return 'text-emerald-600 font-mono font-bold';
         if (num < 0 && colName.includes('PL')) return 'text-red-600 font-mono font-bold';
-        return 'text-slate-700 font-mono font-semibold'; // Nocional ou Strike não ficam verdes/vermelhos
+        return 'text-slate-700 font-mono font-semibold';
       }
 
       if (type === 'numero' || type === 'number') return 'font-mono text-slate-600 font-bold';
