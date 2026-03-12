@@ -101,8 +101,9 @@
           </div>
           <div class="text-center border-l border-r border-slate-200/60 px-1">
             <span class="block text-[8px] text-slate-400 font-bold uppercase mb-0.5">Variação</span>
-            <span class="text-[11px] font-black font-mono-data" :class="ativo.variacaoAtivo >= 0 ? 'text-brand-emerald' : 'text-brand-rose'">
-              {{ ativo.variacaoAtivo > 0 ? '+' : '' }}{{ (ativo.variacaoAtivo * 100).toFixed(2) }}%
+            <!-- ✅ CORRIGIDO: variacaoAtivo → variacao -->
+            <span class="text-[11px] font-black font-mono-data" :class="ativo.variacao >= 0 ? 'text-brand-emerald' : 'text-brand-rose'">
+              {{ ativo.variacao > 0 ? '+' : '' }}{{ (ativo.variacao * 100).toFixed(2) }}%
             </span>
           </div>
           <div class="text-center">
@@ -110,8 +111,6 @@
             <span class="text-[11px] font-black text-brand-indigo font-mono-data">{{ (ativo.ivRank * 100).toFixed(1) }}%</span>
           </div>
         </div>
-
-
 
         <div v-if="ativo.probAlta !== undefined" class="space-y-2 mt-auto">
           <div class="flex items-end justify-between mb-1">
@@ -130,9 +129,6 @@
             <div class="h-full bg-slate-200 transition-all duration-500" :style="{ width: (ativo.probBaixa * 100) + '%' }"></div>
           </div>
         </div>
-
-
-
 
         <div v-else class="mt-auto py-2 bg-amber-50 rounded-lg border border-amber-100 text-center">
           <span class="text-[9px] font-black text-amber-600 uppercase tracking-widest">Aguardando Recálculo</span>
@@ -182,7 +178,7 @@ window.GestaoAtivos = {
       isSyncingBackground: true, 
       modal: { isOpen: false, ticker: '', linhaReal: null },
       sidebar: { isOpen: false, ativo: {} }
-    }
+    };
   },
   
   computed: {
@@ -195,23 +191,21 @@ window.GestaoAtivos = {
     },
 
     ativosProcessados() {
-      const predicoes = (this.db && this.db.analisePreditiva) || [];
-      const tendencia = (this.db && this.db.dadosTendencia) || [];
+      const predicoes   = (this.db && this.db.analisePreditiva)      || [];
+      const tendencia   = (this.db && this.db.dadosTendencia)         || [];
       const fundamentos = (this.db && this.db.analiseFundamentalista) || [];
       
       return this.ativos.map((ativo, index) => {
         const ticker = ativo.tickerAtivo;
-        const pred = predicoes.find(p => p.tickerAtivo === ticker) || {};
-        const tend = tendencia.find(t => t.tickerAtivo === ticker) || {};
+        const pred = predicoes.find(p => p.tickerAtivo === ticker)   || {};
+        const tend = tendencia.find(t => t.tickerAtivo === ticker)   || {};
         const fund = fundamentos.find(f => f.tickerAtivo === ticker) || {};
         
         return { 
-          // 🚀 ORDEM CORRIGIDA: 'ativo' vem por último para garantir que o 
-          // Nome real (BRAVA ON) e o Setor não sejam sobrescritos!
           ...tend, 
           ...pred, 
           ...fund, 
-          ...ativo, 
+          ...ativo,       // ativo por último → não sobrescreve nomeEmpresa/setor
           linhaReal: index + 2 
         };
       });

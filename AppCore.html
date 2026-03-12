@@ -242,7 +242,6 @@ const app = createApp({
         .withSuccessHandler((response) => {
           const tempoBackend = performance.now();
           const msBackend    = tempoBackend - tempoInicio;
-          const cockpitRaw = response.raw['COCKPIT'] || [];
 
           if (!response || !response.success) return handleFailure("Falha na API");
 
@@ -329,6 +328,17 @@ const app = createApp({
 
       const customProps = {
         // =========================================================
+        // 0. INFRAESTRUTURA & NAVEGAÇÃO
+        // =========================================================
+        'menu-sidebar': {
+          menu:        menu.value,
+          currentView: currentView.value,
+          isCollapsed: isCollapsed.value,
+          isMobile:    isMobile.value,
+          lastSync:    lastSync.value
+        },
+
+        // =========================================================
         // 1. HOME & COCKPIT
         // =========================================================
         'ticker-tape':            { ativos: ativosDaHome },
@@ -370,14 +380,6 @@ const app = createApp({
       sincronizarDashboard();
       iniciarMotorRelogio();
       if (window.lucide) window.lucide.createIcons();
-
-      // DEBUG TEMPORÁRIO — remover após diagnóstico
-      window.__nexoDebug = {
-        getDb:    () => db.value,
-        getCubo:  () => cuboOlap.value,
-        getTrade: (i) => db.value?.cockpit?.[i || 0]
-      };
-
     });
 
     // ====================================================================

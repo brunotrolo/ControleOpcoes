@@ -26,12 +26,12 @@
              class="flex items-center border-r border-[var(--app-border)] hover:bg-[var(--app-bg)] transition-colors cursor-default">
           
           <span :class="isMobile ? 'text-2xl' : 'text-[13px]'" class="font-black text-[var(--m3-on-surface)] tracking-widest">
-            {{ ativo.tickerAtivo || ativo.ticker || '---' }}
+            {{ ativo.tickerAtivo || '---' }}
           </span>
           
           <span :class="isMobile ? 'text-2xl px-4 py-1.5' : 'text-[13px] px-2 py-0.5'" 
                 class="font-mono font-black text-emerald-700 ml-3 bg-emerald-100/50 rounded-xl shadow-sm">
-            {{ Tradutor.formatarMoeda(ativo.spotPrice !== undefined ? ativo.spotPrice : ativo.close) }}
+            {{ Tradutor.formatarMoeda(ativo.spotPrice || 0) }}
           </span>
         
         </div>
@@ -56,13 +56,12 @@
 window.TickerTape = {
   template: '#ticker-tape-template',
   props: {
-    ativos: { type: Array, default: () => [] },
-    isMobile: Boolean,
+    ativos:    { type: Array,   default: () => [] },
+    isMobile:  Boolean,
     isLoading: Boolean
   },
   data() {
-    // Retorna o Tradutor global de forma segura
-    return { Tradutor: window.Tradutor } 
+    return { Tradutor: window.Tradutor };
   }
 };
 </script>

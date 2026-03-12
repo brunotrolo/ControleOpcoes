@@ -1,288 +1,729 @@
 <style>
-  /* 🌟 NOVO: Importação das Fontes Premium (Pilar Light & Clean) */
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
-
-  /* Variáveis de Design System e Força Bruta de Tema */
-  :root {
-    /* M3 Tonal Palette - Light Edition (SEU ORIGINAL) */
-    --app-bg: #F8F9FF;           
-    --app-surface: #FFFFFF;      
-    --app-border: #E1E2EC;       
-    --m3-primary: #005AC1;       
-    --m3-on-surface: #1A1C1E;    
-    --m3-on-surface-variant: #44474E; 
-    --shadow-color: 226, 230, 240; 
-    
-    /* 🌟 NOVO: Cores de Marca Harmonizadas (Pilar Semântico) */
-    --brand-indigo: #4F46E5;
-    --brand-emerald: #10B981;
-    --brand-rose: #E11D48;
-    
-    /* 📱 MOBILE CHASSI: Área Segura para não encostar na barra de navegação do Android/iOS */
-    --safe-bottom: env(safe-area-inset-bottom, 20px);
-    
-    /* 🚨 O SEGREDO 1: Diz pro Chrome/Edge parar de forçar barra preta do Windows */
-    color-scheme: light; 
-  }
-
-  /* 🌟 NOVO: Aplicação da fonte principal no corpo do app */
-  body {
-    font-family: 'Inter', system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    
-    /* 📱 MOBILE CHASSI: Aniquila o "duplo-clique" que dá zoom sem querer na tela */
-    touch-action: manipulation;
-    
-    /* 📱 MOBILE CHASSI: Remove aquele quadrado cinza/azul que pisca ao tocar botões no Android */
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  [v-cloak] { display: none; }
-
-  /* Utilitários de Cor (SEU ORIGINAL) */
-  .bg-app-bg { background-color: var(--app-bg); }
-  .bg-app-surface { background-color: var(--app-surface); }
-
-  /* 🚨 O SEGREDO 2: SCROLLBAR GLOBAL (SEU ORIGINAL) */
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb {
-    background: #C1C6D4; 
-    border-radius: 10px; 
-    border: 2px solid var(--app-bg); 
-  }
-  ::-webkit-scrollbar-thumb:hover { background: #9AA0B1; }
-  * { scrollbar-width: thin; scrollbar-color: #C1C6D4 transparent; }
-
-  /* CONTAINER DO CARROSSEL REVISADO (SEU ORIGINAL) */
-  .carousel-container {
-    display: flex; overflow-x: auto; scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch; gap: 1.5rem;
-    padding: 0.5rem 0.25rem 1.5rem 0.25rem; scroll-snap-type: x mandatory;
-  }
-  .carousel-container::-webkit-scrollbar { height: 5px; }
-  .carousel-container::-webkit-scrollbar-thumb { background: #C1C6D4; border: none; }
-
-  /* 🎨 SOMBRAS SUAVIZADAS NOS CARDS (SEU ORIGINAL) */
-  .carousel-item {
-    flex: 0 0 auto; width: 320px; scroll-snap-align: start;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background-color: var(--app-surface); border-radius: 28px; 
-    border: 1px solid var(--app-border);
-    box-shadow: 0 2px 8px -2px rgba(var(--shadow-color), 0.6), 0 4px 12px -4px rgba(var(--shadow-color), 0.4);
-  }
-  .carousel-item:hover { 
-    transform: translateY(-4px); border-color: #C1C6DA; 
-    box-shadow: 0 8px 24px -6px rgba(var(--shadow-color), 0.8), 0 4px 12px -4px rgba(var(--shadow-color), 0.5);
-  }
-
-  /* 🎨 BORDAS DE STATUS - PADRÃO (SEU ORIGINAL) */
-  .border-l-itm { border-left: 6px solid #ef4444 !important; background: linear-gradient(to right, rgba(239, 68, 68, 0.08), transparent); } 
-  .border-l-atm { border-left: 6px solid #f59e0b !important; background: linear-gradient(to right, rgba(245, 158, 11, 0.1), transparent); }
-  .border-l-otm { border-left: 6px solid #10b981 !important; background: linear-gradient(to right, rgba(16, 185, 129, 0.08), transparent); }
-  .border-l-call { border-left: 6px solid #0ea5e9 !important; background: linear-gradient(to right, rgba(14, 165, 233, 0.05), transparent); }
-  .border-l-put { border-left: 6px solid #f59e0b !important; background: linear-gradient(to right, rgba(245, 158, 11, 0.05), transparent); }
-  .border-l-itm, .border-l-atm, .border-l-otm { border-left-style: solid !important; border-left-width: 6px !important; }
-
-  /* FORÇA O HANDSONTABLE (SEU ORIGINAL) */
-  thead.sticky { position: sticky !important; top: 0 !important; z-index: 40 !important; }
-  tbody tr { position: static !important; }
-  .handsontable .ht_master, .handsontable .ht_clone_top, .handsontable .ht_clone_left, 
-  .handsontable .ht_clone_top_left_corner, .handsontable .ht_clone_bottom_left_corner,
-  .handsontable .ht_clone_bottom { z-index: 10 !important; }
-  .htDropdownMenu { z-index: 50 !important; }
+  /* =========================================================
+     🔤 FONTES
+     Syne: display/títulos — geométrica, forte, moderna
+     DM Sans: corpo — legível, refinada, não genérica
+     JetBrains Mono: dados financeiros — precisão e clareza
+     ========================================================= */
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 
   /* =========================================================
-     🌟 NOVO: CLASSES UTILITÁRIAS DE HARMONIZAÇÃO (O "Kit Cannes")
+     🎨 CAMADA 1 — DESIGN TOKENS UNIFICADOS
+     Fonte única de verdade para todo o sistema visual.
+     Sem conflito entre --m3-primary e --brand-indigo.
+     ========================================================= */
+  :root {
+
+    /* --- CORES DE MARCA (Sistema único, sem duplicatas) --- */
+    --brand-indigo:        #4F46E5;   /* Primária — ação, CTA, destaque */
+    --brand-indigo-hover:  #4338CA;   /* Estado hover da primária */
+    --brand-indigo-light:  #EEF2FF;   /* Container leve — fundos, badges */
+    --brand-indigo-muted:  rgba(79, 70, 229, 0.12); /* State layer */
+
+    --brand-emerald:       #059669;   /* Sucesso, lucro, positivo */
+    --brand-emerald-light: #ECFDF5;
+    --brand-emerald-muted: rgba(5, 150, 105, 0.10);
+
+    --brand-rose:          #E11D48;   /* Erro, risco, negativo */
+    --brand-rose-light:    #FFF1F2;
+    --brand-rose-muted:    rgba(225, 29, 72, 0.10);
+
+    --brand-amber:         #D97706;   /* Atenção, ATM, aviso */
+    --brand-amber-light:   #FFFBEB;
+    --brand-amber-muted:   rgba(217, 119, 6, 0.10);
+
+    /* --- SUPERFÍCIES — LIGHT MODE (padrão) --- */
+    --surface-bg:          #F4F6FF;   /* Fundo da página */
+    --surface-base:        #FFFFFF;   /* Cards, modais */
+    --surface-raised:      #FFFFFF;   /* Cards com elevação */
+    --surface-overlay:     #F8FAFC;   /* Fundos internos de cards */
+    --surface-sunken:      #F1F4F9;   /* Inputs, áreas internas */
+
+    /* --- BORDAS --- */
+    --border-subtle:       #E8EAF4;   /* Divisores leves */
+    --border-default:      #D8DAEA;   /* Bordas de cards */
+    --border-strong:       #B8BDD4;   /* Bordas de inputs focus-off */
+
+    /* --- TIPOGRAFIA --- */
+    --text-primary:        #0F1117;   /* Títulos, valores principais */
+    --text-secondary:      #374151;   /* Corpo, valores secundários */
+    --text-tertiary:       #6B7280;   /* Labels, descrições */
+    --text-muted:          #9CA3AF;   /* Placeholders, desabilitados */
+    --text-inverted:       #FFFFFF;   /* Texto sobre fundos escuros */
+
+    /* --- SOMBRAS --- */
+    --shadow-sm:  0 1px 3px rgba(79, 70, 229, 0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md:  0 4px 12px rgba(79, 70, 229, 0.08), 0 2px 6px rgba(0,0,0,0.05);
+    --shadow-lg:  0 8px 24px rgba(79, 70, 229, 0.10), 0 4px 12px rgba(0,0,0,0.06);
+    --shadow-xl:  0 16px 40px rgba(79, 70, 229, 0.12), 0 8px 20px rgba(0,0,0,0.07);
+
+    /* --- SHAPE SCALE (MD3 completo) --- */
+    --radius-xs:   6px;    /* Badges, chips */
+    --radius-sm:   10px;   /* Inputs, botões compactos */
+    --radius-md:   14px;   /* Botões principais */
+    --radius-lg:   20px;   /* Cards internos, dropdowns */
+    --radius-xl:   28px;   /* Cards premium, modais */
+    --radius-full: 9999px; /* Pills, avatares */
+
+    /* --- MOTION --- */
+    --ease-standard:  cubic-bezier(0.2, 0, 0, 1);    /* MD3 Standard */
+    --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);   /* Entrar na tela */
+    --ease-accelerate: cubic-bezier(0.3, 0, 1, 1);   /* Sair da tela */
+    --duration-fast:   150ms;
+    --duration-std:    250ms;
+    --duration-slow:   350ms;
+
+    /* --- ÁREA SEGURA MOBILE --- */
+    --safe-bottom: env(safe-area-inset-bottom, 20px);
+    --safe-top:    env(safe-area-inset-top, 0px);
+
+    /* Legado: mantidos para compatibilidade com componentes antigos */
+    --app-bg:                var(--surface-bg);
+    --app-surface:           var(--surface-base);
+    --app-border:            var(--border-default);
+    --m3-primary:            var(--brand-indigo);
+    --m3-on-surface:         var(--text-primary);
+    --m3-on-surface-variant: var(--text-tertiary);
+    --shadow-color:          79, 70, 229;
+
+    color-scheme: light;
+  }
+
+
+  /* =========================================================
+     🌑 CAMADA 2 — DARK MODE
+     Ativado via [data-theme="dark"] no <html>.
+     Nenhum componente precisa de lógica extra.
+     ========================================================= */
+  [data-theme="dark"] {
+
+    /* Superfícies escuras com profundidade sutil */
+    --surface-bg:      #0D0F14;
+    --surface-base:    #161A23;
+    --surface-raised:  #1C2130;
+    --surface-overlay: #1E2438;
+    --surface-sunken:  #111520;
+
+    /* Bordas */
+    --border-subtle:   #1F2535;
+    --border-default:  #263045;
+    --border-strong:   #354060;
+
+    /* Tipografia invertida */
+    --text-primary:    #F0F2FF;
+    --text-secondary:  #C8CCDE;
+    --text-tertiary:   #8890AA;
+    --text-muted:      #555F78;
+    --text-inverted:   #0F1117;
+
+    /* Cores de marca: ligeiramente mais brilhantes no escuro */
+    --brand-indigo:        #6366F1;
+    --brand-indigo-hover:  #818CF8;
+    --brand-indigo-light:  #1E2240;
+    --brand-indigo-muted:  rgba(99, 102, 241, 0.15);
+
+    --brand-emerald:       #10B981;
+    --brand-emerald-light: #0D2A20;
+    --brand-emerald-muted: rgba(16, 185, 129, 0.12);
+
+    --brand-rose:          #FB7185;
+    --brand-rose-light:    #2A0E18;
+    --brand-rose-muted:    rgba(251, 113, 133, 0.12);
+
+    --brand-amber:         #FBBF24;
+    --brand-amber-light:   #251C08;
+    --brand-amber-muted:   rgba(251, 191, 36, 0.12);
+
+    /* Sombras escuras */
+    --shadow-sm:  0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+    --shadow-md:  0 4px 12px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.25);
+    --shadow-lg:  0 8px 24px rgba(0,0,0,0.40), 0 4px 12px rgba(0,0,0,0.30);
+    --shadow-xl:  0 16px 40px rgba(0,0,0,0.50), 0 8px 20px rgba(0,0,0,0.35);
+
+    --shadow-color: 0, 0, 0;
+
+    color-scheme: dark;
+
+    /* Legado */
+    --app-bg:                var(--surface-bg);
+    --app-surface:           var(--surface-base);
+    --app-border:            var(--border-default);
+    --m3-on-surface:         var(--text-primary);
+    --m3-on-surface-variant: var(--text-tertiary);
+  }
+
+
+  /* =========================================================
+     🔤 CAMADA 3 — SISTEMA TIPOGRÁFICO
+     Hierarquia intencional: Syne para títulos de impacto,
+     DM Sans para corpo e interface, JetBrains Mono para dados.
      ========================================================= */
 
-  /* Padrão para os botões principais de ação */
-  .btn-action {
-    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-    padding: 0.5rem 1.25rem; border-radius: 9999px; /* Totalmente arredondado */
-    font-size: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;
-  }
-  .btn-action-primary { background-color: var(--brand-indigo); color: white; }
-  .btn-action-primary:hover { background-color: #4338CA; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+  /* Reset base */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* Padrão para os Cartões Maiores (igual ao seu carrossel, mas para uso geral) */
-  .premium-card {
-    background-color: var(--app-surface); border-radius: 28px; border: 1px solid var(--app-border);
-    box-shadow: 0 2px 8px -2px rgba(var(--shadow-color), 0.6); transition: all 0.3s ease;
+  html { font-size: 16px; }
+
+  body {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: 0.875rem;       /* 14px — base para interface densa */
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--text-primary);
+    background-color: var(--surface-bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  /* Padrão de tipografia para números de dinheiro e gregas */
+  /* --- Escala tipográfica de TÍTULOS (Syne — impacto) --- */
+  .t-display {                 /* Títulos principais de página */
+    font-family: 'Syne', sans-serif;
+    font-size: 1.75rem;        /* 28px */
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+  }
+  .t-title {                   /* Títulos de card/seção */
+    font-family: 'Syne', sans-serif;
+    font-size: 1.125rem;       /* 18px */
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+  }
+  .t-subtitle {                /* Subtítulos de card */
+    font-size: 0.8125rem;      /* 13px */
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    color: var(--text-secondary);
+  }
+
+  /* --- Escala tipográfica de CORPO (DM Sans) --- */
+  .t-body {                    /* Texto descritivo */
+    font-size: 0.875rem;       /* 14px */
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+  .t-body-strong {             /* Texto em destaque */
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  /* --- Escala tipográfica de LABELS --- */
+  .t-label {                   /* Labels de campo, cabeçalhos de tabela */
+    font-size: 0.6875rem;      /* 11px */
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+  .t-label-sm {                /* Labels menores, badges */
+    font-size: 0.625rem;       /* 10px */
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* --- Escala tipográfica de DADOS (JetBrains Mono) --- */
+  .t-value-xl {                /* Valor principal de card KPI */
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2rem;           /* 32px */
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+  }
+  .t-value-lg {                /* Valor secundário de destaque */
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.375rem;       /* 22px */
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+  }
+  .t-value {                   /* Valores em tabelas e listas */
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8125rem;      /* 13px */
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--text-primary);
+  }
+  .t-value-sm {                /* Valores compactos, gregas */
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6875rem;      /* 11px */
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+
+  /* Alias de compatibilidade com código existente */
   .font-mono-data {
     font-family: 'JetBrains Mono', monospace;
     letter-spacing: -0.02em;
   }
 
+
   /* =========================================================
-     COMPONENTE: BOTÕES DE AUTOMAÇÃO (Padrão de Lista)
+     🧱 COMPONENTES BASE
+     ========================================================= */
+
+  /* --- Cards --- */
+  .premium-card {
+    background-color: var(--surface-base);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-default);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--duration-std) var(--ease-standard),
+                border-color var(--duration-std) var(--ease-standard);
+  }
+  .premium-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-strong);
+  }
+
+  .card-inner {                /* Cards internos dentro de premium-card */
+    background-color: var(--surface-overlay);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-subtle);
+  }
+
+  /* --- Botões --- */
+  .btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--radius-full);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.6875rem;      /* 11px */
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: all var(--duration-fast) var(--ease-standard);
+    cursor: pointer;
+    border: none;
+    white-space: nowrap;
+    min-height: 36px;          /* Área de toque mínima */
+  }
+
+  .btn-action-primary {
+    background-color: var(--brand-indigo);
+    color: var(--text-inverted);
+  }
+  .btn-action-primary:hover {
+    background-color: var(--brand-indigo-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px var(--brand-indigo-muted);
+  }
+  .btn-action-primary:active { transform: translateY(0); box-shadow: none; }
+
+  .btn-action-ghost {
+    background-color: transparent;
+    color: var(--text-tertiary);
+    border: 1px solid var(--border-default);
+    background-color: var(--surface-base);
+  }
+  .btn-action-ghost:hover {
+    color: var(--brand-indigo);
+    border-color: var(--brand-indigo);
+    background-color: var(--brand-indigo-light);
+  }
+
+  /* Área de toque mobile mínima (44px) */
+  @media (max-width: 850px) {
+    .btn-action { min-height: 44px; padding: 0.625rem 1.25rem; }
+  }
+
+  /* --- Inputs --- */
+  .input-base {
+    width: 100%;
+    background-color: var(--surface-sunken);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    padding: 0.625rem 1rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    transition: border-color var(--duration-fast) var(--ease-standard),
+                box-shadow var(--duration-fast) var(--ease-standard),
+                background-color var(--duration-fast) var(--ease-standard);
+    outline: none;
+  }
+  .input-base::placeholder { color: var(--text-muted); }
+  .input-base:focus {
+    border-color: var(--brand-indigo);
+    background-color: var(--surface-base);
+    box-shadow: 0 0 0 3px var(--brand-indigo-muted);
+  }
+
+  /* --- Badges / Status Pills --- */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.625rem;
+    border-radius: var(--radius-full);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid transparent;
+  }
+  .badge-indigo  { background: var(--brand-indigo-light); color: var(--brand-indigo); border-color: var(--border-subtle); }
+  .badge-emerald { background: var(--brand-emerald-light); color: var(--brand-emerald); }
+  .badge-rose    { background: var(--brand-rose-light); color: var(--brand-rose); }
+  .badge-amber   { background: var(--brand-amber-light); color: var(--brand-amber); }
+
+  /* --- Divisores --- */
+  .divider {
+    height: 1px;
+    background-color: var(--border-subtle);
+    border: none;
+    margin: 0;
+  }
+
+
+  /* =========================================================
+     🎨 STATUS SEMÂNTICO DE OPÇÕES (preservado + refinado)
+     ========================================================= */
+  .border-l-itm {
+    border-left: 4px solid var(--brand-rose) !important;
+    background: linear-gradient(to right, var(--brand-rose-muted), transparent);
+  }
+  .border-l-atm {
+    border-left: 4px solid var(--brand-amber) !important;
+    background: linear-gradient(to right, var(--brand-amber-muted), transparent);
+  }
+  .border-l-otm {
+    border-left: 4px solid var(--brand-emerald) !important;
+    background: linear-gradient(to right, var(--brand-emerald-muted), transparent);
+  }
+  .border-l-call {
+    border-left: 4px solid #0EA5E9 !important;
+    background: linear-gradient(to right, rgba(14,165,233,0.06), transparent);
+  }
+  .border-l-put {
+    border-left: 4px solid var(--brand-amber) !important;
+    background: linear-gradient(to right, var(--brand-amber-muted), transparent);
+  }
+
+
+  /* =========================================================
+     📜 SCROLLBARS
+     ========================================================= */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: var(--radius-full);
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+  * { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+
+  /* Scrollbar invisível com reveal no hover */
+  .log-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+  .log-scrollbar::-webkit-scrollbar-thumb { background: transparent; }
+  .log-scrollbar:hover::-webkit-scrollbar-thumb { background: var(--border-strong); }
+
+  /* Carrossel */
+  .carousel-container {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    gap: 1.25rem;
+    padding: 0.5rem 0.25rem 1.25rem 0.25rem;
+    scroll-snap-type: x mandatory;
+  }
+  .carousel-container::-webkit-scrollbar { height: 4px; }
+  .carousel-container::-webkit-scrollbar-thumb { background: var(--border-default); border: none; }
+
+  .carousel-item {
+    flex: 0 0 auto;
+    width: 320px;
+    scroll-snap-align: start;
+    transition: transform var(--duration-std) var(--ease-standard),
+                box-shadow var(--duration-std) var(--ease-standard);
+    background-color: var(--surface-base);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-default);
+    box-shadow: var(--shadow-sm);
+  }
+  .carousel-item:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-strong);
+  }
+
+  .custom-scrollbar-mobile {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+
+  /* =========================================================
+     ⚙️ AUTOMAÇÃO (preservado)
      ========================================================= */
   .automation-btn {
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     width: 100%;
-    padding: 1rem 1.5rem; 
-    background-color: var(--app-surface);
-    border: 1px solid var(--app-border); 
-    border-radius: 16px; 
-    color: var(--m3-on-surface); 
-    font-size: 0.75rem; 
-    font-weight: 800;
-    text-transform: uppercase; 
+    padding: 0.875rem 1.25rem;
+    background-color: var(--surface-base);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
     letter-spacing: 0.05em;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all var(--duration-fast) var(--ease-standard);
+    cursor: pointer;
   }
-
   .automation-btn:hover {
-    background-color: var(--brand-indigo); 
+    background-color: var(--brand-indigo);
     border-color: var(--brand-indigo);
-    color: #FFFFFF; 
+    color: var(--text-inverted);
     transform: translateY(-2px);
-    box-shadow: 0 8px 16px -4px rgba(79, 70, 229, 0.3);
+    box-shadow: 0 6px 16px var(--brand-indigo-muted);
   }
+  .automation-btn:active { transform: translateY(0); box-shadow: none; }
 
-  .automation-btn:active { 
-    transform: translateY(0); 
-    box-shadow: none; 
-  }
 
   /* =========================================================
-     COMPONENTE: CONSOLE DE LOGS (Light Mode Elegante)
+     📱 LAYOUT RESPONSIVO
+     Breakpoint único: 850px (alinhado com media queries do HTML)
      ========================================================= */
-  .log-light-mode {
-    filter: invert(1) hue-rotate(180deg); 
-    opacity: 0.85; 
-    mix-blend-mode: multiply; 
+
+  /* Utilitários de área segura */
+  .pb-safe { padding-bottom: var(--safe-bottom) !important; }
+  .pt-safe { padding-top: var(--safe-top) !important; }
+
+  .bg-app-bg      { background-color: var(--surface-bg); }
+  .bg-app-surface { background-color: var(--surface-base); }
+
+  @media screen and (max-width: 850px) {
+    /* Sidebar desktop oculta */
+    .desktop-sidebar { display: none !important; }
+
+    /* Bottom bar visível */
+    .mobile-bottom-bar {
+      display: flex !important;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      z-index: 9999;
+      padding-bottom: var(--safe-bottom);
+      background-color: var(--surface-base);
+      border-top: 1px solid var(--border-subtle);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    /* Container principal */
+    .main-chassi {
+      padding: 12px 12px 100px 12px !important;
+      margin: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+
+    /* Scrollbars invisíveis no mobile */
+    ::-webkit-scrollbar { width: 0; height: 0; display: none; }
+    * { scrollbar-width: none; -ms-overflow-style: none; }
   }
+
+  @media screen and (min-width: 851px) {
+    .desktop-sidebar  { display: flex !important; }
+    .mobile-bottom-bar { display: none !important; }
+    .main-chassi { padding: 32px !important; }
+  }
+
 
   /* =========================================================
-     COMPONENTE: SCROLLBAR INVISÍVEL (Logs & Listas Menores)
+     🎬 ANIMAÇÕES
      ========================================================= */
-  .log-scrollbar::-webkit-scrollbar { 
-    width: 6px; 
-    height: 6px; 
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-  .log-scrollbar::-webkit-scrollbar-track { 
-    background: transparent; 
+  @keyframes slideInBottom {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-  .log-scrollbar::-webkit-scrollbar-thumb { 
-    background: transparent; 
-    border-radius: 10px; 
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.6; transform: scale(0.85); }
   }
-  .log-scrollbar:hover::-webkit-scrollbar-thumb { 
-    background: #CBD5E1; 
+
+  .animate-fade-in {
+    animation: fadeIn var(--duration-slow) var(--ease-decelerate) both;
   }
-  .log-scrollbar::-webkit-scrollbar-thumb:hover { 
-    background: #94A3B8; 
+  .animate-slide-in {
+    animation: slideInBottom var(--duration-slow) var(--ease-decelerate) both;
   }
+
+  /* Stagger helper: aplique --delay nos filhos via JS ou inline style */
+  .stagger-children > * { animation: fadeIn var(--duration-slow) var(--ease-decelerate) both; }
+  .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger-children > *:nth-child(2) { animation-delay: 60ms; }
+  .stagger-children > *:nth-child(3) { animation-delay: 120ms; }
+  .stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+  .stagger-children > *:nth-child(5) { animation-delay: 240ms; }
+  .stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+
+  /* Transições de view */
+  .fade-enter-active { transition: opacity var(--duration-std) var(--ease-decelerate); }
+  .fade-leave-active { transition: opacity var(--duration-fast) var(--ease-accelerate); }
+  .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+  [v-cloak] { display: none; }
+
 
   /* =========================================================
-     🌟 NOVO: OTIMIZAÇÕES EXCLUSIVAS PARA MOBILE (S22 Ultra)
+     🔧 HANDSONTABLE (preservado)
      ========================================================= */
-  /* Classe que garante que a bottom bar não seja cortada pelo Android */
-  .pb-safe {
-    padding-bottom: var(--safe-bottom) !important;
-  }
-
-  @media (max-width: 768px) {
-    /* Esconde as scrollbars grossas no celular para o Carrossel ficar como app nativo */
-    ::-webkit-scrollbar { 
-      width: 0px; 
-      height: 0px; 
-      display: none; 
-    }
-    * { 
-      scrollbar-width: none; 
-      -ms-overflow-style: none;
-    }
-    /* Suaviza o toque e o arrasto */
-    .custom-scrollbar-mobile {
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-    }
-  }
-
-/* =========================================================
-   🚨 FORÇA BRUTA MOBILE: IGNORA O IFRAME DO GOOGLE
-   ========================================================= */
-@media screen and (max-width: 850px) {
-  /* Oculta a Sidebar do PC no celular */
-  .desktop-sidebar { 
-    display: none !important; 
-  }
-  
-  /* Exibe a Bottom Bar no celular */
-  .mobile-bottom-bar { 
-    display: flex !important; 
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    z-index: 9999;
-  }
-
-  /* Ajusta o container principal para não encostar embaixo e remover margens laterais */
-  .main-chassi {
-    padding: 16px 8px 100px 8px !important; 
-    margin: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-}
-
-@media screen and (min-width: 851px) {
-  /* No PC, exibe a Sidebar */
-  .desktop-sidebar { 
-    display: flex !important; 
-  }
-  
-  /* No PC, esconde a Bottom Bar */
-  .mobile-bottom-bar { 
-    display: none !important; 
-  }
-
-  .main-chassi {
-    padding: 32px !important;
-  }
-}
-
+  thead.sticky { position: sticky !important; top: 0 !important; z-index: 40 !important; }
+  tbody tr { position: static !important; }
+  .handsontable .ht_master,
+  .handsontable .ht_clone_top,
+  .handsontable .ht_clone_left,
+  .handsontable .ht_clone_top_left_corner,
+  .handsontable .ht_clone_bottom_left_corner,
+  .handsontable .ht_clone_bottom { z-index: 10 !important; }
+  .htDropdownMenu { z-index: 50 !important; }
 
 </style>
 
+
 <script>
-  /* CONFIGURAÇÃO DO TAILWIND - SINCRONIZADA COM M3 CLEAN */
+  /* =========================================================
+     🎨 TAILWIND CONFIG — sincronizado com os tokens CSS
+     ========================================================= */
   window.tailwind.config = {
+    darkMode: ['attribute', '[data-theme="dark"]'],  /* Dark mode via atributo, não via prefers-color-scheme */
     theme: {
       extend: {
         colors: {
+          /* Superfícies */
           app: {
-            bg: 'var(--app-bg)', surface: 'var(--app-surface)',
-            border: 'var(--app-border)', primary: 'var(--m3-primary)',
+            bg:      'var(--surface-bg)',
+            surface: 'var(--surface-base)',
+            raised:  'var(--surface-raised)',
+            overlay: 'var(--surface-overlay)',
+            sunken:  'var(--surface-sunken)',
+            border:  'var(--border-default)',
           },
-          status: {
-            otm: '#006D3A', atm: '#8F4E00', itm: '#B3261E',
-          },
+          /* Marca */
           brand: {
-            indigo: 'var(--brand-indigo)', emerald: 'var(--brand-emerald)', rose: 'var(--brand-rose)',
-          }
+            indigo:  'var(--brand-indigo)',
+            emerald: 'var(--brand-emerald)',
+            rose:    'var(--brand-rose)',
+            amber:   'var(--brand-amber)',
+          },
+          /* Texto */
+          content: {
+            primary:   'var(--text-primary)',
+            secondary: 'var(--text-secondary)',
+            tertiary:  'var(--text-tertiary)',
+            muted:     'var(--text-muted)',
+          },
+          /* Legado (compatibilidade) */
+          status: {
+            otm: 'var(--brand-emerald)',
+            atm: 'var(--brand-amber)',
+            itm: 'var(--brand-rose)',
+          },
         },
         fontFamily: {
-          sans: ['Inter', 'system-ui', 'sans-serif'],
-          mono: ['JetBrains Mono', 'monospace'],
+          sans:    ['DM Sans', 'system-ui', 'sans-serif'],
+          display: ['Syne', 'sans-serif'],
+          mono:    ['JetBrains Mono', 'monospace'],
         },
         borderRadius: {
-          'm3': '28px', 
-        }
+          'xs':   'var(--radius-xs)',
+          'sm':   'var(--radius-sm)',
+          'md':   'var(--radius-md)',
+          'lg':   'var(--radius-lg)',
+          'xl':   'var(--radius-xl)',
+          'm3':   'var(--radius-xl)',   /* Alias legado */
+          'full': 'var(--radius-full)',
+          /* Tailwind defaults preservados */
+          DEFAULT: '0.25rem',
+          '2xl':  '1rem',
+          '3xl':  '1.5rem',
+        },
+        transitionTimingFunction: {
+          'standard':   'var(--ease-standard)',
+          'decelerate': 'var(--ease-decelerate)',
+          'accelerate': 'var(--ease-accelerate)',
+        },
+        transitionDuration: {
+          'fast': 'var(--duration-fast)',
+          'std':  'var(--duration-std)',
+          'slow': 'var(--duration-slow)',
+        },
+        boxShadow: {
+          'sm':  'var(--shadow-sm)',
+          'md':  'var(--shadow-md)',
+          'lg':  'var(--shadow-lg)',
+          'xl':  'var(--shadow-xl)',
+        },
       }
     }
-  }
+  };
+
+
+  /* =========================================================
+     🌑 DARK MODE TOGGLE — motor de tema
+     Uso: window.ThemeManager.toggle()
+          window.ThemeManager.set('dark')
+          window.ThemeManager.set('light')
+          window.ThemeManager.getCurrent() → 'light' | 'dark'
+     ========================================================= */
+  window.ThemeManager = (() => {
+    const KEY = 'nexoapp_theme';
+    const ROOT = document.documentElement;
+
+    const apply = (theme) => {
+      ROOT.setAttribute('data-theme', theme);
+      localStorage.setItem(KEY, theme);
+      // Dispara evento global para componentes Vue reagirem se necessário
+      window.dispatchEvent(new CustomEvent('themechange', { detail: { theme } }));
+    };
+
+    const getCurrent = () => ROOT.getAttribute('data-theme') || 'light';
+
+    const toggle = () => apply(getCurrent() === 'dark' ? 'light' : 'dark');
+
+    const init = () => {
+      const saved = localStorage.getItem(KEY);
+      // Respeita preferência salva, senão usa preferência do sistema
+      if (saved) {
+        apply(saved);
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        apply('dark');
+      } else {
+        apply('light');
+      }
+    };
+
+    return { init, toggle, set: apply, getCurrent };
+  })();
+
+  // Inicializa imediatamente para evitar flash de tema errado (FOUC)
+  window.ThemeManager.init();
 </script>
-
-

@@ -141,7 +141,7 @@
                   </div>
                   <div class="flex flex-col text-center border-l-2 border-slate-100">
                     <span class="text-slate-400 text-[13px] font-black uppercase mb-0.5 tracking-widest">POE</span>
-                    <span class="text-slate-700 font-mono font-bold text-3xl">{{ formatVal(op.probabilidadeSucesso, 'pct') }}</span>
+                    <span class="text-slate-700 font-mono font-bold text-3xl">{{ formatVal(op.poe, 'pct') }}</span>
                   </div>
                   <div class="flex flex-col text-right border-l-2 border-slate-100">
                     <span class="text-slate-400 text-[13px] font-black uppercase mb-0.5 tracking-widest">Nocional</span>
@@ -223,7 +223,7 @@
            <div class="flex flex-col text-right border-l border-slate-100"><span class="text-slate-400 text-[8px] font-black uppercase mb-1">Lucro Máx.</span><span class="text-slate-700 font-mono font-bold text-xs">{{ formatVal(op.potencialLucroPct || 0, 'pct') }}</span></div>
 
            <div class="flex flex-col"><span class="text-slate-400 text-[8px] font-black uppercase mb-1">Delta Δ</span><span class="text-slate-700 font-mono font-bold text-xs">{{ formatVal(op.delta, 'delta') }}</span></div>
-           <div class="flex flex-col text-center border-l border-slate-100"><span class="text-slate-400 text-[8px] font-black uppercase mb-1">POE</span><span class="text-slate-700 font-mono font-bold text-xs">{{ formatVal(op.probabilidadeSucesso, 'pct') }}</span></div>
+           <div class="flex flex-col text-center border-l border-slate-100"><span class="text-slate-400 text-[8px] font-black uppercase mb-1">POE</span><span class="text-slate-700 font-mono font-bold text-xs">{{ formatVal(op.poe, 'pct') }}</span></div>
            <div class="flex flex-col text-right border-l border-slate-100"><span class="text-slate-400 text-[8px] font-black uppercase mb-1">Nocional</span><span class="text-slate-800 font-mono font-black text-xs">{{ formatVal(op.nocional, 'currency') }}</span></div>
         </div>
 
@@ -232,13 +232,11 @@
             <span class="text-[9px] font-black uppercase opacity-70 tracking-widest mb-1 truncate">Lucro / Prejuízo (Aberto)</span>
             <div class="flex items-baseline gap-2">
               <span class="text-2xl font-black font-mono tracking-tighter whitespace-nowrap">{{ formatVal(op.plTotalValor, 'currency') }}</span>
-              
               <span class="text-sm font-bold font-mono opacity-60 whitespace-nowrap">
                 ({{ formatVal(op.plTotalPct, 'pct') }})
               </span>
             </div>
           </div>
-          
           <div class="text-4xl filter drop-shadow-sm ml-2 flex-shrink-0">{{ styleContext.icon }}</div>
         </div>
       </div>
@@ -271,7 +269,6 @@
       styleContext() {
         const m = String(this.op.moneynessCode || '').toUpperCase();
         const pct = Number(this.op.plTotalPct) || 0;
-        // 🚨 Emojis Restaurados!
         if (m.includes('ITM') && pct < 0) return { borderClass: 'border-red-200 bg-red-50/10', badgeClass: 'bg-red-500 text-white border-red-600 animate-pulse', footerClass: 'bg-red-50 border-red-100 text-red-900', icon: '' };
         if (m.includes('ITM') || m.includes('ATM')) return { borderClass: 'border-amber-200 bg-amber-50/10', badgeClass: 'bg-amber-100 text-amber-800 border-amber-300', footerClass: 'bg-amber-50 border-amber-100 text-amber-900', icon: '' };
         return { borderClass: 'border-emerald-200 bg-emerald-50/10', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300', footerClass: 'bg-emerald-50 border-emerald-100 text-emerald-900', icon: '' };
@@ -283,11 +280,8 @@
         if (type === 'date') return val instanceof Date ? val.toLocaleDateString('pt-BR') : String(val).split(' ')[0];
         const num = Number(val);
         if (isNaN(num)) return val;
-
-        // 🚀 USA O CACHE EM VEZ DE CRIAR UM "NEW" A CADA RENDER
         if (type === 'currency') return carouselCurrencyFormatter.format(num);
         if (type === 'number') return carouselNumberFormatter.format(num);
-
         if (type === 'pct') return (num * 100).toFixed(2).replace('.', ',') + '%';
         if (type === 'delta') return num.toFixed(4).replace('.', ',');
         return val;
@@ -304,7 +298,6 @@
         const lista = this.statsPreCalculados?.listaAtivas || [];
         return [...lista].sort((a, b) => (a.dteCorridos || 999) - (b.dteCorridos || 999));
       },
-      // 1. Adicione esta propriedade computada em window.CarouselAtivas
       operacoesPorVencimento() {
         if (!this.activeTrades.length) return {};
         return this.activeTrades.reduce((acc, op) => {
@@ -321,24 +314,19 @@
       formatVal(val, type) {
         return CardOperacao.methods.formatVal(val, type);
       },
-
-      // 🚀 NOVO: Auxiliar blindado para calcular a distância
       getDistanciaSpot(op) {
         const strike = Number(op.strike) || 0;
         const spot = Number(op.spotPrice) || 0;
         if (strike === 0 || spot === 0) return 0;
         return ((spot / strike) - 1) * 100;
       },
-
       getStyleContext(op) {
         const m = String(op.moneynessCode || '').toUpperCase();
         const pct = Number(op.plTotalPct) || 0;
-        // 🚨 Emojis Restaurados no Mobile também!
         if (m.includes('ITM') && pct < 0) return { borderClass: 'border-red-200 bg-red-50/10', badgeClass: 'bg-red-500 text-white border-red-600', footerClass: 'bg-red-50 border-red-100 text-red-900', icon: '' };
         if (m.includes('ITM') || m.includes('ATM')) return { borderClass: 'border-amber-200 bg-amber-50/10', badgeClass: 'bg-amber-100 text-amber-800 border-amber-300', footerClass: 'bg-amber-50 border-amber-100 text-amber-900', icon: '' };
         return { borderClass: 'border-emerald-200 bg-emerald-50/10', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300', footerClass: 'bg-emerald-50 border-emerald-100 text-emerald-900', icon: '' };
       },
-      
       getTipoBadgeClass(op) {
         const t = String(op.tipoOpcao || '').toUpperCase();
         const d = String(op.direcaoTrade || '').toUpperCase();

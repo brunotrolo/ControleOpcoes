@@ -3,32 +3,27 @@
  * APP_MENU: Define a estrutura de navegação da Sidebar.
  */
 window.APP_MENU = [
-  { id: 'cockpit',       label: 'Cockpit',                  icon: 'layout' },
-  { id: 'consultoria',   label: 'Consultor Portifolio',     icon: 'shield-check' },
-  { id: 'dados-ativos',  label: 'Gestão de Ativos',         icon: 'database' },
-  { id: 'scanner',       label: 'Scanner Opções',           icon: 'search' },
-  { id: 'comparador',    label: 'Comparador de PUT',        icon: 'crosshair' },
-  { id: 'necton-import', label: 'Importação Necton',        icon: 'file-down' },
-  { id: 'automacao',     label: 'Automação',                icon: 'zap' },
-  { id: 'bancodedados',  label: 'Base de Dados',            icon: 'hard-drive' },
-  { id: 'config',        label: 'Configurações',            icon: 'settings' }
+  { id: 'cockpit',       label: 'Cockpit',                icon: 'layout' },
+  { id: 'consultoria',   label: 'Consultor Portfólio',    icon: 'shield-check' },
+  { id: 'dados-ativos',  label: 'Gestão de Ativos',       icon: 'database' },
+  { id: 'scanner',       label: 'Scanner Opções',         icon: 'search' },
+  { id: 'comparador',    label: 'Comparador de PUT',      icon: 'crosshair' },
+  { id: 'necton-import', label: 'Importação Necton',      icon: 'file-down' },
+  { id: 'automacao',     label: 'Automação',              icon: 'zap' },
+  { id: 'bancodedados',  label: 'Base de Dados',          icon: 'hard-drive' },
+  { id: 'config',        label: 'Configurações',          icon: 'settings' }
 ];
 
 /**
  * LAYOUT_MAP: Define os componentes de cada tela.
+ * 🔧 FIX: Todas as chaves de colunas da cockpit-table alinhadas às chaves
+ *         semânticas do Tradutor (camelCase), não mais aos headers brutos da planilha.
  */
 window.LAYOUT_MAP = {
-  // Tela de Configurações
-  'config': [ 
-    {
-      id: 'painel-ajustes',
-      component: 'settings-view',
-      cols: 'col-span-12',
-      props: { configKey: 'config' }
-    }
-  ],
 
-  // Tela Principal (Cockpit)
+  // =========================================================
+  // COCKPIT (Tela Principal)
+  // =========================================================
   'cockpit': [
     {
       id: 'letreiro-ativos',
@@ -41,38 +36,38 @@ window.LAYOUT_MAP = {
       component: 'card-summary',
       cols: 'col-span-12',
       props: {
-        configFields: ['pl_total', 'theta_total', 'custo_zeragem', 'iv_medio']
+        configFields: ['plTotalValor', 'theta', 'nocional', 'ivAtual']
       }
     },
-    { 
-      id: 'distribuicao-risco', 
-      component: 'card-distrib-moneyness', 
-      cols: 'col-span-12 md:col-span-6' 
+    {
+      id: 'distribuicao-risco',
+      component: 'card-distrib-moneyness',
+      cols: 'col-span-12 md:col-span-6'
     },
-    { 
-      id: 'resultado', 
-      component: 'card-resultado', 
-      cols: 'col-span-12 md:col-span-6' 
+    {
+      id: 'resultado',
+      component: 'card-resultado',
+      cols: 'col-span-12 md:col-span-6'
     },
-    { 
-      id: 'moneyness', 
-      component: 'card-moneyness', 
-      cols: 'col-span-12 md:col-span-4' 
+    {
+      id: 'moneyness',
+      component: 'card-moneyness',
+      cols: 'col-span-12 md:col-span-4'
     },
-    { 
-      id: 'vencimentos', 
-      component: 'card-vencimentos', 
-      cols: 'col-span-12 md:col-span-4' 
+    {
+      id: 'vencimentos',
+      component: 'card-vencimentos',
+      cols: 'col-span-12 md:col-span-4'
     },
-    { 
-      id: 'concentracao', 
-      component: 'card-concentracao', 
-      cols: 'col-span-12 md:col-span-4' 
+    {
+      id: 'concentracao',
+      component: 'card-concentracao',
+      cols: 'col-span-12 md:col-span-4'
     },
-    { 
-      id: 'carousel', 
-      component: 'carousel-ativas', 
-      cols: 'col-span-12' 
+    {
+      id: 'carousel',
+      component: 'carousel-ativas',
+      cols: 'col-span-12'
     },
     {
       id: 'tabela-principal',
@@ -80,30 +75,46 @@ window.LAYOUT_MAP = {
       cols: 'col-span-12',
       props: {
         dataKey: 'cockpit',
+        // 🔧 FIX: chaves semânticas do Tradutor (não mais headers brutos da planilha)
         columns: [
-          { key: 'ID ESTRATÉGIA', label: 'ID', type: 'text' },
-          { key: 'TICKER', label: 'Ativo', type: 'text' },
-          { key: 'CÓDIGO OPÇÃO', label: 'Opção', type: 'text' },
-          { key: 'VENCIMENTO', label: 'Vencimento', type: 'date' },
-          { key: 'VENDA/COMPRA', label: 'Venda/Compra', type: 'text' },
-          { key: 'TIPO', label: 'Tipo', type: 'text' },
-          { key: 'QTD', label: 'Qtd', type: 'number' },
-          { key: 'STRIKE', label: 'Strike', type: 'currency' },
-          { key: 'TICKER SPOT', label: 'Spot', type: 'currency' },
-          { key: 'MONEYNESS_CODE', label: 'Moneyness', type: 'text' },
-          { key: 'PRÊMIO (PM)', label: 'Prêmio (PM)', type: 'currency' },
-          { key: 'PRÊMIO ATUAL', label: 'Prêmio Atual', type: 'currency' },
-          { key: 'GANHO MÁXIMO', label: 'Ganho Max', type: 'currency' },
-          { key: 'LUCRO MAX', label: 'Lucro Max', type: 'percentage' },
-          { key: 'NOCIONAL', label: 'Nocional', type: 'currency' },
-          { key: 'P/L TOTAL %', label: 'P/L %', type: 'percentage' },
-          { key: 'P/L TOTAL', label: 'P/L', type: 'currency' },
-          { key: 'P/L ATUAL', label: 'P/L Atual', type: 'currency' },
-          { key: 'DELTA', label: 'Delta', type: 'percentage' }
+          { key: 'estrategiaId',      label: 'Estratégia',    type: 'text' },
+          { key: 'tickerAtivo',       label: 'Ativo',         type: 'text' },
+          { key: 'simboloOpcao',      label: 'Opção',         type: 'text' },
+          { key: 'dataVencimento',    label: 'Vencimento',    type: 'date' },
+          { key: 'direcaoTrade',      label: 'Direção',       type: 'text' },
+          { key: 'tipoOpcao',         label: 'Tipo',          type: 'text' },
+          { key: 'quantidade',        label: 'Qtd',           type: 'number' },
+          { key: 'strike',            label: 'Strike',        type: 'currency' },
+          { key: 'spotPrice',         label: 'Spot',          type: 'currency' },
+          { key: 'moneynessCode',     label: 'Moneyness',     type: 'text' },
+          { key: 'premioMedio',       label: 'Prêmio (PM)',   type: 'currency' },
+          { key: 'premioAtual',       label: 'Prêmio Atual',  type: 'currency' },
+          { key: 'ganhoMaximo',       label: 'Ganho Máx',     type: 'currency' },
+          { key: 'potencialLucroPct', label: 'Lucro Máx',     type: 'percentage' },
+          { key: 'nocional',          label: 'Nocional',      type: 'currency' },
+          { key: 'plTotalPct',        label: 'P/L %',         type: 'percentage' },
+          { key: 'plTotalUnitario',   label: 'P/L Unit',      type: 'currency' },
+          { key: 'plTotalValor',      label: 'P/L Valor',     type: 'currency' },
+          { key: 'delta',             label: 'Delta',         type: 'number' },
+          { key: 'theta',             label: 'Theta',         type: 'number' },
+          { key: 'dteCorridos',       label: 'DTE',           type: 'number' }
         ]
       }
     }
   ],
+
+  // =========================================================
+  // DEMAIS TELAS (estrutura mantida)
+  // =========================================================
+  'config': [
+    {
+      id: 'painel-ajustes',
+      component: 'settings-view',
+      cols: 'col-span-12',
+      props: { configKey: 'config' }
+    }
+  ],
+
   'automacao': [
     {
       id: 'painel-automacao',
@@ -112,14 +123,16 @@ window.LAYOUT_MAP = {
       props: {}
     }
   ],
+
   'scanner': [
-      {
-        id: 'painel-scanner',
-        component: 'scanner-view',
-        cols: 'col-span-12',
-        props: {}
-      }
-    ],
+    {
+      id: 'painel-scanner',
+      component: 'scanner-view',
+      cols: 'col-span-12',
+      props: {}
+    }
+  ],
+
   'necton-import': [
     {
       id: 'painel-importacao',
@@ -128,6 +141,7 @@ window.LAYOUT_MAP = {
       props: {}
     }
   ],
+
   'dados-ativos': [
     {
       id: 'painel-gestao-ativos',
@@ -136,6 +150,7 @@ window.LAYOUT_MAP = {
       props: {}
     }
   ],
+
   'comparador': [
     {
       id: 'painel-comparador',
@@ -144,6 +159,7 @@ window.LAYOUT_MAP = {
       props: {}
     }
   ],
+
   'bancodedados': [
     {
       id: 'tela-bancodedados',
@@ -152,6 +168,7 @@ window.LAYOUT_MAP = {
       props: {}
     }
   ],
+
   'consultoria': [
     {
       id: 'painel-consultoria',
@@ -164,28 +181,21 @@ window.LAYOUT_MAP = {
 
 /**
  * 📱 MOBILE_ORCHESTRATOR_CONFIG
- * Define a sequência e as regras de exibição para a "Esteira de Inteligência" no S22 Ultra.
- * Esta lógica é ignorada no Desktop, mantendo o layout original intacto.
  */
 window.MOBILE_ORCHESTRATOR_CONFIG = {
-  // Ativa/Desativa a esteira globalmente no mobile
   enabled: true,
-
-  // Configurações do Molde (Wrapper)
   settings: {
-    cardWidth: 'min-w-[85%]', // XX% para garantir o "peek" (espreita) de Y% do próximo card
-    cardHeight: 'h-[260px]',  // Altura padronizada para evitar saltos no scroll
-    gap: 'gap-5',             // Espaçamento entre os cards na esteira
-    snap: 'snap-center'       // Efeito de trava no meio da tela
+    cardWidth:  'min-w-[85%]',
+    cardHeight: 'h-[260px]',
+    gap:        'gap-5',
+    snap:       'snap-center'
   },
-
-  // 🚀 SEQUÊNCIA MESTRA: A ordem exata que os cards aparecerão no Carrossel
   sequence: [
-    { id: 'distribuicao-risco',  component: 'card-distrib-moneyness' },
-    { id: 'resultado',           component: 'card-resultado' },
-    { id: 'moneyness',           component: 'card-moneyness' },
-    { id: 'vencimentos',         component: 'card-vencimentos' },
-    { id: 'concentracao',        component: 'card-concentracao' }
+    { id: 'distribuicao-risco', component: 'card-distrib-moneyness' },
+    { id: 'resultado',          component: 'card-resultado' },
+    { id: 'moneyness',          component: 'card-moneyness' },
+    { id: 'vencimentos',        component: 'card-vencimentos' },
+    { id: 'concentracao',       component: 'card-concentracao' }
   ]
 };
 </script>
