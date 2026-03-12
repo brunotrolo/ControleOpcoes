@@ -34,8 +34,8 @@ const CoreOrchestrator = {
     const erros = [];
 
     // 1. Verifica abas essenciais
-    [SYS_CONFIG.SHEETS.TRIGGER, SYS_CONFIG.SHEETS.LOGS].forEach(aba => {
-      if (!ss.getSheetByName(aba)) erros.push(`Aba '${aba}' ausente.`);
+    [SYS_CONFIG.SHEETS.IMPORT, SYS_CONFIG.SHEETS.LOGS, SYS_CONFIG.SHEETS.CONFIG].forEach(aba => {
+    if (!ss.getSheetByName(aba)) erros.push(`Aba '${aba}' ausente.`);
     });
 
     // 2. Verifica Token da API

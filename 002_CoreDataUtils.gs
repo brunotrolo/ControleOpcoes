@@ -6,12 +6,17 @@
 const DataUtils = {
   
   /** Converte BRL/String para Float Puro */
+  // DEPOIS (002_CoreDataUtils.gs)
+  /** 
+   * @deprecated Use Sanitizador.numeroPuro() para dados de corretora/API.
+   * Mantido apenas para compatibilidade com ConfigManager (001).
+   */
   safeFloat(val) {
-    if (val === undefined || val === null || val === "") return 0;
-    if (typeof val === 'number') return val;
-    let clean = val.toString().replace("R$", "").replace(/\s/g, "").replace(/\./g, "").replace(",", "."); 
-    let num = parseFloat(clean);
-    return isNaN(num) ? 0 : num;
+      if (val === undefined || val === null || val === "") return 0;
+      if (typeof val === 'number') return val;
+      let clean = val.toString().replace("R$", "").replace(/\s/g, "").replace(/\./g, "").replace(",", ".");
+      let num = parseFloat(clean);
+      return isNaN(num) ? 0 : num;
   },
 
   /** Padroniza Datas para o formato brasileiro DD/MM/YYYY */
@@ -50,6 +55,37 @@ const DataUtils = {
     const data = aba.getRange(2, colIdx + 1, lastRow - 1, 1).getValues();
     data.forEach((row, i) => { if (row[0]) map[String(row[0]).trim()] = i + 2; });
     return map;
+  },
+
+  /** 
+   * Cria mapa de cabeçalhos { NOME_HEADER: indice_0based }
+   * Substitui os _getColMap() duplicados nos motores 010, 011 e 012.
+   */
+  getColMap(aba) {
+      if (!aba) return {};
+      const headers = aba.getRange(1, 1, 1, aba.getLastColumn()).getValues()[0];
+      const map = {};
+      headers.forEach((h, i) => { if (h) map[String(h).trim().toUpperCase()] = i; });
+      return map;
+  },
+
+  /**
+   * Cria mapa { pkValue: rowObject } para lookup O(1) por chave primária.
+   * Substitui os _getDynamicMap() duplicados nos motores 011 e 012.
+   */
+  getDynamicMap(aba, pkLabel) {
+      if (!aba) return {};
+      const data = aba.getDataRange().getValues();
+      const headers = data[0];
+      const pkIdx = headers.indexOf(pkLabel);
+      if (pkIdx === -1) return {};
+      const map = {};
+      for (let i = 1; i < data.length; i++) {
+          const obj = {};
+          headers.forEach((h, idx) => { if (h) obj[String(h).trim()] = data[i][idx]; });
+          if (data[i][pkIdx]) map[String(data[i][pkIdx]).trim()] = obj;
+      }
+      return map;
   },
 
   /** Lógica de Merge: Une dados novos aos existentes sem apagar colunas manuais */

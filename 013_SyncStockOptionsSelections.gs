@@ -49,9 +49,9 @@ const CoreScannerOptions = {
       const stats = { ativos: 0, puts: 0, calls: 0, erros: 0 };
 
       // 4. VARREDURA
-      tickers.forEach(ticker => {
-        const opcoesAPI = OplabService.getOptionsByTicker(ticker);
-        
+      tickers.forEach((ticker, index) => {
+          const opcoesAPI = OplabService.getOptionsByTicker(ticker);
+
         if (!opcoesAPI || !Array.isArray(opcoesAPI) || opcoesAPI.length === 0) {
           stats.erros++;
           return;
@@ -83,6 +83,7 @@ const CoreScannerOptions = {
         selecionadas.forEach(op => {
           bufferFinal.push(this._mapearParaDUD(ticker, op, spot, headersOut));
         });
+        if (index < tickers.length - 1) Utilities.sleep(700);
       });
 
       // 5. GRAVAÇÃO EM LOTE
