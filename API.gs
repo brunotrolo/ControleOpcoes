@@ -12,12 +12,22 @@
 /**
  * 🚀 FASE 1: VOO RÁPIDO
  * Carrega apenas o essencial para a tela acender imediatamente.
+ *
+ * 🔧 FIX: Strings literais substituídas por SYS_CONFIG.SHEETS.*
+ *
+ * ⚠️ ATENÇÃO: Mantido getDisplayValues() intencionalmente.
+ *    O GAS não serializa Date objects via google.script.run — getValues() retorna
+ *    Dates nativos que quebram a comunicação com o frontend com response: null.
+ *    A conversão de tipos fica exclusivamente no Tradutor.html.
  */
 function getDadosLight() {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const abasEssenciais = ["Cockpit", "Config_Global"]; 
-    
+    const abasEssenciais = [
+      SYS_CONFIG.SHEETS.COCKPIT,
+      SYS_CONFIG.SHEETS.CONFIG
+    ];
+
     const data = {
       success: true,
       timestamp: new Date().toLocaleString('pt-BR'),
@@ -42,26 +52,29 @@ function getDadosLight() {
  * 🚚 FASE 2: CARGA PESADA (Background)
  * Otimizado APENAS para as 10 abas do Core de Operações atuais.
  * Séries legadas (400, 500, 600) foram expurgadas para economizar memória e tempo de requisição.
+ *
+ * 🔧 FIX: Strings literais substituídas por SYS_CONFIG.SHEETS.*
+ * ⚠️ ATENÇÃO: Mantido getDisplayValues() intencionalmente — mesma razão do getDadosLight.
  */
 function getAbasPesadas() {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const abasPesadas = [
       // 1. Ingestão & Logs
-      "Necton_Import",
-      "Logs",
-      
+      SYS_CONFIG.SHEETS.IMPORT,
+      SYS_CONFIG.SHEETS.LOGS,
+
       // 2. Base de Dados & Histórico
-      "Dados_Ativos",
-      "Dados_Ativos_Historico250d",
-      "Dados_Detalhes",
-      
+      SYS_CONFIG.SHEETS.ASSETS,
+      SYS_CONFIG.SHEETS.HIST_250D,
+      SYS_CONFIG.SHEETS.DETAILS,
+
       // 3. Motor Matemático & Filtros
-      "Calc_Greeks",
-      "Dados_Greeks",
-      "Selecao_Opcoes"
+      SYS_CONFIG.SHEETS.GREEKS_CALC,
+      SYS_CONFIG.SHEETS.GREEKS_API,
+      SYS_CONFIG.SHEETS.SELECTION_OPT
     ];
-    
+
     const data = { success: true, timestamp: new Date().toLocaleString('pt-BR'), raw: {} };
 
     abasPesadas.forEach(nomeAba => {
@@ -89,7 +102,7 @@ function getAbasPesadas() {
 function getPlanilhaDinamica(planilhaAtiva, nomeProcurado) {
   const abas = planilhaAtiva.getSheets();
   const nomeProcuradoUpper = String(nomeProcurado).toUpperCase();
-  
+
   // Otimização: For loop tradicional é levemente mais rápido que .find() no V8 do Apps Script
   for (let i = 0; i < abas.length; i++) {
     if (abas[i].getName().toUpperCase() === nomeProcuradoUpper) {
@@ -102,7 +115,7 @@ function getPlanilhaDinamica(planilhaAtiva, nomeProcurado) {
 function getAbaDinamica(payloadRaw, nomeProcurado) {
   const nomeProcuradoUpper = String(nomeProcurado).toUpperCase();
   const chaves = Object.keys(payloadRaw);
-  
+
   for (let i = 0; i < chaves.length; i++) {
     if (String(chaves[i]).toUpperCase() === nomeProcuradoUpper) {
       return payloadRaw[chaves[i]];
@@ -124,14 +137,14 @@ function testarAPI_Leitura() {
   const light = getDadosLight();
   Logger.log("Status Light: " + light.success);
   Logger.log("Abas carregadas no Light: " + Object.keys(light.raw).join(", "));
-  
+
   Logger.log("-----------------------------------------");
-  
+
   Logger.log("Iniciando Teste: getAbasPesadas()...");
   const pesadas = getAbasPesadas();
   Logger.log("Status Pesadas: " + pesadas.success);
   Logger.log("Abas carregadas no Pesadas: " + Object.keys(pesadas.raw).join(", "));
-  
+
   if (pesadas.error) {
     Logger.log("ERRO ENCONTRADO: " + pesadas.error);
   } else {
@@ -144,34 +157,25 @@ function testarAPI_Leitura() {
 // 2. CREATE (Inserção em Lote)
 // ==========================================
 
+/**
+ * 🔧 FIX: Lógica de busca de linha vazia substituída por getLastRow() + 1.
+ *         A abordagem anterior era frágil — qualquer célula vazia no meio dos
+ *         dados causava inserção na posição errada.
+ */
 function apiAdicionarLinhas(nomeAba, dadosMatriz) {
   try {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(nomeAba);
     if (!sheet) throw new Error(`Aba [${nomeAba}] não existe no banco de dados.`);
     if (!dadosMatriz || dadosMatriz.length === 0) return { success: true, message: "Nenhum dado para inserir." };
 
-    const maxRows = sheet.getMaxRows();
-    const valuesColA = sheet.getRange(1, 1, maxRows, 1).getValues();
-    let startRow = 1;
-
-    // Busca a primeira linha estritamente vazia na Coluna A
-    for (let i = 0; i < valuesColA.length; i++) {
-      if (String(valuesColA[i][0]).trim() === "") { 
-        startRow = i + 1; 
-        break; 
-      }
-    }
-    // Se a planilha estiver completamente cheia, adiciona ao final
-    if (startRow === 1 && String(valuesColA[0][0]).trim() !== "") {
-      startRow = maxRows + 1;
-    }
+    const startRow = sheet.getLastRow() + 1;
 
     sheet.getRange(startRow, 1, dadosMatriz.length, dadosMatriz[0].length).setValues(dadosMatriz);
     SpreadsheetApp.flush(); // 🔒 Trava de segurança: Força a gravação física imediata
-    
+
     return { success: true, message: `${dadosMatriz.length} linhas adicionadas em [${nomeAba}].` };
-  } catch (e) { 
-    return { success: false, error: e.message }; 
+  } catch (e) {
+    return { success: false, error: e.message };
   }
 }
 
@@ -239,8 +243,8 @@ function apiExcluirLinhaSegura(nomeAba, numeroLinha, valorEsperadoColunaA) {
     sheet.deleteRow(numeroLinha);
     SpreadsheetApp.flush();
     return { success: true, message: `Registro [${valorSeguro}] removido de [${nomeAba}].` };
-  } catch (e) { 
-    return { success: false, error: e.message }; 
+  } catch (e) {
+    return { success: false, error: e.message };
   }
 }
 
@@ -252,7 +256,7 @@ function apiExcluirLinhasEmLote(nomeAba, listaLinhas) {
 
     // FILTRO DE SEGURANÇA: Remove nulos, converte para inteiro e ordena de baixo para cima
     const linhasOrdenadas = listaLinhas
-      .filter(l => l !== null && l !== undefined && !isNaN(l)) 
+      .filter(l => l !== null && l !== undefined && !isNaN(l))
       .map(l => parseInt(l, 10))
       .filter(l => l > 0) // Impede deleção de linha 0 ou negativa
       .sort((a, b) => b - a); // ⚠️ OBRIGATÓRIO: Deletar de baixo para cima para não mudar o índice das linhas de cima
@@ -287,8 +291,8 @@ function apiLimparAba(nomeAba, manterLinhasTop = 1, mensagemAuditoria = null) {
 
     SpreadsheetApp.flush();
     return { success: true, message: `Aba [${nomeAba}] foi limpa, mantendo ${manterLinhasTop} linha(s) de cabeçalho.` };
-  } catch (e) { 
-    return { success: false, error: e.message }; 
+  } catch (e) {
+    return { success: false, error: e.message };
   }
 }
 
@@ -298,16 +302,16 @@ function apiLimparAba(nomeAba, manterLinhasTop = 1, mensagemAuditoria = null) {
 
 function testarAPI_Escrita() {
   Logger.log("Iniciando Teste de Escrita na aba [Logs]...");
-  
+
   // 1. Testa Inserção (Adiciona um Log falso)
   const timestamp = new Date().toLocaleString();
-  const resInsert = apiAdicionarLinhas("Logs", [[timestamp, "SISTEMA_TESTE", "INFO", "Teste de Homologação da API de Escrita", ""]]);
+  const resInsert = apiAdicionarLinhas(SYS_CONFIG.SHEETS.LOGS, [[timestamp, "SISTEMA_TESTE", "INFO", "Teste de Homologação da API de Escrita", ""]]);
   Logger.log("Adicionar Linha: " + resInsert.success + " | " + resInsert.message);
-  
+
   // 2. Testa Limpeza Segura (Limpa os Logs mantendo o cabeçalho e adicionando auditoria)
-  const resLimpar = apiLimparAba("Logs", 1, "Auditoria de teste gerada pelo testarAPI_Escrita.");
+  const resLimpar = apiLimparAba(SYS_CONFIG.SHEETS.LOGS, 1, "Auditoria de teste gerada pelo testarAPI_Escrita.");
   Logger.log("Limpar Aba Segura: " + resLimpar.success + " | " + resLimpar.message);
-  
+
   if (resInsert.error || resLimpar.error) {
     Logger.log("❌ ERRO ENCONTRADO DURANTE A ESCRITA/LIMPEZA.");
   } else {
@@ -324,10 +328,10 @@ function apiIntegracaoOpLab(ticker) {
   if (!ticker || String(ticker).trim() === '') {
     return { success: false, error: "Ticker não fornecido pelo Web App." };
   }
-  
+
   try {
     const cleanTicker = String(ticker).toUpperCase().trim();
-    
+
     // Wrapper seguro para a função nativa getOpLabOptionDetails()
     if (typeof getOpLabOptionDetails !== "function") {
       throw new Error("A biblioteca de conexão com o OpLab não está acessível no servidor.");
@@ -335,20 +339,20 @@ function apiIntegracaoOpLab(ticker) {
 
     const data = getOpLabOptionDetails(cleanTicker);
     if (!data) return { success: false, error: `Ativo [${cleanTicker}] não encontrado ou sem liquidez.` };
-    
+
     return {
       success: true,
       data: {
-        symbol: data.symbol || cleanTicker, 
-        category: data.category || "N/A", 
+        symbol: data.symbol || cleanTicker,
+        category: data.category || "N/A",
         strike: parseFloat(data.strike || 0),
-        premioAtual: parseFloat(data.close > 0 ? data.close : (data.bid || 0)), 
+        premioAtual: parseFloat(data.close > 0 ? data.close : (data.bid || 0)),
         spotPrice: parseFloat(data.spot_price || 0),
         dte: parseInt(data.days_to_maturity || 0)
       }
     };
-  } catch (e) { 
-    return { success: false, error: e.message }; 
+  } catch (e) {
+    return { success: false, error: e.message };
   }
 }
 
@@ -359,6 +363,8 @@ function apiIntegracaoOpLab(ticker) {
 /**
  * Atualiza o horizonte na Config_Global e tenta rodar o pipeline.
  * Preparado para degradação graciosa (se o pipeline for deletado, ele não quebra).
+ *
+ * 🔧 FIX: String literal "Config_Global" substituída por SYS_CONFIG.SHEETS.CONFIG
  */
 function apiSimularHorizontePreditivo(diasParam) {
   try {
@@ -368,12 +374,12 @@ function apiSimularHorizontePreditivo(diasParam) {
     }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const abaConfig = ss.getSheetByName("Config_Global");
-    if (!abaConfig) throw new Error("Aba [Config_Global] não encontrada no banco de dados.");
+    const abaConfig = getPlanilhaDinamica(ss, SYS_CONFIG.SHEETS.CONFIG);
+    if (!abaConfig) throw new Error(`Aba [${SYS_CONFIG.SHEETS.CONFIG}] não encontrada no banco de dados.`);
 
     const dados = abaConfig.getDataRange().getValues();
     let configuracaoAtualizada = false;
-    
+
     for (let i = 0; i < dados.length; i++) {
       if (String(dados[i][0]).trim() === "Regra_Dias_Horizonte_Preditivo") {
         abaConfig.getRange(i + 1, 2).setValue(dias);
@@ -384,8 +390,8 @@ function apiSimularHorizontePreditivo(diasParam) {
 
     if (!configuracaoAtualizada) {
       abaConfig.appendRow([
-        "Regra_Dias_Horizonte_Preditivo", 
-        dias, 
+        "Regra_Dias_Horizonte_Preditivo",
+        dias,
         "[SISTEMA] Horizonte de simulação configurado via Web App"
       ]);
     }
@@ -395,17 +401,17 @@ function apiSimularHorizontePreditivo(diasParam) {
     // Tenta acionar o recálculo, mas não quebra se os arquivos legados não existirem
     let statusPipeline = "Salvo em Config_Global (Modo Standby).";
     if (typeof executarFluxoSequencial === "function") {
-      executarFluxoSequencial(); 
+      executarFluxoSequencial();
       statusPipeline = "Pipeline sequencial acionado com sucesso.";
     } else if (typeof gerarAnalisePreditivaHeatmap === "function") {
       gerarAnalisePreditivaHeatmap(dias);
       statusPipeline = "Heatmap preditivo atualizado isoladamente.";
     }
 
-    return { 
-      success: true, 
+    return {
+      success: true,
       mensagem: `Simulação para ${dias} dias processada. ${statusPipeline}`,
-      horizonte: dias 
+      horizonte: dias
     };
 
   } catch (error) {
@@ -419,11 +425,11 @@ function apiSimularHorizontePreditivo(diasParam) {
 
 function testarAPI_Integracoes() {
   Logger.log("Iniciando Teste da Parte 3...");
-  
+
   // Teste de Estado
   const resSimulador = apiSimularHorizontePreditivo(15);
   Logger.log("Atualização de Configuração: " + resSimulador.success + " | " + resSimulador.mensagem);
-  
+
   if (resSimulador.error) {
     Logger.log("❌ ERRO ENCONTRADO NA PARTE 3.");
   } else {
