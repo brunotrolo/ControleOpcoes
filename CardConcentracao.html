@@ -1,0 +1,165 @@
+<template id="card-concentracao-template">
+  <div v-if="isMobile" class="w-full bg-white border border-slate-200 rounded-[32px] pt-6 px-6 pb-8 shadow-sm flex flex-col h-full relative overflow-hidden">
+    
+    <div class="absolute bottom-0 left-0 w-full h-6 flex z-20 font-mono font-black text-[13px] text-white drop-shadow-md">
+      <div v-for="(item, idx) in barItems" :key="'bar-'+idx"
+           :style="{ width: (item.pct || 0) + '%', backgroundColor: item.uniqueColor }" 
+           class="h-full transition-all duration-1000 flex items-center justify-center overflow-hidden border-r border-white/10">
+        <span v-if="item.pct > 4" class="leading-none pt-0.5">{{ item.pct }}%</span>
+      </div>
+      <div v-if="restoPercentual > 0" :style="{ width: (restoPercentual || 0) + '%' }" 
+           class="h-full bg-slate-200 flex-1 transition-all">
+      </div>
+    </div>
+
+    <div class="flex flex-col h-full relative z-10">
+      
+      <div class="flex flex-col mb-4">
+        <h3 class="text-slate-900 font-black tracking-tighter uppercase text-3xl leading-none">Concentração</h3>
+        <span class="text-slate-400 uppercase tracking-[0.2em] font-bold text-[10px] mt-2">Por Ativo</span>
+      </div>
+
+      <div v-if="isLoading" class="flex-1 space-y-5 animate-pulse mt-2">
+        <div v-for="i in 3" :key="i" class="flex justify-between items-center pb-4 border-b border-slate-50">
+          <div class="h-6 bg-slate-100 rounded w-1/4"></div>
+          <div class="h-8 bg-slate-100 rounded w-1/4"></div>
+        </div>
+      </div>
+
+      <template v-else>
+        <div class="flex-1 overflow-y-auto no-scrollbar pr-1 space-y-1 mt-0">
+          
+          <div v-for="(item, idx) in concentracao" :key="idx" 
+               class="flex items-center justify-between w-full border-b border-slate-50/50 pb-2 pt-1 last:border-0">
+            
+            <div class="w-[35%] flex flex-col justify-center">
+              <span class="font-black text-2xl uppercase tracking-tighter leading-none" :style="{ color: item.uniqueColor }">
+                {{ item.ticker }}
+              </span>
+              <span class="text-slate-400 text-[9px] font-bold uppercase tracking-widest leading-none mt-1">Ticker</span>
+            </div>
+            
+            <div class="flex flex-col items-center flex-1">
+              <span class="text-slate-400 text-[8px] uppercase font-black tracking-widest mb-0.5 leading-none">Nocional</span>
+              <span class="text-slate-800 font-mono font-black text-xl leading-none">{{ formatMoeda(item.count) }}</span>
+            </div>
+            
+            <div class="w-[25%] flex flex-col items-end justify-center">
+              <span class="text-slate-400 text-[8px] uppercase font-black tracking-widest mb-0.5 leading-none">Peso</span>
+              <span class="font-black text-2xl font-mono leading-none" :style="{ color: item.uniqueColor }">{{ item.pct || 0 }}%</span>
+            </div>
+
+          </div>
+
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <div v-else class="w-full bg-white border border-slate-200 rounded-[32px] p-5 md:p-7 shadow-sm h-full flex flex-col transition-all hover:shadow-md">
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h3 class="text-[var(--m3-on-surface)] text-lg md:text-xl font-bold tracking-tight uppercase flex items-center">Concentração</h3>
+        <p class="text-[var(--m3-on-surface-variant)] text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-bold mt-1">Exposição por Ativo</p>
+      </div>
+    </div>
+    
+    <div v-if="isLoading" class="flex-1 space-y-4 animate-pulse">
+      <div v-for="i in 4" :key="i" class="h-14 bg-slate-50 border border-slate-100 rounded-2xl"></div>
+    </div>
+    
+    <div v-else class="flex-1 overflow-y-auto custom-scrollbar pr-1 space-y-3 max-h-[300px]">
+      <div v-for="(item, idx) in concentracao" :key="idx" 
+           class="p-3 rounded-2xl border transition-all hover:shadow-sm flex flex-col"
+           :class="item.cardClass">
+        
+        <div class="flex justify-between items-end mb-2">
+          <div class="flex items-center space-x-2">
+            <span class="text-[12px] md:text-[13px] font-black uppercase tracking-widest" :class="item.textColor">{{ item.ticker }}</span>
+            <span class="text-[8px] font-bold opacity-60 uppercase">{{ formatMoeda(item.count) }} Nocional</span>
+          </div>
+          <span class="font-black text-xs md:text-sm" :class="item.textColor">{{ item.pct || 0 }}%</span>
+        </div>
+        
+        <div class="w-full h-2 bg-white/60 rounded-full overflow-hidden flex border border-black/5">
+          <div :style="{ width: (item.pct || 0) + '%' }" class="h-full transition-all duration-1000 ease-out" :class="item.bgColor"></div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+// 🚀 CACHE GLOBAL DE MOEDA PARA O CARD DE CONCENTRAÇÃO
+const concentracaoCurrencyFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+
+window.CardConcentracao = {
+  props: { 
+    isMobile: Boolean, 
+    isLoading: Boolean, 
+    statsPreCalculados: Object
+  },
+  template: '#card-concentracao-template',
+  computed: {
+    concentracao() {
+      // 🛡️ TRAVA DE SEGURANÇA
+      if (!this.statsPreCalculados || !this.statsPreCalculados.concentracaoRisco) {
+        return [];
+      }
+      
+      const dadosMatematicos = this.statsPreCalculados.concentracaoRisco;
+      
+      if (!dadosMatematicos.length) return [];
+
+      // Gerador de cor consistente
+      const getUniqueColor = (str) => {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        return `hsl(${Math.abs(hash) % 360}, 70%, 45%)`;
+      };
+
+      return dadosMatematicos.map(item => {
+        const p = item.pesoPct || 0;
+        const uColor = getUniqueColor(item.ativo);
+        
+        let colorClass = 'text-blue-700', bgClass = 'bg-blue-600', cardClass = 'bg-blue-50/40 border-blue-100/50';
+        
+        if (p >= 30) { colorClass = 'text-red-700'; bgClass = 'bg-red-600'; cardClass = 'bg-red-50 border-red-100'; }
+        else if (p >= 20) { colorClass = 'text-amber-700'; bgClass = 'bg-amber-400'; cardClass = 'bg-amber-50 border-amber-100'; }
+        
+        return { 
+          ticker: item.ativo, 
+          count: item.nocional || 0, // 👈 Agora exibe o NOCIONAL em vez do número de posições
+          pct: p, 
+          uniqueColor: uColor, 
+          textColor: colorClass, 
+          bgColor: bgClass, 
+          cardClass: cardClass 
+        };
+      });
+    },
+    
+    barItems() {
+      return this.concentracao.filter(item => item.pct >= 5);
+    },
+    
+    restoPercentual() {
+      const displayedTotal = this.barItems.reduce((acc, item) => acc + item.pct, 0);
+      return Math.max(0, 100 - displayedTotal);
+    }
+  },
+  methods: {
+    // Método ultra rápido para formatar os Nocionais usando o cache criado fora do componente
+    formatMoeda(valor) {
+      if (!valor && valor !== 0) return 'R$ 0';
+      return concentracaoCurrencyFmt.format(valor);
+    }
+  }
+};
+</script>
+
+<style scoped>
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>

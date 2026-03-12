@@ -1,0 +1,228 @@
+<template id="gestao-ativos-sidebar-template">
+  <transition name="slide-right">
+    <div v-if="isOpen" class="fixed right-0 top-0 h-full w-full max-w-[640px] bg-slate-50 shadow-[-40px_0_80px_rgba(0,0,0,0.1)] border-l border-slate-200 z-[10000] flex flex-col font-sans">
+      
+      <div class="px-10 py-8 border-b border-slate-200 bg-white flex justify-between items-center shrink-0 shadow-sm relative z-10">
+        <div class="flex items-center gap-5">
+          <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-md border border-slate-100 ring-4 ring-slate-50">
+            <span class="font-black text-brand-indigo text-2xl tracking-tighter">{{ ativo.tickerAtivo || 'N/A' }}</span>
+          </div>
+          <div>
+            <h3 class="text-3xl font-black text-slate-900 leading-none tracking-tighter">Dossiê Preditivo</h3>
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-2">{{ ativo.nomeEmpresa || '---' }} • {{ ativo.setor || 'N/A' }}</p>
+          </div>
+        </div>
+        <div class="flex flex-col items-end gap-3">
+          <button @click="$emit('close')" class="p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-full transition-all text-slate-500 hover:text-slate-900">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+          <div class="text-right mt-1 cursor-help" title="Preço atual da ação no mercado.">
+             <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest underline decoration-dotted underline-offset-4">Spot Atual</span>
+             <span class="text-xl font-black font-mono-data text-slate-900">{{ Tradutor.formatarMoeda(ativo.spotPrice) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-10 space-y-8 log-scrollbar bg-slate-50/50">
+        
+        <section class="relative bg-white rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-indigo-50 overflow-hidden group">
+          <div class="absolute -right-10 -top-10 w-40 h-40 bg-indigo-50/50 rounded-full blur-3xl group-hover:bg-indigo-100/50 transition-all duration-700"></div>
+          <div class="relative z-10">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="p-2 bg-indigo-50 rounded-xl border border-indigo-100 text-brand-indigo">
+                <i data-lucide="brain-circuit" class="w-5 h-5"></i>
+              </div>
+              <h4 class="text-xs font-black uppercase tracking-[0.2em] text-slate-800">Veredito da Inteligência Artificial ({{ dias }}d)</h4>
+            </div>
+            <p class="text-sm font-medium leading-relaxed text-slate-600 border-l-4 border-brand-indigo pl-5 py-1">
+              <span class="text-slate-900 font-black">Direção Projetada:</span> {{ gerarSinteseIA(ativo, dias) }}
+            </p>
+          </div>
+        </section>
+
+        <div class="grid grid-cols-2 gap-6">
+
+          <section class="bg-white rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col justify-center items-center text-center relative overflow-hidden hover:border-brand-indigo/30 transition-all">
+             <div class="flex items-center gap-2 mb-6 cursor-help" title="Nota de 0 a 10. Acima de 7 = Forte tendência de Alta. Abaixo de 4 = Forte tendência de Queda.">
+                <i data-lucide="target" class="w-4 h-4 text-brand-indigo"></i>
+                <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 underline decoration-dotted underline-offset-4">Score de Confluência</h4>
+             </div>
+             <div class="mb-8 cursor-help" title="A nota calculada pelo sistema unindo gráfico, fundamentos e matemática.">
+                <span class="block text-6xl font-black font-mono-data tracking-tighter leading-none mb-2" :class="getScoreColor(ativo.score)">
+                  {{ ativo.score ? parseFloat(ativo.score).toFixed(2) : '0.00' }}
+                </span>
+             </div>
+             <div class="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 cursor-help" title="O que está influenciando mais o preço agora.">
+                <span class="text-[11px] font-black text-brand-indigo uppercase tracking-widest">{{ ativo.fatorDominante || 'Aguardando' }}</span>
+                <span class="block text-[9px] font-bold text-slate-400 uppercase mt-1.5 underline decoration-dotted underline-offset-4">Força Principal</span>
+             </div>
+          </section>
+
+          <section class="bg-white rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col justify-between hover:border-brand-emerald/30 transition-all">
+             <div class="flex items-center gap-2 mb-6 cursor-help" title="O valor real da empresa baseado no seu patrimônio e nos lucros que ela gera.">
+                <i data-lucide="landmark" class="w-4 h-4 text-brand-emerald"></i>
+                <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 underline decoration-dotted underline-offset-4">Análise Fundamentalista</h4>
+             </div>
+             <div class="space-y-8 flex-1 flex flex-col justify-center">
+               <div class="cursor-help" title="O preço máximo que esta ação deveria custar. Se estiver abaixo disso, está barata.">
+                  <span class="block text-[10px] font-black text-slate-400 uppercase mb-2 underline decoration-dotted underline-offset-4">Preço Justo (Graham)</span>
+                  <span class="text-4xl font-black text-slate-900 font-mono-data tracking-tighter">{{ Tradutor.formatarMoeda(ativo.graham || 0) }}</span>
+               </div>
+               <div class="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100 flex items-center justify-between cursor-help" title="Potencial de lucro (em %) se a ação subir do preço atual até o Preço Justo calculado.">
+                  <div>
+                    <span class="block text-[9px] font-black text-slate-500 uppercase underline decoration-dotted underline-offset-4">Potencial (Upside)</span>
+                    <span class="text-xl font-black font-mono-data mt-1 block" :class="getMargemSeguranca(ativo) < 0 ? 'text-brand-rose' : 'text-brand-emerald'">
+                      {{ getMargemSeguranca(ativo) > 0 ? '+' : '' }}{{ getMargemSeguranca(ativo).toFixed(1) }}%
+                    </span>
+                  </div>
+                  <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-emerald-100" :class="getMargemSeguranca(ativo) >= 0 ? 'text-brand-emerald' : 'text-brand-rose border-rose-100'">
+                    <i :data-lucide="getMargemSeguranca(ativo) >= 0 ? 'trending-up' : 'trending-down'" class="w-5 h-5"></i>
+                  </div>
+               </div>
+             </div>
+          </section>
+        </div>
+
+        <section class="bg-white rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+          <div class="flex justify-between items-start mb-10">
+            <div class="cursor-help" title="A 'zona segura' onde a matemática diz que o preço deve ficar nos próximos dias.">
+              <div class="flex items-center gap-2 mb-1">
+                <i data-lucide="activity" class="w-4 h-4 text-brand-indigo"></i>
+                <h4 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 underline decoration-dotted underline-offset-4">Range de Operação ({{ dias }} dias)</h4>
+              </div>
+              <span class="text-2xl font-black text-slate-900 tracking-tighter">Limites Estatísticos</span>
+            </div>
+            <span class="px-4 py-1.5 bg-indigo-50 text-brand-indigo text-[10px] font-black rounded-xl border border-indigo-100 uppercase tracking-widest cursor-help" title="Grau de certeza matemática do cálculo.">Probabilidade: 68%</span>
+          </div>
+          
+          <div class="relative pt-8 pb-16">
+            
+            <div class="h-6 w-full bg-slate-50 rounded-full relative shadow-inner border border-slate-200">
+               <div class="absolute inset-y-0 bg-brand-indigo/10 rounded-full border-y border-brand-indigo/30" style="left: 10%; right: 10%;"></div>
+               
+               <div :style="{ left: getSpotPos(ativo) + '%' }" class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 flex flex-col items-center z-20 group transition-all duration-1000 ease-out">
+                  <div class="w-1 h-10 bg-slate-900 rounded-full absolute -top-2"></div>
+                  <div class="w-5 h-5 bg-white border-4 border-slate-900 rounded-full shadow-lg relative z-10 cursor-crosshair group-hover:scale-125 transition-all"></div>
+                  <div class="absolute top-8 bg-slate-900 text-white text-[11px] font-black py-1.5 px-3 rounded-lg shadow-xl font-mono-data opacity-0 group-hover:opacity-100 transition-all whitespace-nowrap z-30 pointer-events-none">
+                    SPOT: {{ Tradutor.formatarMoeda(ativo.spotPrice) }}
+                  </div>
+               </div>
+            </div>
+
+            <div class="absolute top-20 left-0 text-left cursor-help" title="O valor mínimo projetado. Dificilmente a ação cai abaixo disso.">
+              <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest underline decoration-dotted underline-offset-4 mb-1.5">Piso Mínimo</span>
+              <span class="text-lg font-black text-brand-rose font-mono-data bg-rose-50 px-3 py-1 rounded-lg border border-rose-100/50">{{ Tradutor.formatarMoeda(ativo.spotMin) }}</span>
+            </div>
+            
+            <div class="absolute top-20 right-0 text-right cursor-help" title="O valor máximo projetado. Dificilmente a ação sobe acima disso.">
+              <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest underline decoration-dotted underline-offset-4 mb-1.5">Teto Máximo</span>
+              <span class="text-lg font-black text-brand-emerald font-mono-data bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100/50">{{ Tradutor.formatarMoeda(ativo.spotMax) }}</span>
+            </div>
+
+          </div>
+
+          <div class="mt-4 border-t border-slate-100 pt-8">
+            <div class="flex justify-between items-end mb-3">
+               <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest cursor-help underline decoration-dotted underline-offset-4" title="A chance matemática de terminar os dias em alta ou em baixa.">Vetor Direcional</span>
+               <div class="flex gap-4 text-xs font-black font-mono-data uppercase">
+                 <span class="text-brand-emerald">Alta: {{ (parseFloat(ativo.probAlta || 0) * 100).toFixed(0) }}%</span>
+                 <span class="text-brand-rose">Baixa: {{ (parseFloat(ativo.probBaixa || 0) * 100).toFixed(0) }}%</span>
+               </div>
+            </div>
+            <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
+              <div class="h-full bg-brand-emerald transition-all duration-1000" :style="{ width: (parseFloat(ativo.probAlta || 0) * 100) + '%' }"></div>
+              <div class="h-full bg-brand-rose transition-all duration-1000" :style="{ width: (parseFloat(ativo.probBaixa || 0) * 100) + '%' }"></div>
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+      
+      <div class="p-8 border-t border-slate-200 bg-white shrink-0">
+         <button @click="$emit('close')" class="w-full btn-action bg-white text-slate-600 border border-slate-200 hover:bg-indigo-50/50 hover:text-brand-indigo hover:border-indigo-200 h-14 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-center gap-3 text-sm font-black tracking-wide">
+           <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+           <span>Finalizar Leitura Preditiva</span>
+         </button>
+      </div>
+
+    </div>
+  </transition>
+</template>
+
+<script>
+window.GestaoAtivosSidebar = {
+  template: '#gestao-ativos-sidebar-template',
+  props: {
+    isOpen: Boolean,
+    ativo: { type: Object, default: () => ({}) }, // 🛡️ Proteção anti-crash
+    dias: Number
+  },
+  data() {
+    return {
+      Tradutor: window.Tradutor
+    };
+  },
+  methods: {
+    // 📏 Calcula a posição da bolinha no Range Estatístico com segurança
+    getSpotPos(a) {
+      const min = parseFloat(a.spotMin) || 0;
+      const max = parseFloat(a.spotMax) || 0;
+      const current = parseFloat(a.spotPrice) || 0;
+      
+      if (max - min <= 0 || current === 0) return 50; 
+      
+      const pos = ((current - min) / (max - min)) * 100;
+      return Math.min(Math.max(pos, 0), 100);
+    },
+    
+    // 🛡️ Extrai a margem de segurança garantindo o formato correto (x 100)
+    getMargemSeguranca(a) {
+      return (parseFloat(a.margemSeguranca) || 0) * 100;
+    },
+
+    getScoreColor(s) {
+       const score = parseFloat(s) || 0;
+       if (score >= 7) return 'text-brand-emerald';
+       if (score >= 5) return 'text-amber-500';
+       return 'text-brand-rose';
+    },
+
+    // 🤖 Motor Lexical Simplificado e Elegante
+    gerarSinteseIA(ativo, dias) {
+      if (!ativo || ativo.score === undefined) {
+          return "Sincronizando dados com o servidor preditivo...";
+      }
+
+      const score = parseFloat(ativo.score);
+      const probAlta = (parseFloat(ativo.probAlta) || 0) * 100;
+      const margem = this.getMargemSeguranca(ativo);
+      const fator = ativo.fatorDominante || 'Desconhecido';
+      
+      let analise = `Análise projetada para ${dias} dias: `;
+      
+      if (score >= 7) analise += "O ativo exibe forte tendência de ALTA. ";
+      else if (score >= 5) analise += "Viés LIGEIRAMENTE POSITIVO, mas exige cautela. ";
+      else if (score <= 3.5) analise += "ALERTA: Risco elevado de queda severa. ";
+      else analise += "Trajetória INDEFINIDA (Lateralização Provável). ";
+
+      analise += `A força propulsora principal identificada é a [${fator}]. `;
+      
+      if (margem > 10) {
+          analise += `Note que a margem de segurança de ${margem.toFixed(1)}% reforça a atratividade do ativo frente ao valor intrínseco de Graham.`;
+      } else if (margem < -5) {
+          analise += `Atenção: Ativo negociado acima do Preço Justo de Graham. Possível distorção de mercado.`;
+      } else {
+          analise += `Matematicamente, a chance do preço fechar acima de ${this.Tradutor.formatarMoeda(ativo.spotPrice)} é de ${probAlta.toFixed(0)}%.`;
+      }
+
+      return analise;
+    }
+  },
+  updated() {
+    if (this.isOpen && typeof lucide !== 'undefined') {
+      this.$nextTick(() => lucide.createIcons());
+    }
+  }
+};
+</script>

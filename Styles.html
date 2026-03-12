@@ -1,0 +1,288 @@
+<style>
+  /* 🌟 NOVO: Importação das Fontes Premium (Pilar Light & Clean) */
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
+
+  /* Variáveis de Design System e Força Bruta de Tema */
+  :root {
+    /* M3 Tonal Palette - Light Edition (SEU ORIGINAL) */
+    --app-bg: #F8F9FF;           
+    --app-surface: #FFFFFF;      
+    --app-border: #E1E2EC;       
+    --m3-primary: #005AC1;       
+    --m3-on-surface: #1A1C1E;    
+    --m3-on-surface-variant: #44474E; 
+    --shadow-color: 226, 230, 240; 
+    
+    /* 🌟 NOVO: Cores de Marca Harmonizadas (Pilar Semântico) */
+    --brand-indigo: #4F46E5;
+    --brand-emerald: #10B981;
+    --brand-rose: #E11D48;
+    
+    /* 📱 MOBILE CHASSI: Área Segura para não encostar na barra de navegação do Android/iOS */
+    --safe-bottom: env(safe-area-inset-bottom, 20px);
+    
+    /* 🚨 O SEGREDO 1: Diz pro Chrome/Edge parar de forçar barra preta do Windows */
+    color-scheme: light; 
+  }
+
+  /* 🌟 NOVO: Aplicação da fonte principal no corpo do app */
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    
+    /* 📱 MOBILE CHASSI: Aniquila o "duplo-clique" que dá zoom sem querer na tela */
+    touch-action: manipulation;
+    
+    /* 📱 MOBILE CHASSI: Remove aquele quadrado cinza/azul que pisca ao tocar botões no Android */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  [v-cloak] { display: none; }
+
+  /* Utilitários de Cor (SEU ORIGINAL) */
+  .bg-app-bg { background-color: var(--app-bg); }
+  .bg-app-surface { background-color: var(--app-surface); }
+
+  /* 🚨 O SEGREDO 2: SCROLLBAR GLOBAL (SEU ORIGINAL) */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: #C1C6D4; 
+    border-radius: 10px; 
+    border: 2px solid var(--app-bg); 
+  }
+  ::-webkit-scrollbar-thumb:hover { background: #9AA0B1; }
+  * { scrollbar-width: thin; scrollbar-color: #C1C6D4 transparent; }
+
+  /* CONTAINER DO CARROSSEL REVISADO (SEU ORIGINAL) */
+  .carousel-container {
+    display: flex; overflow-x: auto; scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch; gap: 1.5rem;
+    padding: 0.5rem 0.25rem 1.5rem 0.25rem; scroll-snap-type: x mandatory;
+  }
+  .carousel-container::-webkit-scrollbar { height: 5px; }
+  .carousel-container::-webkit-scrollbar-thumb { background: #C1C6D4; border: none; }
+
+  /* 🎨 SOMBRAS SUAVIZADAS NOS CARDS (SEU ORIGINAL) */
+  .carousel-item {
+    flex: 0 0 auto; width: 320px; scroll-snap-align: start;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: var(--app-surface); border-radius: 28px; 
+    border: 1px solid var(--app-border);
+    box-shadow: 0 2px 8px -2px rgba(var(--shadow-color), 0.6), 0 4px 12px -4px rgba(var(--shadow-color), 0.4);
+  }
+  .carousel-item:hover { 
+    transform: translateY(-4px); border-color: #C1C6DA; 
+    box-shadow: 0 8px 24px -6px rgba(var(--shadow-color), 0.8), 0 4px 12px -4px rgba(var(--shadow-color), 0.5);
+  }
+
+  /* 🎨 BORDAS DE STATUS - PADRÃO (SEU ORIGINAL) */
+  .border-l-itm { border-left: 6px solid #ef4444 !important; background: linear-gradient(to right, rgba(239, 68, 68, 0.08), transparent); } 
+  .border-l-atm { border-left: 6px solid #f59e0b !important; background: linear-gradient(to right, rgba(245, 158, 11, 0.1), transparent); }
+  .border-l-otm { border-left: 6px solid #10b981 !important; background: linear-gradient(to right, rgba(16, 185, 129, 0.08), transparent); }
+  .border-l-call { border-left: 6px solid #0ea5e9 !important; background: linear-gradient(to right, rgba(14, 165, 233, 0.05), transparent); }
+  .border-l-put { border-left: 6px solid #f59e0b !important; background: linear-gradient(to right, rgba(245, 158, 11, 0.05), transparent); }
+  .border-l-itm, .border-l-atm, .border-l-otm { border-left-style: solid !important; border-left-width: 6px !important; }
+
+  /* FORÇA O HANDSONTABLE (SEU ORIGINAL) */
+  thead.sticky { position: sticky !important; top: 0 !important; z-index: 40 !important; }
+  tbody tr { position: static !important; }
+  .handsontable .ht_master, .handsontable .ht_clone_top, .handsontable .ht_clone_left, 
+  .handsontable .ht_clone_top_left_corner, .handsontable .ht_clone_bottom_left_corner,
+  .handsontable .ht_clone_bottom { z-index: 10 !important; }
+  .htDropdownMenu { z-index: 50 !important; }
+
+
+  /* =========================================================
+     🌟 NOVO: CLASSES UTILITÁRIAS DE HARMONIZAÇÃO (O "Kit Cannes")
+     ========================================================= */
+
+  /* Padrão para os botões principais de ação */
+  .btn-action {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    padding: 0.5rem 1.25rem; border-radius: 9999px; /* Totalmente arredondado */
+    font-size: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;
+  }
+  .btn-action-primary { background-color: var(--brand-indigo); color: white; }
+  .btn-action-primary:hover { background-color: #4338CA; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+
+  /* Padrão para os Cartões Maiores (igual ao seu carrossel, mas para uso geral) */
+  .premium-card {
+    background-color: var(--app-surface); border-radius: 28px; border: 1px solid var(--app-border);
+    box-shadow: 0 2px 8px -2px rgba(var(--shadow-color), 0.6); transition: all 0.3s ease;
+  }
+
+  /* Padrão de tipografia para números de dinheiro e gregas */
+  .font-mono-data {
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.02em;
+  }
+
+  /* =========================================================
+     COMPONENTE: BOTÕES DE AUTOMAÇÃO (Padrão de Lista)
+     ========================================================= */
+  .automation-btn {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    width: 100%;
+    padding: 1rem 1.5rem; 
+    background-color: var(--app-surface);
+    border: 1px solid var(--app-border); 
+    border-radius: 16px; 
+    color: var(--m3-on-surface); 
+    font-size: 0.75rem; 
+    font-weight: 800;
+    text-transform: uppercase; 
+    letter-spacing: 0.05em;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .automation-btn:hover {
+    background-color: var(--brand-indigo); 
+    border-color: var(--brand-indigo);
+    color: #FFFFFF; 
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px -4px rgba(79, 70, 229, 0.3);
+  }
+
+  .automation-btn:active { 
+    transform: translateY(0); 
+    box-shadow: none; 
+  }
+
+  /* =========================================================
+     COMPONENTE: CONSOLE DE LOGS (Light Mode Elegante)
+     ========================================================= */
+  .log-light-mode {
+    filter: invert(1) hue-rotate(180deg); 
+    opacity: 0.85; 
+    mix-blend-mode: multiply; 
+  }
+
+  /* =========================================================
+     COMPONENTE: SCROLLBAR INVISÍVEL (Logs & Listas Menores)
+     ========================================================= */
+  .log-scrollbar::-webkit-scrollbar { 
+    width: 6px; 
+    height: 6px; 
+  }
+  .log-scrollbar::-webkit-scrollbar-track { 
+    background: transparent; 
+  }
+  .log-scrollbar::-webkit-scrollbar-thumb { 
+    background: transparent; 
+    border-radius: 10px; 
+  }
+  .log-scrollbar:hover::-webkit-scrollbar-thumb { 
+    background: #CBD5E1; 
+  }
+  .log-scrollbar::-webkit-scrollbar-thumb:hover { 
+    background: #94A3B8; 
+  }
+
+  /* =========================================================
+     🌟 NOVO: OTIMIZAÇÕES EXCLUSIVAS PARA MOBILE (S22 Ultra)
+     ========================================================= */
+  /* Classe que garante que a bottom bar não seja cortada pelo Android */
+  .pb-safe {
+    padding-bottom: var(--safe-bottom) !important;
+  }
+
+  @media (max-width: 768px) {
+    /* Esconde as scrollbars grossas no celular para o Carrossel ficar como app nativo */
+    ::-webkit-scrollbar { 
+      width: 0px; 
+      height: 0px; 
+      display: none; 
+    }
+    * { 
+      scrollbar-width: none; 
+      -ms-overflow-style: none;
+    }
+    /* Suaviza o toque e o arrasto */
+    .custom-scrollbar-mobile {
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+
+/* =========================================================
+   🚨 FORÇA BRUTA MOBILE: IGNORA O IFRAME DO GOOGLE
+   ========================================================= */
+@media screen and (max-width: 850px) {
+  /* Oculta a Sidebar do PC no celular */
+  .desktop-sidebar { 
+    display: none !important; 
+  }
+  
+  /* Exibe a Bottom Bar no celular */
+  .mobile-bottom-bar { 
+    display: flex !important; 
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 9999;
+  }
+
+  /* Ajusta o container principal para não encostar embaixo e remover margens laterais */
+  .main-chassi {
+    padding: 16px 8px 100px 8px !important; 
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+@media screen and (min-width: 851px) {
+  /* No PC, exibe a Sidebar */
+  .desktop-sidebar { 
+    display: flex !important; 
+  }
+  
+  /* No PC, esconde a Bottom Bar */
+  .mobile-bottom-bar { 
+    display: none !important; 
+  }
+
+  .main-chassi {
+    padding: 32px !important;
+  }
+}
+
+
+</style>
+
+<script>
+  /* CONFIGURAÇÃO DO TAILWIND - SINCRONIZADA COM M3 CLEAN */
+  window.tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          app: {
+            bg: 'var(--app-bg)', surface: 'var(--app-surface)',
+            border: 'var(--app-border)', primary: 'var(--m3-primary)',
+          },
+          status: {
+            otm: '#006D3A', atm: '#8F4E00', itm: '#B3261E',
+          },
+          brand: {
+            indigo: 'var(--brand-indigo)', emerald: 'var(--brand-emerald)', rose: 'var(--brand-rose)',
+          }
+        },
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+          mono: ['JetBrains Mono', 'monospace'],
+        },
+        borderRadius: {
+          'm3': '28px', 
+        }
+      }
+    }
+  }
+</script>
+
+

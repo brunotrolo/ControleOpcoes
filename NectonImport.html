@@ -1,0 +1,377 @@
+<template id="necton-import-template">
+  <div class="max-w-[95%] mx-auto pb-16 font-sans space-y-8 mt-6">
+    
+    <div class="premium-card px-8 py-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 z-10 relative">
+      <div class="flex items-center gap-5">
+        <div class="p-3 bg-indigo-50 text-brand-indigo rounded-2xl shadow-sm border border-indigo-100/50">
+          <i data-lucide="download-cloud" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h2 class="text-2xl font-black text-slate-900 tracking-tight">Importador Necton</h2>
+          <p class="text-slate-400 text-[10px] uppercase tracking-[0.25em] font-bold mt-1">Motor de ingestão em massa e gestão de ordens</p>
+        </div>
+      </div>
+      </div>
+
+    <div class="premium-card p-8">
+      
+    <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-5">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-brand-indigo shadow-sm border border-indigo-100/50">
+            <i data-lucide="clipboard-paste" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-black text-slate-800 tracking-tight">Ingestão de Dados</h3>
+            <p class="text-[9px] uppercase tracking-widest font-bold text-slate-400 mt-0.5">Ctrl+V da Necton para iniciar</p>
+          </div>
+        </div>
+        <div v-if="parsedData.length > 0" class="px-4 py-1.5 bg-emerald-50 text-brand-emerald border border-emerald-200 rounded-full text-[10px] font-black uppercase tracking-widest animate-pulse shadow-sm">
+          {{ parsedData.length }} Linhas Prontas
+        </div>
+      </div>
+
+      <textarea 
+        v-model="rawText" 
+        placeholder="Cole as colunas aqui (Ativo, Status, Tipo, Dir, Qtd...)"
+        class="w-full h-32 bg-slate-50/50 border border-slate-200 rounded-2xl p-5 text-xs font-mono-data text-slate-600 focus:ring-2 focus:ring-brand-indigo focus:bg-white focus:border-transparent transition-all resize-none shadow-inner"
+      ></textarea>
+
+      <div class="mt-6 flex flex-wrap gap-3 justify-end">
+        <button v-if="rawText.length > 0 || parsedData.length > 0" @click="limpar" :disabled="isSaving"
+          class="btn-action bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-50">
+          Limpar
+        </button>
+
+        <button v-if="parsedData.length === 0" @click="parseData" :disabled="rawText.length === 0"
+          class="btn-action btn-action-primary disabled:opacity-50">
+          Analisar Dados
+        </button>
+
+        <button v-if="parsedData.length > 0" @click="salvar" :disabled="isSaving"
+          class="btn-action bg-brand-emerald text-white hover:bg-emerald-600 shadow-md hover:-translate-y-0.5 disabled:opacity-50">
+          <span v-if="isSaving" class="animate-spin inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full mr-2"></span>
+          {{ isSaving ? 'Salvando...' : 'Gravar na Planilha' }}
+        </button>
+      </div>
+
+      <div v-if="parsedData.length > 0" class="mt-8 border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-sm animate-fade-in">
+        <div class="bg-slate-50 border-b border-slate-200 px-5 py-3 flex justify-between items-center">
+          <h4 class="text-[10px] font-black uppercase tracking-widest text-slate-500">Pré-visualização da Inserção</h4>
+          <span class="text-[10px] font-bold text-slate-400">Revise os dados antes de gravar</span>
+        </div>
+        <div class="overflow-x-auto max-h-96 log-scrollbar">
+          <table class="w-full text-left whitespace-nowrap">
+            <thead class="bg-white sticky top-0 shadow-sm z-10">
+              <tr class="text-[9px] uppercase tracking-widest text-slate-400 font-black">
+                <th class="px-4 py-3">Ativo</th>
+                <th class="px-4 py-3">Status</th>
+                <th class="px-4 py-3">Tipo</th>
+                <th class="px-4 py-3 text-center">Dir.</th>
+                <th class="px-4 py-3 text-right">Qtd. oferta</th>
+                <th class="px-4 py-3 text-right">Qtd. aparente</th>
+                <th class="px-4 py-3 text-right">Qtd. exec</th>
+                <th class="px-4 py-3 text-right">Qtd. restante</th>
+                <th class="px-4 py-3 text-right">P. limite</th>
+                <th class="px-4 py-3 text-right">Disp. baixo</th>
+                <th class="px-4 py-3 text-right">Disp. cima</th>
+                <th class="px-4 py-3 text-right">P. médio</th>
+                <th class="px-4 py-3 text-right">Último Preço</th>
+                <th class="px-4 py-3">Data</th>
+                <th class="px-4 py-3 text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 font-mono-data text-slate-600 text-xs font-medium">
+              <tr v-for="(row, idx) in parsedData" :key="idx" class="hover:bg-slate-50/80 transition-colors group">
+                <td class="px-4 py-2.5 font-bold text-slate-800">{{ row[0] }}</td>
+                <td class="px-4 py-2.5 text-[10px]">{{ row[1] }}</td>
+                <td class="px-4 py-2.5 text-[10px]">{{ row[2] }}</td>
+                <td class="px-4 py-2.5 text-center">
+                  <span :class="row[3] === 'C' ? 'bg-emerald-50 text-brand-emerald border-emerald-200' : 'bg-rose-50 text-brand-rose border-rose-200'" class="px-2 py-0.5 rounded text-[10px] font-bold border">
+                    {{ row[3] }}
+                  </span>
+                </td>
+                <td class="px-4 py-2.5 text-right text-slate-400">{{ row[4] }}</td>
+                <td class="px-4 py-2.5 text-right text-slate-400">{{ row[5] }}</td>
+                <td class="px-4 py-2.5 text-right font-bold text-brand-indigo">{{ row[6] }}</td>
+                <td class="px-4 py-2.5 text-right text-slate-400">{{ row[7] }}</td>
+                <td class="px-4 py-2.5 text-right">{{ row[8] }}</td>
+                <td class="px-4 py-2.5 text-right text-slate-400">{{ row[9] }}</td>
+                <td class="px-4 py-2.5 text-right text-slate-400">{{ row[10] }}</td>
+                <td class="px-4 py-2.5 text-right font-bold">{{ row[11] }}</td>
+                <td class="px-4 py-2.5 text-right">{{ row[12] }}</td>
+                <td class="px-4 py-2.5 text-[10px]">{{ row[13] }}</td>
+                <td class="px-4 py-2.5 text-center">
+                  <button @click="removerLinhaPreview(idx)" class="p-1 text-slate-300 hover:text-brand-rose hover:bg-rose-50 rounded transition-all opacity-0 group-hover:opacity-100 focus:opacity-100" title="Remover desta importação">
+                    <i data-lucide="x" class="w-4 h-4 mx-auto"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="premium-card p-8">
+      
+    <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-5">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-brand-indigo shadow-sm border border-indigo-100/50">
+            <i data-lucide="history" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-black text-slate-800 tracking-tight">Histórico de Operações</h3>
+            <p class="text-[9px] uppercase tracking-widest font-bold text-slate-400 mt-0.5">Registros salvos na base</p>
+          </div>
+        </div>
+        <button @click="$emit('refresh')" class="btn-action bg-white border border-slate-200 text-slate-400 hover:text-brand-indigo hover:bg-indigo-50 px-3 py-2 rounded-xl shadow-sm transition-all" title="Atualizar Histórico">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div v-if="isLoadingHistory" class="flex flex-col items-center justify-center py-16">
+        <div class="animate-spin w-8 h-8 border-4 border-indigo-50 border-t-brand-indigo rounded-full mb-4"></div>
+        <span class="text-[10px] font-black uppercase tracking-widest text-brand-indigo">Sincronizando...</span>
+      </div>
+
+      <div v-else-if="history.length === 0" class="text-center py-16 bg-white border border-dashed border-slate-200 rounded-[24px]">
+        <span class="text-5xl mb-4 block opacity-40">📭</span>
+        <h4 class="text-lg font-black text-slate-700 tracking-tight">Nenhum registro encontrado</h4>
+        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-2">A aba Necton_Import está vazia.</p>
+      </div>
+
+      <div v-else class="overflow-x-auto log-scrollbar rounded-2xl border border-slate-200">
+        <table class="w-full text-left whitespace-nowrap">
+          <thead class="bg-slate-50/80">
+            <tr class="text-[9px] uppercase tracking-widest text-slate-400 font-black border-b border-slate-100">
+              <th class="px-5 py-4">Linha</th>
+              <th class="px-5 py-4">Ativo</th>
+              <th class="px-5 py-4">Tipo / Dir</th>
+              <th class="px-5 py-4">Data</th>
+              <th class="px-5 py-4 text-right">Preço</th>
+              <th class="px-5 py-4 text-center">Ação</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-mono-data text-slate-600 text-xs font-medium">
+            <tr v-for="item in history" :key="item.linhaReal" class="hover:bg-slate-50/80 transition-colors group">
+              <td class="px-5 py-3 text-[10px] text-slate-400">#{{ item.linhaReal }}</td>
+              <td class="px-5 py-3 font-bold text-slate-800">{{ item.ativo }}</td>
+              <td class="px-5 py-3">
+                <div class="flex items-center gap-2">
+                  <span class="text-[9px] font-sans font-black uppercase text-slate-400 border border-slate-200 px-1.5 rounded bg-white">{{ item.tipo }}</span>
+                  <span :class="item.direcao === 'C' ? 'text-brand-emerald bg-emerald-50 border-emerald-200' : 'text-brand-rose bg-rose-50 border-rose-200'" class="px-1.5 py-0.5 rounded text-[10px] font-bold border">
+                    {{ item.direcao }}
+                  </span>
+                </div>
+              </td>
+              <td class="px-5 py-3 text-slate-500">{{ item.data }}</td>
+              <td class="px-5 py-3 text-right font-bold">{{ item.preco }}</td>
+              <td class="px-5 py-3 text-center">
+
+                <button @click="confirmarExclusao(item.linhaReal, item.ativo)" :disabled="isDeleting === item.linhaReal"
+                  class="p-1.5 mx-auto text-slate-300 hover:text-brand-rose hover:bg-rose-50 rounded-lg transition-all opacity-0 group-hover:opacity-100 focus:opacity-100 disabled:opacity-100" title="Excluir Registro da Planilha">
+                  
+                  <div v-if="isDeleting === item.linhaReal" class="animate-spin w-4 h-4 border-2 border-rose-200 border-t-brand-rose rounded-full"></div>
+                  <div v-show="isDeleting !== item.linhaReal">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </div>
+                  
+                </button>
+
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+    
+    <transition name="fade">
+      <div v-if="modalExclusao.isOpen" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+        <div class="bg-white rounded-[28px] shadow-2xl border border-slate-200 w-full max-w-sm overflow-hidden transform transition-all text-center">
+          <div class="p-8">
+            <div class="w-16 h-16 bg-rose-50 text-brand-rose rounded-full flex items-center justify-center mx-auto mb-6 ring-4 ring-rose-50/50">
+              <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 mb-2 tracking-tight">Excluir Operação?</h3>
+            <p class="text-sm text-slate-500 font-medium leading-relaxed mb-2">
+              Você está apagando a operação de <strong class="text-brand-indigo">{{ modalExclusao.ativo }}</strong> na linha {{ modalExclusao.linhaReal }}.
+            </p>
+            <span class="text-brand-rose font-bold uppercase text-[10px] tracking-[0.2em] mt-3 block bg-rose-50 py-1.5 rounded-lg">Ação irreversível</span>
+          </div>
+          
+          <div class="flex border-t border-slate-100 p-4 gap-3 bg-slate-50">
+            <button @click="fecharModal" class="btn-action flex-1 bg-white border border-slate-200 text-slate-500 hover:bg-slate-100">
+              Cancelar
+            </button>
+            <button @click="executarExclusao" class="btn-action flex-1 bg-brand-rose text-white hover:bg-rose-600 shadow-md">
+              Sim, Excluir
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+  </div>
+</template>
+
+<script>
+window.NectonImport = {
+  template: '#necton-import-template',
+  props: {
+    data: { type: Array, default: () => [] } 
+  },
+  data() {
+    return {
+      rawText: '',
+      parsedData: [],
+      isSaving: false,
+      isDeleting: null,
+      modalExclusao: { isOpen: false, linhaReal: null, ativo: null } 
+    };
+  },
+  computed: {
+    history() {
+      if (!this.data || this.data.length === 0) return [];
+      
+      return this.data.map((item, index) => {
+        let dataFormatada = '---';
+        if (item.timestampOrdem instanceof Date) {
+            dataFormatada = item.timestampOrdem.toLocaleString('pt-BR');
+        } else if (item.timestampOrdem) {
+            dataFormatada = String(item.timestampOrdem);
+        }
+
+        return {
+          // 🚀 FIX: Tenta usar o carimbo absoluto primeiro, se falhar, usa o index
+          linhaReal: item.linhaRealExcel || (index + 2), 
+          ativo: item.simboloOpcao || '---',
+          status: item.orderStatus || '---',
+          tipo: item.orderType || '---',
+          direcao: item.direcaoTrade || '---',
+          qtd: item.quantidade || item.quantidadeOferta || 0,
+          preco: window.Tradutor ? window.Tradutor.formatarMoeda(item.premioAtual) : item.premioAtual,
+          data: dataFormatada 
+        };
+      });
+    },
+    isLoadingHistory() {
+      return false; 
+      }
+    },
+  mounted() {
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  },
+  // 🚀 A SOLUÇÃO DO BOTÃO INVISÍVEL ESTÁ AQUI:
+  updated() {
+    if (typeof lucide !== 'undefined') {
+      this.$nextTick(() => lucide.createIcons());
+    }
+  },
+  methods: {
+    parseData() {
+      if (!this.rawText || this.rawText.trim() === '') {
+        this.parsedData = [];
+        return;
+      }
+      
+      const rawLines = this.rawText.split('\n');
+      const lines = rawLines.map(l => l.trim()).filter(l => l.length > 0);
+      const validData = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        
+        if (line.includes('\t')) {
+          const numCols = line.split('\t').map(c => c.trim());
+          if (numCols.length >= 8 && i >= 4) {
+            let direcao = lines[i - 1].trim().toUpperCase();
+            let tipo = lines[i - 2].replace(/\t/g, '').trim(); 
+            let status = lines[i - 3].trim();
+            let ativo = lines[i - 4].trim().toUpperCase();
+
+            const row = [
+              ativo, status, tipo, direcao, 
+              numCols[0], numCols[1], numCols[2], numCols[3], 
+              numCols[4], numCols[5], numCols[6], numCols[7], 
+              numCols[8], numCols[9], ''
+            ];
+
+            if (ativo !== 'ATIVO') validData.push(row);
+          }
+        }
+      }
+      this.parsedData = validData;
+    },
+
+    removerLinhaPreview(index) {
+      this.parsedData.splice(index, 1);
+    },
+
+    limpar() {
+      this.rawText = '';
+      this.parsedData = [];
+    },
+
+    salvar() {
+      if (this.parsedData.length === 0) return;
+      this.isSaving = true;
+      google.script.run
+        .withSuccessHandler((res) => {
+          this.isSaving = false;
+          if (res && res.success) {
+            this.limpar();
+            this.$emit('refresh'); 
+          } else {
+            alert("Erro ao salvar: " + (res.error || res.message));
+          }
+        })
+        .withFailureHandler((err) => {
+          this.isSaving = false;
+          alert("Falha de conexão com o servidor: " + err);
+        })
+        .apiAdicionarLinhas('Necton_Import', this.parsedData);
+    },
+
+    confirmarExclusao(linhaReal, ativo) {
+      this.modalExclusao = { isOpen: true, linhaReal, ativo };
+    },
+
+    fecharModal() {
+      this.modalExclusao = { isOpen: false, linhaReal: null, ativo: null };
+    },
+
+    executarExclusao() {
+      // 🚀 FIX: Trava matemática que evita enviar comandos "null" para o Sheets
+      const linhaAlvo = parseInt(this.modalExclusao.linhaReal, 10);
+      const ativoAlvo = String(this.modalExclusao.ativo);
+      
+      this.isDeleting = linhaAlvo;
+      this.fecharModal(); 
+      
+      if (isNaN(linhaAlvo) || linhaAlvo < 1) {
+          alert("Erro de segurança: Número de linha inválido.");
+          this.isDeleting = null;
+          return;
+      }
+      
+      google.script.run
+        .withSuccessHandler((res) => {
+          if (res && res.success) {
+            this.$emit('refresh'); 
+          } else {
+            alert(res.error || "Erro ao excluir a linha.");
+          }
+          this.isDeleting = null; 
+        })
+        .withFailureHandler((err) => {
+          alert("Falha de conexão com a planilha: " + err);
+          this.isDeleting = null; 
+        })
+        .apiExcluirLinhaSegura('Necton_Import', linhaAlvo, ativoAlvo); 
+    }
+  }
+};
+</script>

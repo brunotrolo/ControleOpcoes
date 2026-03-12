@@ -1,0 +1,422 @@
+<script>
+window.Tradutor = {
+  // 📖 A BÍBLIA DO TRADUTOR: Dicionário Global de Harmonização (Nexo 2026)
+  DICIONARIO: {
+    
+    'COCKPIT': {
+      headerRowIndex: 9, 
+      map: {
+        'ID_TRADE': { key: 'tradeId', type: 'texto' },
+        'ID ESTRATÉGIA': { key: 'estrategiaId', type: 'texto', fallback: 'SEM_ESTRATEGIA' },
+        'STATUS': { key: 'status', type: 'texto' },
+        'DATA TRADE': { key: 'dataTrade', type: 'data' },
+        'VENCIMENTO': { key: 'dataVencimento', type: 'data' },
+        'CÓDIGO OPÇÃO': { key: 'simboloOpcao', type: 'texto' },
+        'TICKER': { key: 'tickerAtivo', type: 'texto' },
+        'VENDA/COMPRA': { key: 'direcaoTrade', type: 'texto' },
+        'TIPO': { key: 'tipoOpcao', type: 'texto' },
+        'QTD': { key: 'quantidade', type: 'numero' },
+        'STRIKE': { key: 'strike', type: 'moeda' },
+        'TICKER SPOT': { key: 'spotPrice', type: 'moeda' },
+        'MONEYNESS_CODE': { key: 'moneynessCode', type: 'texto' },
+        'PRÊMIO (PM)': { key: 'premioMedio', type: 'moeda' },
+        'PRÊMIO ATUAL': { key: 'premioAtual', type: 'moeda' },
+        'GANHO MÁXIMO': { key: 'ganhoMaximo', type: 'moeda' },
+        'LUCRO MAX': { key: 'potencialLucroPct', type: 'percentual' },
+        'P/L TOTAL %': { key: 'plTotalPct', type: 'percentual' },
+        'P/L TOTAL': { key: 'plTotalUnitario', type: 'moeda' },
+        'P/L ATUAL': { key: 'plTotalValor', type: 'moeda' },
+        'DTE CORRIDOS': { key: 'dteCorridos', type: 'numero' },
+        'IV_CURRENT': { key: 'ivAtual', type: 'numero' },
+        'IV_1Y_RANK': { key: 'ivRank', type: 'percentual' },
+        'DELTA': { key: 'delta', type: 'numero' },
+        'THETA': { key: 'theta', type: 'numero' }
+      }
+    },
+
+    'DADOS_ATIVOS': {
+      headerRowIndex: 0,
+      map: {
+        'Ticker': { key: 'tickerAtivo', type: 'texto' },
+        'Timestamp_Atualizacao': { key: 'dataHoraAtualizacao', type: 'data' },
+        'name': { key: 'nomeEmpresa', type: 'texto' },
+        'close': { key: 'spotPrice', type: 'moeda' },
+        'beta_ibov': { key: 'betaIbov', type: 'numero' },
+        'iv_1y_rank': { key: 'ivRank', type: 'percentual' },
+        'iv_current': { key: 'ivAtual', type: 'percentual' }
+      }
+    },
+
+    'CALC_GREEKS': {
+      headerRowIndex: 0,
+      map: {
+        'ID_Trade_Unico': { key: 'tradeId', type: 'texto' },
+        'Ativo': { key: 'simboloOpcao', type: 'texto' },
+        'moneyness_code': { key: 'moneynessCode', type: 'texto' },
+        'price': { key: 'ultimoPrecoOpcao', type: 'moeda' },
+        'delta': { key: 'delta', type: 'numero' },
+        'gamma': { key: 'gamma', type: 'numero' },
+        'theta': { key: 'theta', type: 'numero' },
+        'volatility': { key: 'volatilidadeImpl', type: 'percentual' }
+      }
+    },
+
+    'NECTON_IMPORT': {
+      headerRowIndex: 0,
+      map: {
+        'Ativo': { key: 'simboloOpcao', type: 'texto' },
+        'Status': { key: 'orderStatus', type: 'texto' },
+        'Tipo': { key: 'orderType', type: 'texto' },
+        'Dir.': { key: 'direcaoTrade', type: 'texto' },
+        'Qtd. exec': { key: 'quantidade', type: 'numero' },
+        'P. médio': { key: 'premioMedioEntrada', type: 'moeda' },
+        'Último Preço': { key: 'premioAtual', type: 'moeda' },
+        'Data': { key: 'timestampOrdem', type: 'data' },
+        'Ticker': { key: 'tickerAtivo', type: 'texto' },
+        'Vencimento': { key: 'dataVencimento', type: 'data' },
+        'Strike': { key: 'strike', type: 'moeda' }
+      }
+    },
+
+    'LOGS': {
+      headerRowIndex: 0,
+      map: {
+        'Timestamp': { key: 'timestampLog', type: 'data' },
+        'Servico': { key: 'servico', type: 'texto' },
+        'Status': { key: 'status', type: 'texto' },
+        'Mensagem_Resumo': { key: 'mensagemResumo', type: 'texto' },
+        'Contexto_Detalhado': { key: 'contextoDetalhado', type: 'texto' }
+      }
+    },
+
+    // 🌟 NOVO: O MOTOR MACRO DA IA
+    'SCANNER_MACRO': {
+      headerRowIndex: 0,
+      map: {
+        'Indicador': { key: 'nomeIndicador', type: 'texto' },
+        'Valor_Atual': { key: 'valorAtual', type: 'numero' }, // VIX, Selic serão números
+        'Tendencia': { key: 'tendencia', type: 'texto' },
+        'Status_Seguranca': { key: 'statusSeguranca', type: 'texto' }
+      }
+    },
+
+    // 🌟 NOVO: O VEREDITO DA IA
+    'DB_VEREDITOS_IA': {
+      headerRowIndex: 0,
+      map: {
+        'Ticker': { key: 'tickerAtivo', type: 'texto' },
+        'Strike_Sugerido': { key: 'strikeSugerido', type: 'moeda' },
+        'Premio_Estimado': { key: 'premioEstimado', type: 'moeda' },
+        'DTE': { key: 'dte', type: 'numero' },
+        'Nexo_Score': { key: 'nexoScore', type: 'numero' },
+        'Comando_Acao': { key: 'comandoAcao', type: 'texto' }, // "VENDA", "AGUARDE", "ABORTAR"
+        'Racional_IA': { key: 'racionalIA', type: 'texto' },
+        'Alerta_Evento': { key: 'alertaEvento', type: 'texto' }
+      }
+    }
+  },
+
+  processarBancoCompleto(rawMatrix) {
+    if (!rawMatrix) return null;
+
+    const getAba = (nome) => {
+        const chaveReal = Object.keys(rawMatrix).find(k => k.toUpperCase() === nome.toUpperCase());
+        return rawMatrix[chaveReal] || null;
+    };
+
+    return {
+      // 1. CORE OPERACIONAL
+      cockpit: this.processar(getAba('COCKPIT'), 'COCKPIT'),
+      configGlobal: this.processar(getAba('CONFIG_GLOBAL'), 'CONFIG_GLOBAL'),
+      logs: this.processar(getAba('Logs'), 'LOGS'),
+      dadosAtivos: this.processar(getAba('Dados_Ativos'), 'DADOS_ATIVOS'),
+      calcGreeks: this.processar(getAba('CALC_GREEKS'), 'CALC_GREEKS'),
+      necton: this.processar(getAba('NECTON_IMPORT'), 'NECTON_IMPORT'),
+
+      // 2. INTELIGÊNCIA ARTIFICIAL (Nexo 2026)
+      scannerMacro: this.processar(getAba('SCANNER_MACRO'), 'SCANNER_MACRO'),
+      vereditosIA: this.processar(getAba('DB_VEREDITOS_IA'), 'DB_VEREDITOS_IA'),
+
+      // 3. BASE (Não-reativa)
+      raw: rawMatrix, 
+      resumoGerencial: { timestamp: new Date().toLocaleString('pt-BR') }
+    };
+  },
+
+
+  /**
+   * 🚀 MOTOR PRINCIPAL: Processa qualquer matriz bruta do Excel
+   * @param {Array} rawMatrix - A matriz bidimensional vinda do Google Sheets.
+   * @param {String} namespace - O contexto dos dados (ex: 'COCKPIT', 'CONFIG_GLOBAL').
+   * @returns {Array|Object} - Array de objetos limpos (ou Objeto JSON se for Config).
+   */
+  processar(rawMatrix, namespace = 'GENERICO') {
+    if (!rawMatrix || !Array.isArray(rawMatrix) || rawMatrix.length === 0) {
+        return namespace === 'CONFIG_GLOBAL' ? {} : [];
+    }
+
+    // ⚡ DESVIO ESTRATÉGICO: A aba de configurações tem um parse especial (Chave/Valor)
+    if (namespace === 'CONFIG_GLOBAL') {
+      return this._processarConfigGlobal(rawMatrix);
+    }
+
+    const config = this.DICIONARIO[namespace] || { headerRowIndex: 0, map: {} };
+    const headerIndex = config.headerRowIndex;
+    
+    // Captura e normaliza os cabeçalhos reais da planilha
+    const rawHeaders = rawMatrix[headerIndex] || [];
+    const cabecalhos = rawHeaders.map(h => String(h).toUpperCase().trim());
+
+    const corpoDados = rawMatrix.slice(headerIndex + 1);
+    const dadosValidos = [];
+
+    // Loop de Linhas
+    for (let i = 0; i < corpoDados.length; i++) {
+      const row = corpoDados[i];
+      const primeiraCelula = String(row[0] || '').trim().toUpperCase();
+
+      // Trava de Segurança: Ignora linhas vazias ou subtotais
+      if (primeiraCelula === "" || primeiraCelula.includes("SUBTOTAL")) continue; 
+
+      const objetoRow = {};
+
+      objetoRow.linhaRealExcel = headerIndex + i + 2; 
+      
+      // Cruza o mapa do Dicionário com os índices do Cabeçalho
+      for (const [colunaOrig, regras] of Object.entries(config.map)) {
+        // CORREÇÃO: Transforma a chave do dicionário em maiúsculo também!
+        const idx = cabecalhos.indexOf(String(colunaOrig).toUpperCase().trim());
+        
+        if (idx !== -1) {
+            objetoRow[regras.key] = this._sanitizarDado(row[idx], regras.type);
+        } else if (regras.fallback !== undefined) {
+            objetoRow[regras.key] = regras.fallback;
+        }
+      }
+
+      // =========================================================================
+      // 🛡️ REGRAS DE SANEAMENTO ESPECÍFICAS POR NAMESPACE
+      // =========================================================================
+      if (namespace === 'COCKPIT') {
+        
+        // 1. Unificação de Status
+        if (objetoRow.status) {
+          const s = String(objetoRow.status).toUpperCase();
+          objetoRow.status = (s.includes('ATIV')) ? 'ATIVO' : 'ENCERRADO';
+          objetoRow.isAtiva = (objetoRow.status === 'ATIVO');
+        } else {
+          objetoRow.isAtiva = false;
+        }
+
+        // 2. Filtro Cirúrgico: Se não for ATIVO, nem entra na matriz (AppCore ficará mais leve)
+        if (!objetoRow.isAtiva) continue;
+
+        // 3. Normalização Forçada de Moneyness
+        if (objetoRow.moneynessCode) {
+          const m = String(objetoRow.moneynessCode).toUpperCase();
+          if (m.includes('ITM')) objetoRow.moneynessCode = 'ITM';
+          else if (m.includes('OTM')) objetoRow.moneynessCode = 'OTM';
+          else objetoRow.moneynessCode = 'ATM';
+        }
+        
+        // 4. Normalização de Tipo (CALL/PUT)
+        if (objetoRow.tipoOpcao) {
+          const t = String(objetoRow.tipoOpcao).toUpperCase();
+          objetoRow.tipoOpcao = t.includes('CALL') ? 'CALL' : 'PUT';
+        }
+        
+        // 5. Normalização de Direção (COMPRA/VENDA)
+        if (objetoRow.direcaoTrade) {
+          const d = String(objetoRow.direcaoTrade).toUpperCase();
+          objetoRow.direcaoTrade = (d === 'V' || d.includes('VENDA')) ? 'VENDA' : 'COMPRA';
+        }
+      }
+
+      dadosValidos.push(objetoRow);
+    }
+    
+    return dadosValidos;
+  },
+
+
+// =========================================================================
+  // 🧹 A "LAVANDERIA" DE DADOS (Sanitizadores Privados)
+  // =========================================================================
+  
+  _sanitizarDado(valor, tipo) {
+    if (valor === undefined || valor === null || valor === '') {
+        if (tipo === 'numero' || tipo === 'percentual' || tipo === 'moeda') return 0;
+        if (tipo === 'booleano') return false;
+        return '';
+    }
+    switch (tipo) {
+      case 'moeda':
+      case 'numero':     return this._sanitizarMoeda(valor);
+      case 'percentual': return this._sanitizarPercentual(valor);
+      case 'data':       return this._sanitizarData(valor);
+      case 'booleano':   return this._sanitizarBooleano(valor);
+      case 'texto': 
+      default:           return String(valor).trim().toUpperCase();
+    }
+  },
+
+  _sanitizarMoeda(val) {
+    if (typeof val === 'number') return val;
+    let s = String(val).trim().replace(/[R$\s]/gi, '');
+    
+    if (s.includes(',')) {
+      // Formato BR clássico (ex: 1.500,50 -> 1500.50)
+      s = s.replace(/\./g, '').replace(',', '.');
+    } else if (s.includes('.')) {
+      // 🚨 TRAVA DE MILHAR: Protege "1.000" e "1.500" vindos do Sheets sem vírgula
+      // Checa se as partes após o ponto têm exatamente 3 dígitos
+      const partes = s.split('.');
+      const isMilharBR = partes.slice(1).every(p => p.length === 3);
+      if (isMilharBR) {
+         s = s.replace(/\./g, ''); // "1.500" -> "1500"
+      }
+    }
+    
+    const num = parseFloat(s);
+    return isNaN(num) ? 0 : num;
+  },
+
+  _sanitizarPercentual(val) {
+    if (typeof val === 'number') {
+        // Se for um número maior que 1 (ex: 87.9), assumimos que precisa ser decimalizado
+        return (val > 1 || val < -1) ? val / 100 : val;
+    }
+    
+    let str = String(val).trim();
+    let hasPercentSign = str.includes('%');
+    let num = this._sanitizarMoeda(str.replace('%', ''));
+    
+    // Lei de Ouro do Blueprint: 87,9 ou 87.9% deve virar 0.879
+    if (hasPercentSign || num > 1 || num < -1) return num / 100;
+    return num;
+  },
+
+  _sanitizarData(val) {
+    if (!val) return new Date(2099, 11, 31);
+    if (val instanceof Date) return val;
+    
+    let s = String(val).trim();
+    if (s.includes('/')) {
+        const parts = s.split(' '); // Separa a data da hora
+        const dateParts = parts[0].split('/');
+        
+        if (dateParts.length === 3) {
+            let ano = parseInt(dateParts[2], 10);
+            let mes = parseInt(dateParts[1], 10) - 1;
+            let dia = parseInt(dateParts[0], 10);
+            
+            let horas = 0, mins = 0, segs = 0;
+            // Se tiver hora, captura os valores
+            if (parts.length > 1 && parts[1].includes(':')) {
+                const timeParts = parts[1].split(':');
+                horas = parseInt(timeParts[0], 10) || 0;
+                mins = parseInt(timeParts[1], 10) || 0;
+                segs = parseInt(timeParts[2], 10) || 0;
+            }
+            return new Date(ano, mes, dia, horas, mins, segs);
+        }
+    }
+    
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? new Date(2099, 11, 31) : d;
+  },
+
+  _sanitizarBooleano(val) {
+    if (typeof val === 'boolean') return val;
+    const s = String(val).toUpperCase().trim();
+    return s === 'TRUE' || s === 'VERDADEIRO' || s === 'SIM' || s === 'S' || s === '1';
+  },
+
+  // =========================================================================
+  // ⚙️ PROCESSADOR DA ABA CONFIG_GLOBAL
+  // =========================================================================
+
+  /**
+   * ⚙️ PROCESSADOR DE CONFIGURAÇÃO GLOBAL
+   * Transforma a matriz [Chave, Valor] em Objeto JSON Único e Harmonizado.
+   */
+  _processarConfigGlobal(matriz) {
+    if (!matriz || !Array.isArray(matriz)) return {};
+
+    const configObj = {};
+    
+    // 🛡️ MAPA ESTÁTICO DE SINERGIA (Conforme Namespace 7)
+    const mapaEstatico = {
+      // CORE & INFRA
+      'Taxa_Selic_Anual': { key: 'taxaSelicAnual', type: 'percentual' },
+      'Email_Alerta_Padrao': { key: 'emailAlerta', type: 'texto' },
+      'OPLAB_ACCESS_TOKEN': { key: 'oplabToken', type: 'texto' },
+      
+      // REGRAS SCANNER
+      'Regra_Vencimento_Entrada_Opcoes': { key: 'regraVencimentoAlvo', type: 'data' },
+      'Regra_IV_Rank_Min': { key: 'regraIvRankMin', type: 'percentual' },
+      'Regra_DTE_Saida_Alvo': { key: 'regraDteSaida', type: 'numero' },
+      'Regra_Delta_PUT_Entrada_Min': { key: 'regraDeltaPutMin', type: 'percentual' }, // Delta é probabilidade
+      'Regra_Delta_PUT_Entrada_Max': { key: 'regraDeltaPutMax', type: 'percentual' },
+      
+      // MOTOR PREDITIVO
+      'Regra_Dias_Horizonte_Preditivo': { key: 'horizontePreditivo', type: 'numero' },
+      'Peso_Score_Estatistico': { key: 'pesoEstatistico', type: 'percentual' },
+      'Peso_Score_Fundamentalista': { key: 'pesoFundamentalista', type: 'percentual' },
+      
+      // IA PROMPTS
+      'IA_PERFIL_CONSULTOR': { key: 'iaPerfilAtivo', type: 'texto' },
+      'PROMPT_SIST_OTIMIZADOR': { key: 'promptSistOtimizador', type: 'texto' },
+      'PROMPT_REGRAS_GERAIS': { key: 'promptRegrasGerais', type: 'texto' }
+    };
+
+    matriz.forEach(row => {
+      let chaveOrig = String(row[0] || '').trim();
+      const valorRaw = row[1];
+      
+      if (!chaveOrig || chaveOrig.startsWith('//')) return; 
+
+      let chaveFinal = chaveOrig;
+      let tipo = 'texto';
+
+      // 1. Verificação no Mapa Estático (Prioritário)
+      if (mapaEstatico[chaveOrig]) {
+        chaveFinal = mapaEstatico[chaveOrig].key;
+        tipo = mapaEstatico[chaveOrig].type;
+      } 
+      // 2. Lógica Dinâmica para UI (SHOW_, ORDER_, LABEL_)
+      else if (chaveOrig.startsWith('SHOW_') || chaveOrig.startsWith('ORDER_') || chaveOrig.startsWith('LABEL_')) {
+        const partes = chaveOrig.split('_').filter(p => p !== ""); // Remove espaços/underscores vazios
+        const prefixo = partes[0].toLowerCase(); 
+        
+        // Geração do PascalCase robusto para chaves dinâmicas
+        const sufixoPascal = partes.slice(1).map(p => 
+          p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()
+        ).join('');
+
+        const mapaPrefixos = { 'show': 'uiShow', 'order': 'uiOrder', 'label': 'uiLabel' };
+        chaveFinal = (mapaPrefixos[prefixo] || prefixo) + sufixoPascal;
+        
+        if (prefixo === 'show') tipo = 'booleano';
+        else if (prefixo === 'order') tipo = 'numero';
+      }
+
+      configObj[chaveFinal] = this._sanitizarDado(valorRaw, tipo);
+    });
+
+    return configObj;
+  },
+
+  // 🚀 CACHE DE FORMATAÇÃO GLOBAL: Criado uma única vez
+  _currencyFormatter: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }),
+
+  // Mantido para compatibilidade exclusiva de apresentação visual rápida.
+  formatarMoeda(valor) {
+    if (valor === undefined || valor === null) return "R$ 0,00";
+    let numero = parseFloat(String(valor).replace(',', '.'));
+    if (isNaN(numero)) numero = 0;
+    return this._currencyFormatter.format(numero); // 🚀 Usa o cache
+  }
+
+};
+</script>

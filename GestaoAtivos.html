@@ -1,0 +1,308 @@
+<template id="gestao-ativos-template">
+  <div class="max-w-[95%] mx-auto font-sans pb-24 space-y-6 mt-6 animate-fade-in">
+
+    <div class="premium-card px-8 py-6 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 z-10 relative bg-white">
+      <div class="flex items-center gap-5">
+        <div class="p-3 bg-indigo-50 text-brand-indigo rounded-2xl shadow-sm border border-indigo-100/50">
+          <i data-lucide="layers" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h2 class="text-2xl font-black text-slate-900 tracking-tight">Gestão de Ativos</h2>
+          <p class="text-slate-400 text-[10px] uppercase tracking-[0.25em] font-bold mt-1">Livermore Intelligence Hub</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-4 w-full xl:w-auto justify-end">
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <div class="relative flex-1 sm:w-56">
+            <i data-lucide="plus-circle" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+            <input 
+              v-model="novoTicker" 
+              @keyup.enter="adicionarAtivo"
+              placeholder="Novo Ticker (Ex: PETR4)" 
+              class="w-full bg-slate-50 border border-slate-200 rounded-full pl-11 pr-4 py-2 text-sm font-bold focus:ring-2 focus:ring-brand-indigo focus:bg-white transition-all shadow-inner text-slate-700"
+            >
+          </div>
+          <button @click="adicionarAtivo" :disabled="!novoTicker || isSaving" class="btn-action btn-action-primary px-6 py-2 whitespace-nowrap h-10">
+            <span v-if="!isSaving">Monitorar</span>
+            <div v-else class="w-4 h-4 animate-spin border-2 border-white/30 border-t-white rounded-full"></div>
+          </button>
+        </div>
+
+        <div class="hidden sm:block w-px h-8 bg-slate-200"></div>
+
+        <div class="flex items-center gap-2 bg-slate-50 p-1 rounded-full border border-slate-200 shadow-inner w-full sm:w-auto justify-between sm:justify-start">
+          <div class="flex items-center bg-white rounded-full p-0.5 shadow-sm border border-slate-100">
+            <button @click="alterarDias(-1)" class="w-8 h-8 flex items-center justify-center hover:bg-slate-50 rounded-full transition-all text-slate-400 hover:text-brand-indigo">
+              <i data-lucide="minus" class="w-4 h-4"></i>
+            </button>
+            <div class="px-2 text-center min-w-[3rem]">
+              <span class="block text-sm font-black text-brand-indigo">{{ diasHorizonte }}d</span>
+            </div>
+            <button @click="alterarDias(1)" class="w-8 h-8 flex items-center justify-center hover:bg-slate-50 rounded-full transition-all text-slate-400 hover:text-brand-indigo">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+            </button>
+          </div>
+          
+          <button @click="recalcularIA" :disabled="loadingIA" class="btn-action bg-white border border-slate-200 text-slate-600 hover:text-brand-indigo hover:border-brand-indigo hover:bg-indigo-50 px-5 h-9 rounded-full whitespace-nowrap shadow-sm mr-1">
+            <span v-if="!loadingIA" class="font-bold text-[10px] uppercase tracking-widest">Recalcular Range</span>
+            <div v-else class="w-4 h-4 animate-spin border-2 border-brand-indigo/30 border-t-brand-indigo rounded-full"></div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="showSkeleton" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+      <div v-for="n in 8" :key="'skel-'+n" class="premium-card p-5 relative overflow-hidden flex flex-col justify-between h-[250px] bg-white border border-slate-100 shadow-sm animate-pulse">
+        <div class="flex justify-between items-start mb-4 pr-10">
+          <div class="w-2/3 space-y-3 mt-1">
+            <div class="h-6 bg-slate-200 rounded-md w-20"></div> 
+            <div class="h-2 bg-slate-200 rounded w-32"></div> 
+          </div>
+          <div class="h-8 bg-slate-200 rounded-md w-12"></div> 
+        </div>
+        <div class="h-16 bg-slate-50 rounded-xl border border-slate-100 mb-4"></div>
+        <div class="space-y-3 mt-auto">
+          <div class="h-2 bg-slate-200 rounded w-full"></div>
+          <div class="h-1.5 w-full bg-slate-100 rounded-full"></div>
+        </div>
+      </div>
+    </div>
+
+    <div v-else-if="ativosProcessados.length === 0" class="py-20 text-center bg-white rounded-3xl border border-slate-200 shadow-sm mt-6">
+      <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
+        <i data-lucide="search" class="w-8 h-8 text-slate-300"></i>
+      </div>
+      <h4 class="text-sm font-black text-slate-400 uppercase tracking-widest">Nenhum ativo sendo monitorado</h4>
+    </div>
+
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
+      <div v-for="ativo in ativosProcessados" :key="ativo.tickerAtivo" 
+           @click="selecionarAtivo(ativo)"
+           class="premium-card p-5 group cursor-pointer hover:border-brand-indigo hover:shadow-md transition-all relative overflow-hidden flex flex-col justify-between h-full bg-white">
+        
+        <button @click.stop="confirmarExclusao(ativo)" 
+                class="absolute top-4 right-4 p-2 bg-rose-50 text-rose-400 rounded-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-rose-500 hover:text-white z-20">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+        </button>
+
+        <div class="flex justify-between items-start mb-4 pr-10">
+          <div class="w-full">
+            <span class="text-2xl font-black text-slate-900 tracking-tighter block leading-none">{{ ativo.tickerAtivo }}</span>
+            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest block truncate mt-1.5">{{ ativo.nomeEmpresa || '---' }}</span>
+            <span class="text-[8px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded font-bold mt-1 inline-block border border-slate-200">{{ ativo.setor || 'N/A' }}</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-1 mb-5 p-2.5 bg-slate-50/80 rounded-xl border border-slate-100 shadow-inner">
+          <div class="text-center">
+            <span class="block text-[8px] text-slate-400 font-bold uppercase mb-0.5">Spot</span>
+            <span class="text-[11px] font-black text-slate-700 font-mono-data">{{ Tradutor.formatarMoeda(ativo.spotPrice) }}</span>
+          </div>
+          <div class="text-center border-l border-r border-slate-200/60 px-1">
+            <span class="block text-[8px] text-slate-400 font-bold uppercase mb-0.5">Variação</span>
+            <span class="text-[11px] font-black font-mono-data" :class="ativo.variacaoAtivo >= 0 ? 'text-brand-emerald' : 'text-brand-rose'">
+              {{ ativo.variacaoAtivo > 0 ? '+' : '' }}{{ (ativo.variacaoAtivo * 100).toFixed(2) }}%
+            </span>
+          </div>
+          <div class="text-center">
+            <span class="block text-[8px] text-slate-400 font-bold uppercase mb-0.5">IV Rank</span>
+            <span class="text-[11px] font-black text-brand-indigo font-mono-data">{{ (ativo.ivRank * 100).toFixed(1) }}%</span>
+          </div>
+        </div>
+
+
+
+        <div v-if="ativo.probAlta !== undefined" class="space-y-2 mt-auto">
+          <div class="flex items-end justify-between mb-1">
+            <div class="flex justify-between text-[9px] font-black uppercase text-slate-500 tracking-widest gap-3">
+              <span class="text-brand-indigo">Alta: {{ (ativo.probAlta * 100).toFixed(0) }}%</span>
+              <span class="text-slate-400">Baixa: {{ (ativo.probBaixa * 100).toFixed(0) }}%</span>
+            </div>
+            <div class="text-right">
+              <span class="text-xl font-black font-mono-data leading-none" :class="getScoreColor(ativo.score)">
+                {{ ativo.score ? ativo.score.toFixed(2) : '0.00' }}
+              </span>
+            </div>
+          </div>
+          <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
+            <div class="h-full bg-brand-indigo transition-all duration-500" :style="{ width: (ativo.probAlta * 100) + '%' }"></div>
+            <div class="h-full bg-slate-200 transition-all duration-500" :style="{ width: (ativo.probBaixa * 100) + '%' }"></div>
+          </div>
+        </div>
+
+
+
+
+        <div v-else class="mt-auto py-2 bg-amber-50 rounded-lg border border-amber-100 text-center">
+          <span class="text-[9px] font-black text-amber-600 uppercase tracking-widest">Aguardando Recálculo</span>
+        </div>
+      </div>
+    </div>
+
+    <transition name="fade">
+      <div v-if="modal.isOpen" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+        <div class="bg-white rounded-[28px] shadow-2xl border border-slate-200 w-full max-w-sm overflow-hidden text-center">
+          <div class="p-8">
+            <h3 class="text-xl font-black text-slate-900 mb-2">Remover Ativo?</h3>
+            <p class="text-sm text-slate-500 mb-4">Parar de monitorar <strong class="text-brand-indigo">{{ modal.ticker }}</strong>?</p>
+          </div>
+          <div class="flex border-t border-slate-100 p-4 gap-3 bg-slate-50/50">
+            <button @click="fecharModal" class="btn-action flex-1 bg-white border border-slate-200 text-slate-500">Cancelar</button>
+            <button @click="executarExclusao" class="btn-action flex-1 bg-red-600 text-white">Sim, Remover</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <gestao-ativos-sidebar 
+      :is-open="sidebar.isOpen" 
+      :ativo="sidebar.ativo" 
+      :dias="diasHorizonte"
+      @close="sidebar.isOpen = false">
+    </gestao-ativos-sidebar>
+
+  </div>
+</template>
+
+<script>
+window.GestaoAtivos = {
+  template: '#gestao-ativos-template',
+  props: {
+    ativos: { type: Array, default: () => [] },
+    db: { type: Object, default: () => ({ configGlobal: {}, analisePreditiva: [], dadosTendencia: [] }) },
+    isLoading: Boolean 
+  },
+  data() {
+    return {
+      Tradutor: window.Tradutor,
+      novoTicker: '',
+      isSaving: false,
+      loadingIA: false,
+      isSyncingBackground: true, 
+      modal: { isOpen: false, ticker: '', linhaReal: null },
+      sidebar: { isOpen: false, ativo: {} }
+    }
+  },
+  
+  computed: {
+    diasHorizonte() {
+      return this.db.configGlobal?.horizontePreditivo || 45;
+    },
+    
+    showSkeleton() {
+      return this.isLoading || (this.isSyncingBackground && this.ativos.length === 0);
+    },
+
+    ativosProcessados() {
+      const predicoes = (this.db && this.db.analisePreditiva) || [];
+      const tendencia = (this.db && this.db.dadosTendencia) || [];
+      const fundamentos = (this.db && this.db.analiseFundamentalista) || [];
+      
+      return this.ativos.map((ativo, index) => {
+        const ticker = ativo.tickerAtivo;
+        const pred = predicoes.find(p => p.tickerAtivo === ticker) || {};
+        const tend = tendencia.find(t => t.tickerAtivo === ticker) || {};
+        const fund = fundamentos.find(f => f.tickerAtivo === ticker) || {};
+        
+        return { 
+          // 🚀 ORDEM CORRIGIDA: 'ativo' vem por último para garantir que o 
+          // Nome real (BRAVA ON) e o Setor não sejam sobrescritos!
+          ...tend, 
+          ...pred, 
+          ...fund, 
+          ...ativo, 
+          linhaReal: index + 2 
+        };
+      });
+    }
+  },
+
+  watch: {
+    ativos: {
+      immediate: true,
+      handler(newVal) {
+        if (newVal && newVal.length > 0) {
+          this.isSyncingBackground = false;
+        }
+      }
+    }
+  },
+
+  methods: {
+    selecionarAtivo(ativo) { 
+      this.sidebar.ativo = ativo; 
+      this.sidebar.isOpen = true; 
+    },
+    
+    getScoreColor(score) {
+      if (!score) return 'text-slate-300';
+      if (score >= 7) return 'text-brand-emerald';
+      if (score >= 5) return 'text-amber-500';
+      return 'text-brand-rose';
+    },
+
+    alterarDias(delta) {
+      const novo = this.diasHorizonte + delta;
+      if (novo >= 1 && novo <= 45) {
+        google.script.run
+          .withSuccessHandler(() => this.$emit('refresh'))
+          .apiSetCellValue('Config_Global', 21, 2, novo); 
+      }
+    },
+
+    adicionarAtivo() {
+      if (!this.novoTicker || this.isSaving) return;
+      this.isSaving = true;
+      google.script.run
+        .withSuccessHandler((res) => {
+          this.novoTicker = ''; 
+          this.isSaving = false;
+          if (res.success) this.$emit('refresh');
+          else alert("Erro ao salvar: " + res.error);
+        })
+        .apiAdicionarLinhas('Dados_Ativos', [[this.novoTicker.toUpperCase().trim(), new Date().toLocaleString('pt-BR')]]);
+    },
+
+    confirmarExclusao(ativo) { 
+      this.modal = { isOpen: true, ticker: ativo.tickerAtivo, linhaReal: ativo.linhaReal }; 
+    },
+    
+    fecharModal() { 
+      this.modal = { isOpen: false, ticker: '', linhaReal: null }; 
+    },
+    
+    executarExclusao() {
+      const { linhaReal, ticker } = this.modal;
+      this.fecharModal(); 
+      this.isSaving = true;
+      google.script.run
+        .withSuccessHandler(() => { 
+          this.isSaving = false; 
+          this.$emit('refresh'); 
+        })
+        .apiExcluirLinhaSegura('Dados_Ativos', linhaReal, ticker);
+    },
+
+    recalcularIA() {
+      this.loadingIA = true;
+      google.script.run
+        .withSuccessHandler((res) => {
+          this.loadingIA = false;
+          if (res.success) this.$emit('refresh');
+          else alert("Erro na simulação: " + res.error);
+        })
+        .apiSimularHorizontePreditivo(this.diasHorizonte); 
+    }
+  },
+
+  mounted() {
+    setTimeout(() => { this.isSyncingBackground = false; }, 8000);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  },
+  
+  updated() { 
+    if (typeof lucide !== 'undefined') lucide.createIcons(); 
+  }
+};
+</script>

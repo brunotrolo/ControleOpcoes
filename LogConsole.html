@@ -1,0 +1,215 @@
+<template id="log-console-template">
+  <div class="w-full bg-white border border-[var(--app-border)] rounded-[28px] overflow-hidden shadow-sm font-mono">
+      
+   <div class="bg-[var(--app-bg)] px-4 py-3 border-b border-[var(--app-border)] flex justify-between items-center text-[10px] text-[var(--m3-on-surface-variant)] uppercase tracking-widest font-bold">
+
+     <div class="flex items-center space-x-6">
+        <div class="flex items-center">
+          <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></span>
+          Orchestrator Terminal v2.0
+        </div>
+        <div class="hidden md:flex space-x-8 opacity-50">
+          <span>Time</span>
+          <span>Service</span>
+          <span>Status</span>
+          <span>Summary</span>
+        </div>
+      </div>
+
+
+      <div class="flex items-center gap-3">
+        <div>Exibindo últimos {{ formattedLogs.length }} registros</div>
+        
+        <button @click="refreshLogs" 
+                class="bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-600 hover:text-white px-3 py-1 rounded-full text-[9px] font-black transition-all flex items-center gap-1 uppercase tracking-tighter">
+          <span class="flex items-center gap-1">
+            <i data-lucide="refresh-cw" style="width: 12px; height: 12px;"></i> 
+            <span>Atualizar</span>
+          </span>
+        </button>
+
+        <button @click="limparLogs" 
+                class="bg-red-50 text-red-600 border border-red-100 hover:bg-red-600 hover:text-white px-3 py-1 rounded-full text-[9px] font-black transition-all flex items-center gap-1 uppercase tracking-tighter">
+          <span class="flex items-center gap-1">
+            <i data-lucide="trash-2" style="width: 12px; height: 12px;"></i> 
+            <span>Limpar Logs</span>
+          </span>
+        </button>
+      </div>
+
+
+    </div>
+
+    <div class="h-80 overflow-y-auto overflow-x-auto p-4 space-y-1 text-[11px] custom-scrollbar" ref="scrollContainer">
+      
+      <div v-for="(log, idx) in formattedLogs" :key="idx" 
+           class="flex items-start space-x-4 py-1 border-l-2 pl-3 hover:bg-white/5 transition-colors whitespace-nowrap"
+           :class="getLevelClass(log.status)">
+        
+        <span class="text-sky-400 shrink-0 w-16">{{ log.timestamp }}</span>
+        
+        <span class="font-bold shrink-0 w-28 truncate text-slate-400">{{ log.service }}</span>
+        
+        <span class="shrink-0 w-24 px-2 rounded text-[9px] font-black text-center uppercase"
+              :class="getStatusBadgeClass(log.status)">
+          {{ log.status }}
+        </span>
+
+        <span class="text-[var(--m3-on-surface)] font-semibold shrink-0 min-w-[200px]">{{ log.message }}</span>
+
+        <span v-if="log.context" 
+              :title="log.context" 
+              class="text-yellow-400 italic truncate max-w-lg cursor-help">
+          | {{ log.context }}
+        </span>
+      </div>
+      
+      <div v-if="formattedLogs.length === 0" class="text-slate-700 italic p-4">
+        Aguardando atividade do sistema...
+      </div>
+    </div>
+  </div>
+</template>
+
+<style>
+  /* Personalização suave do scrollbar para o Terminal */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 1); 
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(51, 65, 85, 1); 
+    border-radius: 3px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(71, 85, 105, 1); 
+  }
+</style>
+
+<script>
+window.LogConsole = {
+  props: { 
+    logs: {
+      type: Array,
+      default: () => []
+    }
+  },
+  template: '#log-console-template',
+
+  mounted() {
+      // Garante que o ícone de lixeira seja renderizado ao abrir o console
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+    },
+  
+  computed: {
+    formattedLogs() {
+      if (!this.logs || this.logs.length === 0) return [];
+      
+      // PERFORMANCE: Pega apenas as últimas 100 linhas para não travar o Vue
+      const recentLogs = this.logs.slice(-100);
+
+      // ADAPTADOR: Transforma o dado bruto do Tradutor no formato do Design
+      return recentLogs.map(l => {
+        
+        let rawTime = '---';
+        if (l.timestampLog instanceof Date) {
+            rawTime = l.timestampLog.toLocaleString('pt-BR');
+        } else if (l.timestampLog) {
+            rawTime = String(l.timestampLog);
+        }
+        
+        // Pega só a hora (ex: "06/03/2026 13:40:45" vira "13:40:45")
+        let shortTime = rawTime.includes(' ') ? rawTime.split(' ')[1] : rawTime;
+
+        return {
+          timestamp: shortTime,
+          service: l.servico || 'SYSTEM',
+          status: l.status || 'INFO',
+          message: l.mensagemResumo || '',
+          context: l.contextoDetalhado || ''
+        };
+      });
+    }
+  },
+
+  watch: {
+    // Agora observamos a lista formatada para dar o autoscroll
+    formattedLogs() {
+      this.$nextTick(() => {
+        const container = this.$refs.scrollContainer;
+        // Joga o scroll para o final para ver a mensagem mais recente
+        if (container) container.scrollTop = container.scrollHeight;
+      });
+    }
+  },
+
+  methods: {
+    getLevelClass(status) {
+      const st = String(status).toUpperCase();
+      // M3: Fundos muito claros (50) e bordas sutis (100)
+      if (st.includes('ERRO') || st.includes('FALHA')) return 'border-red-200 bg-red-50/50 text-red-900';
+      if (st.includes('SUCESSO') || st.includes('OK')) return 'border-emerald-200 bg-emerald-50/50 text-emerald-900';
+      if (st.includes('AVISO') || st.includes('WARNING')) return 'border-amber-200 bg-amber-50/50 text-amber-900';
+      if (st.includes('INICIO')) return 'border-blue-200 bg-blue-50/50 text-blue-900';
+      return 'border-slate-200 bg-slate-50/50 text-slate-900';
+    },
+
+    getStatusBadgeClass(status) {
+      const st = String(status).toUpperCase();
+      // M3: Badges com cores sólidas mas não agressivas
+      if (st.includes('ERRO') || st.includes('FALHA')) return 'bg-red-600 text-white';
+      if (st.includes('SUCESSO') || st.includes('OK')) return 'bg-emerald-600 text-white';
+      if (st.includes('AVISO') || st.includes('WARNING')) return 'bg-amber-600 text-white';
+      if (st.includes('INICIO')) return 'bg-blue-600 text-white';
+      return 'bg-slate-600 text-white';
+    },
+
+    // Método para apenas atualizar os dados
+    refreshLogs() {
+      console.log("🔥 Disparando Refresh via Console...");
+      
+      // Feedback visual imediato: limpa a lista para o usuário ver o "Aguardando..."
+      this.logs.splice(0, this.logs.length); 
+      
+      // Emite o mesmo evento que a AutomationView emite com sucesso
+      this.$emit('refresh'); 
+      
+      // Força os ícones a piscarem
+      if (typeof lucide !== 'undefined') {
+        setTimeout(() => lucide.createIcons(), 100);
+      }
+    },
+
+    // Método para limpar com o Novo Motor V8
+    async limparLogs() {
+      // 1. Limpeza visual instantânea
+      this.logs.splice(0, this.logs.length); 
+      
+      if (typeof google !== 'undefined') {
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (res && res.success) {
+              // 2. Aguarda um fôlego do servidor e solicita a atualização ao pai
+              setTimeout(() => {
+                this.$emit('refresh');
+              }, 800);
+            } else {
+              alert("Erro ao limpar logs: " + (res.error || res.message));
+            }
+          })
+          .withFailureHandler((err) => {
+            alert("Falha de conexão: " + err);
+          })
+          // 👇 A GRANDE MUDANÇA: Usando o Truncate Genérico
+          // Parâmetros: ('Aba', manter_linhas_top, 'Mensagem_Auditoria')
+          .apiLimparAba('Logs', 1, 'HISTÓRICO DE LOGS FOI LIMPO PELO USUÁRIO');
+      }
+    }
+  }
+};
+</script>

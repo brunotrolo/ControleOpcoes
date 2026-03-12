@@ -1,0 +1,354 @@
+<div id="carousel-ativas-html">
+
+  <template id="carousel-ativas-template">
+    <div class="col-span-12 mt-8 mb-12">
+      
+      <div class="flex justify-between items-end mb-6 px-4">
+        <div>
+          <h3 class="text-[var(--m3-on-surface)] text-xl md:text-2xl font-bold tracking-tight uppercase">Operações</h3>
+          <p class="text-[var(--m3-on-surface-variant)] text-[10px] md:text-xs uppercase tracking-[0.2em] font-bold mt-1">Por Posição</p>
+        </div>
+        <div v-if="!isLoading && activeTrades.length > 0" class="hidden md:flex gap-4">
+          <div class="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-sm"></span>
+            <span class="text-[10px] font-black text-emerald-700 uppercase tracking-widest">{{ opsOTM }} OTM</span>
+          </div>
+          <div class="flex items-center gap-2 bg-red-50 px-3 py-1.5 rounded-full border border-red-100">
+            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse shadow-sm"></span>
+            <span class="text-[10px] font-black text-red-700 uppercase tracking-widest">{{ opsITM }} ITM</span>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="isLoading || activeTrades.length === 0" class="flex overflow-x-auto pb-8 gap-6 px-4">
+        <div v-for="n in (isMobile ? 2 : 6)" :key="'skel-'+n" 
+             class="carousel-item flex-none snap-start"
+             :class="isMobile ? 'w-[88vw]' : 'w-[340px]'">
+          <div class="bg-white border border-slate-200 rounded-[32px] p-6 shadow-sm h-[440px] animate-pulse">
+             <div class="h-4 bg-slate-200 rounded w-1/2 mb-4"></div>
+             <div class="h-10 bg-slate-200 rounded w-3/4 mb-10"></div>
+             <div class="h-20 bg-slate-100 rounded-2xl mb-4"></div>
+             <div class="grid grid-cols-3 gap-4">
+               <div v-for="i in 6" class="h-8 bg-slate-100 rounded"></div>
+             </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-else>
+
+        <div v-if="isMobile" class="space-y-12 px-2 pb-10">
+          <div v-for="(opsDoVencimento, dataVencimento) in operacoesPorVencimento" :key="dataVencimento" class="flex flex-col">
+            
+            <div class="flex justify-between items-center mb-8 px-6 border-l-[12px] border-blue-500 bg-blue-50/50 py-6 rounded-r-[32px]">
+              <div class="flex flex-col">
+                <span class="text-sm font-black uppercase text-blue-600 tracking-widest">Vencimento</span>
+                <h4 class="text-4xl font-black text-slate-800">{{ dataVencimento }}</h4>
+              </div>
+              <span class="bg-white px-6 py-3 rounded-2xl border-2 text-xl font-black text-blue-700 shadow-sm">
+                {{ opsDoVencimento.length }} ATIVOS
+              </span>
+            </div>
+            
+            <div class="flex overflow-x-auto gap-8 snap-x snap-mandatory custom-scrollbar-mobile pb-8 px-2">
+              <div v-for="(op, idx) in opsDoVencimento" :key="'mob-'+idx" 
+                   class="carousel-item flex-none w-[85vw] snap-center bg-white border-2 rounded-[56px] p-12 shadow-2xl flex flex-col active:scale-[0.98] transition-all"
+                   :class="getStyleContext(op).borderClass">
+                
+                <div class="flex justify-between items-start mb-10">
+                  <div class="flex flex-col gap-3">
+                    <div class="flex items-center gap-6">
+                      <span class="text-7xl font-black text-slate-900 tracking-tighter">{{ op.tickerAtivo }}</span>
+                      <span :class="getTipoBadgeClass(op)" class="text-base px-5 py-2 rounded-2xl font-black uppercase tracking-widest border-2">
+                        {{ String(op.direcaoTrade || '').charAt(0) }} {{ op.tipoOpcao }}
+                      </span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                      <span class="text-2xl font-black text-slate-400 uppercase tracking-widest">{{ op.simboloOpcao }}</span>
+                      <span class="text-slate-300 text-3xl">|</span>
+                      <span class="text-slate-600 font-bold text-xl uppercase tracking-widest">QTD: {{ formatVal(op.quantidade, 'number') }}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="text-right flex flex-col items-end gap-3 pt-2">
+                    <div :class="getStyleContext(op).badgeClass" class="px-6 py-2.5 rounded-2xl text-base font-black tracking-widest border uppercase shadow-md">
+                      {{ op.moneynessCode }}
+                    </div>
+                    <div class="flex flex-col items-end">
+                      <span class="text-sm font-black text-slate-400 uppercase tracking-widest">Venc. ({{ op.dteCorridos }}d)</span>
+                      <span class="text-2xl font-black text-slate-700 font-mono">{{ formatVal(op.dataVencimento, 'date') }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                  <div class="bg-slate-50 rounded-[40px] border-2 border-slate-100 py-4 px-2 mb-4 flex justify-around items-center shadow-inner">
+                    
+                    <div class="text-center flex-1">
+                      <p class="text-[11px] font-black uppercase text-slate-400 mb-0.5 tracking-widest">Spot</p>
+                      <p class="text-4xl font-mono font-black text-slate-800 leading-none">{{ formatVal(op.spotPrice, 'currency') }}</p>
+                    </div>
+
+                    <div class="h-16 w-[3px] bg-slate-200 rounded-full mx-1"></div>
+
+                    <div class="text-center flex-1">
+                      <p class="text-[11px] font-black uppercase text-slate-400 mb-0.5 tracking-widest">Dist.</p>
+                      <p :class="getDistanciaSpot(op) >= 0 ? 'text-emerald-600' : 'text-red-600'" 
+                        class="text-2xl font-mono font-black bg-white px-4 py-1.5 rounded-2xl border-2 shadow-sm inline-block leading-none">
+                        {{ getDistanciaSpot(op) > 0 ? '+' : '' }}{{ getDistanciaSpot(op).toFixed(1) }}%
+                      </p>
+                    </div>
+
+                    <div class="h-16 w-[3px] bg-slate-200 rounded-full mx-1"></div>
+
+                    <div class="text-center flex-1">
+                      <p class="text-[11px] font-black uppercase text-slate-400 mb-0.5 tracking-widest">Strike</p>
+                      <p class="text-4xl font-mono font-black text-slate-800 leading-none">{{ formatVal(op.strike, 'currency') }}</p>
+                    </div>
+
+                  </div>
+
+                <div class="grid grid-cols-3 gap-y-3 gap-x-6 border-t-[3px] border-slate-50 pt-6 mb-6">  
+                  <div class="flex flex-col">
+                    <span class="text-slate-400 text-[13px] font-black uppercase mb-0.5 tracking-widest">Prêmio Médio</span>
+                    <span class="text-slate-700 font-mono font-bold text-3xl">{{ formatVal(op.premioMedio, 'currency') }}</span>
+                  </div>
+                  <div class="flex flex-col text-center border-l-2 border-slate-100">
+                    <span class="text-slate-400 text-[13px] font-black uppercase mb-0.5 tracking-widest">Prêmio Atual</span>
+                    <span class="text-slate-700 font-mono font-bold text-3xl">{{ formatVal(op.premioAtual, 'currency') }}</span>
+                  </div>
+                  <div class="flex flex-col text-right border-l-2 border-slate-100">
+                    <span class="text-slate-400 text-[13px] font-black uppercase mb-0.5 tracking-widest">Break-Even</span>
+                    <span class="text-slate-700 font-mono font-bold text-3xl">{{ formatVal(op.breakEven || 0, 'currency') }}</span>
+                  </div>
+
+                  <div class="flex flex-col">
+                    <span class="text-slate-400 text-[13px] font-black uppercase mb-0.5 tracking-widest">Ganho Máximo</span>
+                    <span class="text-emerald-600 font-mono font-black text-3xl">{{ formatVal(op.ganhoMaximo, 'currency') }}</span>
+                  </div>
+
+                  <div class="flex flex-col text-center border-l-2 border-slate-100">
+                    <span class="text-slate-400 text-[13px] font-black uppercase mb-0.5 tracking-widest">P/L %</span>
+                    <span :class="Number(op.plTotalPct) >= 0 ? 'text-emerald-600' : 'text-red-600'" class="font-mono font-bold text-3xl">{{ formatVal(op.plTotalPct, 'pct') }}</span>
+                  </div>
+                  <div class="flex flex-col text-right border-l-2 border-slate-100">
+                    <span class="text-slate-400 text-[13px] font-black uppercase mb-0.5 tracking-widest">Lucro Máximo</span>
+                    <span class="text-slate-700 font-mono font-bold text-3xl">{{ formatVal(op.potencialLucroPct || 0, 'pct') }}</span>
+                  </div>
+
+                  <div class="flex flex-col">
+                    <span class="text-slate-400 text-[13px] font-black uppercase mb-0.5 tracking-widest">Delta</span>
+                    <span class="text-slate-700 font-mono font-bold text-3xl">{{ formatVal(op.delta, 'delta') }}</span>
+                  </div>
+                  <div class="flex flex-col text-center border-l-2 border-slate-100">
+                    <span class="text-slate-400 text-[13px] font-black uppercase mb-0.5 tracking-widest">POE</span>
+                    <span class="text-slate-700 font-mono font-bold text-3xl">{{ formatVal(op.probabilidadeSucesso, 'pct') }}</span>
+                  </div>
+                  <div class="flex flex-col text-right border-l-2 border-slate-100">
+                    <span class="text-slate-400 text-[13px] font-black uppercase mb-0.5 tracking-widest">Nocional</span>
+                    <span class="text-slate-800 font-mono font-black text-3xl">{{ formatVal(op.nocional, 'currency') }}</span>
+                  </div>
+                </div>
+
+                <div :class="getStyleContext(op).footerClass" class="mt-2 p-8 rounded-[48px] border-[4px] flex justify-between items-center shadow-2xl">
+                  <div class="flex flex-col min-w-0">
+                    <span class="text-lg font-black uppercase opacity-70 tracking-widest mb-3 truncate">Resultado Aberto</span>
+                    <div class="flex items-baseline gap-6">
+                      <span class="text-5xl font-black font-mono tracking-tighter whitespace-nowrap">{{ formatVal(op.plTotalValor, 'currency') }}</span>
+                      <span class="text-3xl font-bold font-mono opacity-60">({{ formatVal(op.plTotalPct, 'pct') }})</span>
+                    </div>
+                  </div>
+                  <div class="text-9xl filter drop-shadow-xl pr-4">{{ getStyleContext(op).icon }}</div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="flex overflow-x-auto pb-8 gap-6 snap-x snap-mandatory custom-scrollbar px-4">
+          <card-operacao v-for="(op, idx) in activeTrades" :key="op.tradeId || idx" :op="op"></card-operacao>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template id="card-operacao-template">
+    <div class="carousel-item flex-none w-[340px] snap-start">
+      <div :class="['bg-[var(--app-surface)] border-2 rounded-[32px] p-6 shadow-sm h-full flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1', styleContext.borderClass]">
+        
+        <div class="flex justify-between items-start mb-5">
+          <div class="flex flex-col gap-1">
+            <div class="flex items-center space-x-2">
+              <h4 class="text-slate-900 text-4xl font-black tracking-tighter leading-none">{{ op.tickerAtivo || '--' }}</h4>
+              <span :class="tipoBadge" class="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest">
+                {{ String(op.direcaoTrade || '').charAt(0) }} {{ op.tipoOpcao }}
+              </span>
+            </div>
+            <div class="flex items-center space-x-2 mt-1">
+              <span class="text-slate-500 font-black text-xs uppercase tracking-widest">{{ op.simboloOpcao || '--' }}</span>
+              <span class="text-slate-300">|</span>
+              <span class="text-slate-600 font-bold text-[10px] uppercase tracking-widest">QTD: {{ formatVal(op.quantidade, 'number') }}</span>
+            </div>
+          </div>
+          
+          <div class="flex flex-col items-end gap-2">
+            <div :class="styleContext.badgeClass" class="px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest border uppercase shadow-sm">{{ op.moneynessCode || 'N/A' }}</div>
+            <div class="flex flex-col items-end mt-1 text-right">
+              <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Venc. ({{ op.dteCorridos }}d)</span>
+              <span class="text-sm font-black font-mono text-slate-700 leading-none">{{ formatVal(op.dataVencimento, 'date') }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-50 rounded-2xl border border-slate-100 p-4 mb-5 flex justify-between items-center shadow-inner">
+          <div class="text-center flex-1"><p class="text-[9px] font-black uppercase text-slate-400 mb-1">Spot</p><p class="text-sm font-mono font-black text-slate-800">{{ formatVal(op.spotPrice, 'currency') }}</p></div>
+          <div class="h-8 w-[2px] bg-slate-200"></div>
+          <div class="text-center flex-1">
+            <p class="text-[9px] font-black uppercase text-slate-400 mb-1">Dist.</p>
+            <p :class="distanciaSpot >= 0 ? 'text-emerald-500' : 'text-red-500'" class="text-sm font-mono font-black bg-white px-2 py-0.5 rounded-lg border border-slate-100 shadow-sm inline-block">
+              {{ distanciaSpot > 0 ? '+' : '' }}{{ distanciaSpot.toFixed(1) }}%
+            </p>
+          </div>
+          <div class="h-8 w-[2px] bg-slate-200"></div>
+          <div class="text-center flex-1"><p class="text-[9px] font-black uppercase text-slate-400 mb-1">Strike</p><p class="text-sm font-mono font-black text-slate-800">{{ formatVal(op.strike, 'currency') }}</p></div>
+        </div>
+
+        <div class="flex-1 grid grid-cols-3 gap-y-4 border-t-2 border-slate-50 pt-5 mb-5">
+           <div class="flex flex-col"><span class="text-slate-400 text-[8px] font-black uppercase mb-1">Prêmio Médio</span><span class="text-slate-700 font-mono font-bold text-xs">{{ formatVal(op.premioMedio, 'currency') }}</span></div>
+           <div class="flex flex-col text-center border-l border-slate-100"><span class="text-slate-400 text-[8px] font-black uppercase mb-1">Prêmio Atual</span><span class="text-slate-700 font-mono font-bold text-xs">{{ formatVal(op.premioAtual, 'currency') }}</span></div>
+           <div class="flex flex-col text-right border-l border-slate-100"><span class="text-slate-400 text-[8px] font-black uppercase mb-1">Break-Even</span><span class="text-slate-700 font-mono font-bold text-xs">{{ formatVal(op.breakEven || 0, 'currency') }}</span></div>
+           
+           <div class="flex flex-col"><span class="text-slate-400 text-[8px] font-black uppercase mb-1">Ganho Máx.</span><span class="text-emerald-600 font-mono font-black text-xs">{{ formatVal(op.ganhoMaximo, 'currency') }}</span></div>
+           <div class="flex flex-col text-center border-l border-slate-100"><span class="text-slate-400 text-[8px] font-black uppercase mb-1">P/L %</span><span :class="Number(op.plTotalPct) >= 0 ? 'text-emerald-600' : 'text-red-600'" class="font-mono font-bold text-xs">{{ formatVal(op.plTotalPct, 'pct') }}</span></div>
+           <div class="flex flex-col text-right border-l border-slate-100"><span class="text-slate-400 text-[8px] font-black uppercase mb-1">Lucro Máx.</span><span class="text-slate-700 font-mono font-bold text-xs">{{ formatVal(op.potencialLucroPct || 0, 'pct') }}</span></div>
+
+           <div class="flex flex-col"><span class="text-slate-400 text-[8px] font-black uppercase mb-1">Delta Δ</span><span class="text-slate-700 font-mono font-bold text-xs">{{ formatVal(op.delta, 'delta') }}</span></div>
+           <div class="flex flex-col text-center border-l border-slate-100"><span class="text-slate-400 text-[8px] font-black uppercase mb-1">POE</span><span class="text-slate-700 font-mono font-bold text-xs">{{ formatVal(op.probabilidadeSucesso, 'pct') }}</span></div>
+           <div class="flex flex-col text-right border-l border-slate-100"><span class="text-slate-400 text-[8px] font-black uppercase mb-1">Nocional</span><span class="text-slate-800 font-mono font-black text-xs">{{ formatVal(op.nocional, 'currency') }}</span></div>
+        </div>
+
+        <div :class="['mt-auto p-5 rounded-[24px] border-2 flex justify-between items-center transition-colors', styleContext.footerClass]">
+          <div class="flex flex-col min-w-0">
+            <span class="text-[9px] font-black uppercase opacity-70 tracking-widest mb-1 truncate">Lucro / Prejuízo (Aberto)</span>
+            <div class="flex items-baseline gap-2">
+              <span class="text-2xl font-black font-mono tracking-tighter whitespace-nowrap">{{ formatVal(op.plTotalValor, 'currency') }}</span>
+              
+              <span class="text-sm font-bold font-mono opacity-60 whitespace-nowrap">
+                ({{ formatVal(op.plTotalPct, 'pct') }})
+              </span>
+            </div>
+          </div>
+          
+          <div class="text-4xl filter drop-shadow-sm ml-2 flex-shrink-0">{{ styleContext.icon }}</div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+
+  const carouselCurrencyFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  const carouselNumberFormatter = new Intl.NumberFormat('pt-BR');
+
+  const CardOperacao = {
+    props: { op: { type: Object, required: true } },
+    template: '#card-operacao-template',
+    computed: {
+      distanciaSpot() {
+        const strike = Number(this.op.strike) || 0;
+        const spot = Number(this.op.spotPrice) || 0;
+        return (strike === 0 || spot === 0) ? 0 : ((spot / strike) - 1) * 100;
+      },
+      tipoBadge() {
+        const t = String(this.op.tipoOpcao || '').toUpperCase();
+        const d = String(this.op.direcaoTrade || '').toUpperCase();
+        if (d.includes('VENDA') && t.includes('PUT')) return 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200';
+        if (d.includes('VENDA') && t.includes('CALL')) return 'bg-amber-100 text-amber-800 border-amber-200';
+        if (d.includes('COMPRA') && t.includes('PUT')) return 'bg-rose-100 text-rose-800 border-rose-200';
+        if (d.includes('COMPRA') && t.includes('CALL')) return 'bg-sky-100 text-sky-800 border-sky-200';
+        return 'bg-slate-100 text-slate-800 border-slate-200';
+      },
+      styleContext() {
+        const m = String(this.op.moneynessCode || '').toUpperCase();
+        const pct = Number(this.op.plTotalPct) || 0;
+        // 🚨 Emojis Restaurados!
+        if (m.includes('ITM') && pct < 0) return { borderClass: 'border-red-200 bg-red-50/10', badgeClass: 'bg-red-500 text-white border-red-600 animate-pulse', footerClass: 'bg-red-50 border-red-100 text-red-900', icon: '' };
+        if (m.includes('ITM') || m.includes('ATM')) return { borderClass: 'border-amber-200 bg-amber-50/10', badgeClass: 'bg-amber-100 text-amber-800 border-amber-300', footerClass: 'bg-amber-50 border-amber-100 text-amber-900', icon: '' };
+        return { borderClass: 'border-emerald-200 bg-emerald-50/10', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300', footerClass: 'bg-emerald-50 border-emerald-100 text-emerald-900', icon: '' };
+      }
+    },
+    methods: {
+      formatVal(val, type) {
+        if (!val && val !== 0) return '--';
+        if (type === 'date') return val instanceof Date ? val.toLocaleDateString('pt-BR') : String(val).split(' ')[0];
+        const num = Number(val);
+        if (isNaN(num)) return val;
+
+        // 🚀 USA O CACHE EM VEZ DE CRIAR UM "NEW" A CADA RENDER
+        if (type === 'currency') return carouselCurrencyFormatter.format(num);
+        if (type === 'number') return carouselNumberFormatter.format(num);
+
+        if (type === 'pct') return (num * 100).toFixed(2).replace('.', ',') + '%';
+        if (type === 'delta') return num.toFixed(4).replace('.', ',');
+        return val;
+      }
+    }
+  };
+
+  window.CarouselAtivas = {
+    components: { 'card-operacao': CardOperacao },
+    props: { isMobile: Boolean, isLoading: Boolean, statsPreCalculados: Object },
+    template: '#carousel-ativas-template',
+    computed: {
+      activeTrades() {
+        const lista = this.statsPreCalculados?.listaAtivas || [];
+        return [...lista].sort((a, b) => (a.dteCorridos || 999) - (b.dteCorridos || 999));
+      },
+      // 1. Adicione esta propriedade computada em window.CarouselAtivas
+      operacoesPorVencimento() {
+        if (!this.activeTrades.length) return {};
+        return this.activeTrades.reduce((acc, op) => {
+          const venc = this.formatVal(op.dataVencimento, 'date');
+          if (!acc[venc]) acc[venc] = [];
+          acc[venc].push(op);
+          return acc;
+        }, {});
+      },
+      opsOTM() { return this.activeTrades.filter(op => String(op.moneynessCode).toUpperCase().includes('OTM')).length; },
+      opsITM() { return this.activeTrades.filter(op => String(op.moneynessCode).toUpperCase().includes('ITM')).length; }
+    },
+    methods: {
+      formatVal(val, type) {
+        return CardOperacao.methods.formatVal(val, type);
+      },
+
+      // 🚀 NOVO: Auxiliar blindado para calcular a distância
+      getDistanciaSpot(op) {
+        const strike = Number(op.strike) || 0;
+        const spot = Number(op.spotPrice) || 0;
+        if (strike === 0 || spot === 0) return 0;
+        return ((spot / strike) - 1) * 100;
+      },
+
+      getStyleContext(op) {
+        const m = String(op.moneynessCode || '').toUpperCase();
+        const pct = Number(op.plTotalPct) || 0;
+        // 🚨 Emojis Restaurados no Mobile também!
+        if (m.includes('ITM') && pct < 0) return { borderClass: 'border-red-200 bg-red-50/10', badgeClass: 'bg-red-500 text-white border-red-600', footerClass: 'bg-red-50 border-red-100 text-red-900', icon: '' };
+        if (m.includes('ITM') || m.includes('ATM')) return { borderClass: 'border-amber-200 bg-amber-50/10', badgeClass: 'bg-amber-100 text-amber-800 border-amber-300', footerClass: 'bg-amber-50 border-amber-100 text-amber-900', icon: '' };
+        return { borderClass: 'border-emerald-200 bg-emerald-50/10', badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300', footerClass: 'bg-emerald-50 border-emerald-100 text-emerald-900', icon: '' };
+      },
+      
+      getTipoBadgeClass(op) {
+        const t = String(op.tipoOpcao || '').toUpperCase();
+        const d = String(op.direcaoTrade || '').toUpperCase();
+        if (d.includes('VENDA') && t.includes('PUT')) return 'bg-fuchsia-100 text-fuchsia-800 border-fuchsia-200';
+        if (d.includes('VENDA') && t.includes('CALL')) return 'bg-amber-100 text-amber-800 border-amber-200';
+        if (d.includes('COMPRA') && t.includes('PUT')) return 'bg-rose-100 text-rose-800 border-rose-200';
+        if (d.includes('COMPRA') && t.includes('CALL')) return 'bg-sky-100 text-sky-800 border-sky-200';
+        return 'bg-slate-100 text-slate-800 border-slate-200';
+      }
+    },
+  };
+  </script>
+</div>

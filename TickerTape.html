@@ -1,0 +1,68 @@
+<template id="ticker-tape-template">
+  
+  <div v-if="isLoading" 
+       :class="isMobile ? 'h-24 px-6' : 'h-12 px-4'"
+       class="w-full bg-[var(--app-surface)] border border-[var(--app-border)] rounded-[24px] overflow-hidden flex items-center shadow-sm mb-1 animate-pulse gap-6">
+       
+    <div v-for="i in 6" :key="'skel-tick-'+i" class="flex items-center gap-3 shrink-0 opacity-40">
+      <div :class="isMobile ? 'h-8 w-16' : 'h-4 w-12'" class="bg-slate-300 rounded"></div>
+      <div class="h-5 w-20 bg-emerald-100 rounded-md"></div>
+    </div>
+  </div>
+
+  <div v-else-if="ativos && ativos.length > 0" 
+       :class="isMobile ? 'h-24' : 'h-12'"
+       class="w-full bg-[var(--app-surface)] border border-[var(--app-border)] rounded-[24px] overflow-hidden flex items-center relative shadow-sm mb-1 group transition-all hover:shadow-md">
+    
+    <div :class="isMobile ? 'w-8' : 'w-16'" class="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-[var(--app-surface)] to-transparent z-10 pointer-events-none"></div>
+    <div :class="isMobile ? 'w-8' : 'w-16'" class="absolute right-0 top-0 bottom-0 bg-gradient-to-l from-[var(--app-surface)] to-transparent z-10 pointer-events-none"></div>
+    
+    <div class="flex whitespace-nowrap animate-ticker group-hover:[animation-play-state:paused] w-max">
+      
+      <div class="flex items-center" v-for="n in 4" :key="n">
+        
+        <div v-for="(ativo, idx) in ativos" :key="n + '-' + idx" 
+             :class="isMobile ? 'px-8 gap-5' : 'px-8'"
+             class="flex items-center border-r border-[var(--app-border)] hover:bg-[var(--app-bg)] transition-colors cursor-default">
+          
+          <span :class="isMobile ? 'text-2xl' : 'text-[13px]'" class="font-black text-[var(--m3-on-surface)] tracking-widest">
+            {{ ativo.tickerAtivo || ativo.ticker || '---' }}
+          </span>
+          
+          <span :class="isMobile ? 'text-2xl px-4 py-1.5' : 'text-[13px] px-2 py-0.5'" 
+                class="font-mono font-black text-emerald-700 ml-3 bg-emerald-100/50 rounded-xl shadow-sm">
+            {{ Tradutor.formatarMoeda(ativo.spotPrice !== undefined ? ativo.spotPrice : ativo.close) }}
+          </span>
+        
+        </div>
+        
+      </div>
+
+    </div>
+  </div>
+</template>
+
+<style>
+  @keyframes ticker {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-50%, 0, 0); } 
+  }
+  .animate-ticker {
+    animation: ticker 35s linear infinite;
+  }
+</style>
+
+<script>
+window.TickerTape = {
+  template: '#ticker-tape-template',
+  props: {
+    ativos: { type: Array, default: () => [] },
+    isMobile: Boolean,
+    isLoading: Boolean
+  },
+  data() {
+    // Retorna o Tradutor global de forma segura
+    return { Tradutor: window.Tradutor } 
+  }
+};
+</script>

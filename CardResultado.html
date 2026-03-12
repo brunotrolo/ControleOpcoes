@@ -1,0 +1,175 @@
+<template id="card-resultado-template">
+  <div v-if="isMobile" class="w-full bg-white border border-slate-200 rounded-[32px] pt-6 px-6 pb-8 shadow-sm flex flex-col h-full relative overflow-hidden">
+    
+    <div class="absolute bottom-0 left-0 w-full h-6 flex z-20 font-mono font-black text-[15px] text-white drop-shadow-md">
+      <div :style="{ width: (stats.pctLucro || 0) + '%' }" class="h-full bg-emerald-500 shadow-[0_-5px_15px_rgba(16,185,129,0.2)] transition-all duration-1000 flex items-center justify-center overflow-hidden">
+        <span v-if="stats.pctLucro > 0" class="leading-none pt-0.5">{{ stats.pctLucro }}%</span>
+      </div>
+      <div :style="{ width: (stats.pctBreakeven || 0) + '%' }" class="h-full bg-slate-400 transition-all duration-1000 flex items-center justify-center overflow-hidden">
+        <span v-if="stats.pctBreakeven > 0" class="text-slate-900 leading-none pt-0.5">{{ stats.pctBreakeven }}%</span>
+      </div>
+      <div :style="{ width: (stats.pctPrejuizo || 0) + '%' }" class="h-full bg-red-500 shadow-[0_-5px_15px_rgba(239,68,68,0.2)] transition-all duration-1000 flex items-center justify-center overflow-hidden">
+        <span v-if="stats.pctPrejuizo > 0" class="leading-none pt-0.5">{{ stats.pctPrejuizo }}%</span>
+      </div>
+    </div>
+
+    <div class="flex flex-col h-full relative z-10">
+      
+      <div class="flex flex-col mb-4">
+        <h3 class="text-slate-900 font-black tracking-tighter uppercase text-3xl leading-none">Resultado</h3>
+        <div class="flex items-center mt-2 space-x-2">
+          <span class="text-slate-400 uppercase tracking-[0.2em] font-bold text-[10px]">Performance Total</span>
+          <template v-if="!isLoading && stats.total > 0">
+            <span class="w-1.5 h-1.5 rounded-full" :class="statusPerformance.bgClass"></span>
+            <span class="text-[10px] font-black tracking-widest uppercase" :class="statusPerformance.textClass">
+              {{ statusPerformance.labelClean }}
+            </span>
+          </template>
+        </div>
+      </div>
+
+      <div v-if="isLoading" class="flex-1 flex flex-col justify-center space-y-6 animate-pulse mt-2">
+        <div class="flex justify-between w-full mb-2">
+          <div class="h-4 bg-slate-100 rounded w-1/3"></div>
+          <div class="h-4 bg-slate-100 rounded w-1/3"></div>
+        </div>
+        <div class="flex justify-around items-end w-full">
+          <div v-for="i in 3" :key="i" class="flex flex-col items-center space-y-3">
+            <div class="h-4 bg-slate-50 rounded w-12"></div>
+            <div class="h-16 bg-slate-100 rounded-lg w-16"></div>
+          </div>
+        </div>
+      </div>
+
+      <template v-else>
+        <div class="flex flex-col flex-1 justify-center">
+          
+          <div class="flex justify-between px-1 text-sm font-black uppercase tracking-widest mb-4">
+            <span class="text-emerald-600">Lucro</span>
+            <span class="text-red-600">Prejuízo</span>
+          </div>
+
+          <div class="flex items-center justify-around px-1 mt-2">
+            <div class="flex flex-col items-center w-1/3">
+              <span class="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Lucro</span>
+              <span class="text-emerald-500 font-mono font-black text-[72px] tracking-[-0.05em] leading-none drop-shadow-sm">
+                {{ stats.lucro || 0 }}
+              </span>
+            </div>
+
+            <div class="flex flex-col items-center w-1/3">
+              <span class="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Empate</span>
+              <span class="text-slate-400 font-mono font-black text-[56px] tracking-[-0.05em] leading-none drop-shadow-sm">
+                {{ stats.breakeven || 0 }}
+              </span>
+            </div>
+
+            <div class="flex flex-col items-center w-1/3">
+              <span class="text-xs font-black uppercase tracking-widest text-slate-400 mb-1">Prejuízo</span>
+              <span class="text-red-500 font-mono font-black text-[72px] tracking-[-0.05em] leading-none drop-shadow-sm">
+                {{ stats.prejuizo || 0 }}
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </template>
+
+    </div>
+  </div>
+
+  <div v-else class="w-full bg-white border border-slate-200 rounded-[32px] p-5 md:p-7 shadow-sm flex flex-col transition-all hover:shadow-md h-full">
+    <div class="flex justify-between items-start mb-6">
+      <div>
+        <h3 class="text-[var(--m3-on-surface)] text-lg md:text-xl font-bold tracking-tight uppercase flex items-center">
+          Resultado
+        </h3>
+        <p class="text-[var(--m3-on-surface-variant)] text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-bold mt-1">
+          Por Lucro | Prejuízo
+        </p>
+      </div>
+    </div>
+
+    <div v-if="isLoading" class="animate-pulse space-y-6">
+      <div class="h-6 bg-slate-100 rounded-full w-full"></div>
+      <div class="flex gap-2">
+        <div v-for="i in 3" :key="i" class="h-4 bg-slate-50 rounded w-full"></div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="h-20 bg-slate-50 rounded-2xl border border-slate-100"></div>
+        <div class="h-20 bg-slate-50 rounded-2xl border border-slate-100"></div>
+      </div>
+    </div>
+
+    <template v-else>
+      <div class="relative mb-4">
+        <div class="flex justify-between items-end mb-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest px-1">
+          <span class="text-slate-500">Performance</span>
+          <span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">{{ stats.pctLucro || 0 }}% NO LUCRO</span>
+        </div>
+        
+        <div class="w-full h-5 bg-slate-100 rounded-full overflow-hidden flex shadow-inner border border-slate-200 p-1">
+          <div :style="{ width: (stats.pctLucro || 0) + '%' }" class="h-full bg-emerald-600 rounded-l-full transition-all duration-1000 border-r border-white/20"></div>
+          <div :style="{ width: (stats.pctBreakeven || 0) + '%' }" class="h-full bg-slate-400 transition-all duration-1000 border-r border-white/20"></div>
+          <div :style="{ width: (stats.pctPrejuizo || 0) + '%' }" class="h-full bg-red-600 rounded-r-full transition-all duration-1000"></div>
+        </div>
+
+        <div class="flex justify-between space-x-1 text-[8px] font-black uppercase mt-2">
+          <div class="flex-1 flex justify-center items-center text-emerald-700 bg-emerald-50/50 py-1 rounded-lg border border-emerald-50">
+            <span class="w-1.5 h-1.5 bg-emerald-600 rounded-full mr-1"></span> {{ stats.lucro || 0 }}  ㅤGANHANDO
+          </div>
+          <div class="flex-1 flex justify-center items-center text-slate-600 bg-slate-50/50 py-1 rounded-lg border border-slate-100">
+            <span class="w-1.5 h-1.5 bg-slate-400 rounded-full mr-1"></span> {{ stats.breakeven || 0 }}  ㅤEMPATE
+          </div>
+          <div class="flex-1 flex justify-center items-center text-red-700 bg-red-50/50 py-1 rounded-lg border border-red-50">
+            <span class="w-1.5 h-1.5 bg-red-600 rounded-full mr-1"></span> {{ stats.prejuizo || 0 }}  ㅤPERDENDO
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4 mt-auto">
+        <div class="bg-emerald-50/50 p-3 rounded-2xl border border-emerald-100 flex flex-col items-center">
+          <span class="text-emerald-700/70 text-[8px] md:text-[9px] font-black uppercase tracking-widest mb-1">Lucro</span>
+          <div class="flex items-baseline space-x-1">
+            <span class="text-emerald-800 font-mono font-black text-sm md:text-lg">{{ stats.pctLucro || 0 }}</span>
+            <span class="text-emerald-600 text-[10px] font-bold">%</span>
+          </div>
+        </div>
+        <div class="bg-red-50/50 p-3 rounded-2xl border border-red-100 flex flex-col items-center">
+          <span class="text-red-700/70 text-[8px] md:text-[9px] font-black uppercase tracking-widest mb-1">Prejuízo</span>
+          <div class="flex items-baseline space-x-1">
+            <span class="text-red-800 font-mono font-black text-sm md:text-lg">{{ stats.pctPrejuizo || 0 }}</span>
+            <span class="text-red-600 text-[10px] font-bold">%</span>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+</template>
+
+<script>
+window.CardResultado = {
+  props: {
+    isMobile: Boolean,
+    statsPreCalculados: Object,
+    isLoading: Boolean
+  },
+  template: '#card-resultado-template',
+  computed: {
+    stats() {
+      // 🛡️ TRAVA DE SEGURANÇA: Se o Cubo não chegou ou está vazio, devolve zeros perfeitos
+      if (!this.statsPreCalculados || !this.statsPreCalculados.resultadoStats) {
+        return { lucro: 0, breakeven: 0, prejuizo: 0, total: 0, pctLucro: 0, pctBreakeven: 0, pctPrejuizo: 0 };
+      }
+      return this.statsPreCalculados.resultadoStats;
+    },
+    
+    // LED Integrado para o Mobile e Desktop
+    statusPerformance() {
+      if (this.stats.total === 0) return { labelClean: 'Aguardando', bgClass: 'bg-slate-300', textClass: 'text-slate-500' };
+      if (this.stats.pctLucro >= 50) return { labelClean: 'Positivo', bgClass: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]', textClass: 'text-emerald-600' };
+      return { labelClean: 'Atenção', bgClass: 'bg-red-500 animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.5)]', textClass: 'text-red-600 animate-pulse' };
+    }
+  }
+};
+</script>

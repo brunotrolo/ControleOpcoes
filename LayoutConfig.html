@@ -1,0 +1,191 @@
+<script>
+/**
+ * APP_MENU: Define a estrutura de navegação da Sidebar.
+ */
+window.APP_MENU = [
+  { id: 'cockpit',       label: 'Cockpit',                  icon: 'layout' },
+  { id: 'consultoria',   label: 'Consultor Portifolio',     icon: 'shield-check' },
+  { id: 'dados-ativos',  label: 'Gestão de Ativos',         icon: 'database' },
+  { id: 'scanner',       label: 'Scanner Opções',           icon: 'search' },
+  { id: 'comparador',    label: 'Comparador de PUT',        icon: 'crosshair' },
+  { id: 'necton-import', label: 'Importação Necton',        icon: 'file-down' },
+  { id: 'automacao',     label: 'Automação',                icon: 'zap' },
+  { id: 'bancodedados',  label: 'Base de Dados',            icon: 'hard-drive' },
+  { id: 'config',        label: 'Configurações',            icon: 'settings' }
+];
+
+/**
+ * LAYOUT_MAP: Define os componentes de cada tela.
+ */
+window.LAYOUT_MAP = {
+  // Tela de Configurações
+  'config': [ 
+    {
+      id: 'painel-ajustes',
+      component: 'settings-view',
+      cols: 'col-span-12',
+      props: { configKey: 'config' }
+    }
+  ],
+
+  // Tela Principal (Cockpit)
+  'cockpit': [
+    {
+      id: 'letreiro-ativos',
+      component: 'ticker-tape',
+      cols: 'col-span-12',
+      props: {}
+    },
+    {
+      id: 'resumo-executivo',
+      component: 'card-summary',
+      cols: 'col-span-12',
+      props: {
+        configFields: ['pl_total', 'theta_total', 'custo_zeragem', 'iv_medio']
+      }
+    },
+    { 
+      id: 'distribuicao-risco', 
+      component: 'card-distrib-moneyness', 
+      cols: 'col-span-12 md:col-span-6' 
+    },
+    { 
+      id: 'resultado', 
+      component: 'card-resultado', 
+      cols: 'col-span-12 md:col-span-6' 
+    },
+    { 
+      id: 'moneyness', 
+      component: 'card-moneyness', 
+      cols: 'col-span-12 md:col-span-4' 
+    },
+    { 
+      id: 'vencimentos', 
+      component: 'card-vencimentos', 
+      cols: 'col-span-12 md:col-span-4' 
+    },
+    { 
+      id: 'concentracao', 
+      component: 'card-concentracao', 
+      cols: 'col-span-12 md:col-span-4' 
+    },
+    { 
+      id: 'carousel', 
+      component: 'carousel-ativas', 
+      cols: 'col-span-12' 
+    },
+    {
+      id: 'tabela-principal',
+      component: 'cockpit-table',
+      cols: 'col-span-12',
+      props: {
+        dataKey: 'cockpit',
+        columns: [
+          { key: 'ID ESTRATÉGIA', label: 'ID', type: 'text' },
+          { key: 'TICKER', label: 'Ativo', type: 'text' },
+          { key: 'CÓDIGO OPÇÃO', label: 'Opção', type: 'text' },
+          { key: 'VENCIMENTO', label: 'Vencimento', type: 'date' },
+          { key: 'VENDA/COMPRA', label: 'Venda/Compra', type: 'text' },
+          { key: 'TIPO', label: 'Tipo', type: 'text' },
+          { key: 'QTD', label: 'Qtd', type: 'number' },
+          { key: 'STRIKE', label: 'Strike', type: 'currency' },
+          { key: 'TICKER SPOT', label: 'Spot', type: 'currency' },
+          { key: 'MONEYNESS_CODE', label: 'Moneyness', type: 'text' },
+          { key: 'PRÊMIO (PM)', label: 'Prêmio (PM)', type: 'currency' },
+          { key: 'PRÊMIO ATUAL', label: 'Prêmio Atual', type: 'currency' },
+          { key: 'GANHO MÁXIMO', label: 'Ganho Max', type: 'currency' },
+          { key: 'LUCRO MAX', label: 'Lucro Max', type: 'percentage' },
+          { key: 'NOCIONAL', label: 'Nocional', type: 'currency' },
+          { key: 'P/L TOTAL %', label: 'P/L %', type: 'percentage' },
+          { key: 'P/L TOTAL', label: 'P/L', type: 'currency' },
+          { key: 'P/L ATUAL', label: 'P/L Atual', type: 'currency' },
+          { key: 'DELTA', label: 'Delta', type: 'percentage' }
+        ]
+      }
+    }
+  ],
+  'automacao': [
+    {
+      id: 'painel-automacao',
+      component: 'automation-view',
+      cols: 'col-span-12',
+      props: {}
+    }
+  ],
+  'scanner': [
+      {
+        id: 'painel-scanner',
+        component: 'scanner-view',
+        cols: 'col-span-12',
+        props: {}
+      }
+    ],
+  'necton-import': [
+    {
+      id: 'painel-importacao',
+      component: 'necton-import',
+      cols: 'col-span-12',
+      props: {}
+    }
+  ],
+  'dados-ativos': [
+    {
+      id: 'painel-gestao-ativos',
+      component: 'gestao-ativos',
+      cols: 'col-span-12',
+      props: {}
+    }
+  ],
+  'comparador': [
+    {
+      id: 'painel-comparador',
+      component: 'comparativo-view',
+      cols: 'col-span-12',
+      props: {}
+    }
+  ],
+  'bancodedados': [
+    {
+      id: 'tela-bancodedados',
+      component: 'bancodedados-view',
+      cols: 'col-span-12',
+      props: {}
+    }
+  ],
+  'consultoria': [
+    {
+      id: 'painel-consultoria',
+      component: 'consultoria-view',
+      cols: 'col-span-12',
+      props: {}
+    }
+  ]
+};
+
+/**
+ * 📱 MOBILE_ORCHESTRATOR_CONFIG
+ * Define a sequência e as regras de exibição para a "Esteira de Inteligência" no S22 Ultra.
+ * Esta lógica é ignorada no Desktop, mantendo o layout original intacto.
+ */
+window.MOBILE_ORCHESTRATOR_CONFIG = {
+  // Ativa/Desativa a esteira globalmente no mobile
+  enabled: true,
+
+  // Configurações do Molde (Wrapper)
+  settings: {
+    cardWidth: 'min-w-[85%]', // XX% para garantir o "peek" (espreita) de Y% do próximo card
+    cardHeight: 'h-[260px]',  // Altura padronizada para evitar saltos no scroll
+    gap: 'gap-5',             // Espaçamento entre os cards na esteira
+    snap: 'snap-center'       // Efeito de trava no meio da tela
+  },
+
+  // 🚀 SEQUÊNCIA MESTRA: A ordem exata que os cards aparecerão no Carrossel
+  sequence: [
+    { id: 'distribuicao-risco',  component: 'card-distrib-moneyness' },
+    { id: 'resultado',           component: 'card-resultado' },
+    { id: 'moneyness',           component: 'card-moneyness' },
+    { id: 'vencimentos',         component: 'card-vencimentos' },
+    { id: 'concentracao',        component: 'card-concentracao' }
+  ]
+};
+</script>

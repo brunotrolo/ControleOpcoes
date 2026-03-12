@@ -1,0 +1,300 @@
+<script>
+window.Agregador = {
+  
+  /**
+   * 🚀 O ORQUESTRADOR DO CUBO OLAP (Single Source of Truth)
+   * Único ponto de entrada. Consome o db global e cospe o `statsPreCalculados`.
+   */
+  processarSumario(db) {
+    if (!db || !db.cockpit || db.cockpit.length === 0) return this._gerarCuboVazio();
+
+    // 🕵️ DEPURAÇÃO: Vamos ver o que está chegando antes do filtro
+    const tradesAtivos = db.cockpit.filter(t => {
+      const statusLimpo = String(t.status || '').toUpperCase().trim();
+      const ativaFlag = t.isAtiva === true;
+      return ativaFlag || statusLimpo === 'ATIVO';
+    });
+
+    // 2. ENRIQUECIMENTO (JOIN)
+    // Aqui cruzamos os dados do Cockpit com as Gregas para ter o Delta/Gamma total
+    const tradesComRisco = this._enriquecerDados(tradesAtivos, db.calcGreeks);
+
+    // 3. GERAÇÃO DAS GAVETAS DO CUBO
+    return {
+      meta: { timestamp: new Date().toISOString(), status: 'CALCULATED' },
+      resumoGlobal: this._calcularMetricasGlobais(tradesComRisco),
+      distribuicaoVencimentos: this._calcularVencimentos(tradesComRisco),
+      concentracaoRisco: this._calcularConcentracao(tradesComRisco),
+      moneynessStats: this._calcularMoneyness(tradesComRisco),
+      moneynessPorTipo: this._calcularMoneynessPorTipo(tradesComRisco),
+      resultadoStats: this._calcularResultados(tradesComRisco),
+      vencimentosDteStats: this._calcularVencimentosDTE(tradesComRisco),
+      performanceStats: this._calcularResultados(tradesComRisco),
+      listaAtivas: tradesComRisco 
+    };
+  },
+
+  _mapearColunas(headers) {
+    // V5: Mapeamento direto das chaves blindadas do Tradutor
+    return {
+      STATUS: 'status',
+      PL_TOTAL: 'plTotalValor',
+      PL_SESSAO: 'plSessaoValor',
+      PL_PCT: 'plTotalPct',
+      LUCRO_MAX: 'potencialLucroPct',
+      PERDA_MAX: 'perdaMaxima',
+      NOCIONAL: 'nocional',
+      MONEYNESS: 'moneynessCode',
+      TIPO: 'tipoOpcao',
+      DIRECAO: 'direcaoTrade',
+      VENCIMENTO: 'dataVencimento',
+      STRIKE: 'strike',
+      SPOT: 'spotPrice',
+      PREMIO_ENTRADA: 'premioMedioEntrada',
+      DELTA: 'delta',
+      GAMMA: 'gamma',
+      VEGA: 'vega',
+      THETA: 'theta',
+      RHO: 'rho',
+      IV: 'ivAtual',
+      POE: 'probabilidadeSucesso'
+    };
+  },
+
+  // =========================================================================
+  // 🧮 GAVETAS DE CÁLCULO (Motor Analítico)
+  // =========================================================================
+
+  _calcularMetricasGlobais(trades) {
+    if (!trades || trades.length === 0) return {};
+
+    const mapaCockpit = window.Tradutor.DICIONARIO.COCKPIT.map;
+    const resumo = { totalOps: trades.length };
+
+    trades.forEach(t => {
+      for (const [colunaOriginal, config] of Object.entries(mapaCockpit)) {
+        const chave = config.key;
+        if (config.type === 'numero' || config.type === 'moeda') {
+          if (resumo[chave] === undefined) resumo[chave] = 0;
+          resumo[chave] += (parseFloat(t[chave]) || 0); // Soma usando a chave curta (ex: t.nocional)
+        }
+      }
+    });
+
+    // Cálculos de proporção (Exceções)
+    if (resumo.nocional > 0) {
+      resumo.plTotalPct = (resumo.plTotalValor / resumo.nocional) * 100;
+    }
+
+    return resumo;
+  },
+
+  _calcularVencimentos(tradesAtivos) {
+    const mapaVencimentos = tradesAtivos.reduce((acc, trade) => {
+      // Trava de segurança para data
+      let chaveData = 'N/A';
+      if (trade.dataVencimento instanceof Date) {
+        chaveData = trade.dataVencimento.toISOString().split('T')[0];
+      } else if (trade.dataVencimento) {
+        chaveData = String(trade.dataVencimento).split('T')[0];
+      }
+      
+      if (!acc[chaveData]) {
+        acc[chaveData] = { 
+          dataVencimento: chaveData, 
+          dteMedioUteis: 0, 
+          nocionalTotal: 0, 
+          lucroMaximo: 0, 
+          plAberto: 0, 
+          contagem: 0 
+        };
+      }
+      
+      acc[chaveData].contagem += 1;
+      // Chaves Harmonizadas com o Tradutor V5:
+      acc[chaveData].nocionalTotal += (trade.nocionalTotal || 0); 
+      acc[chaveData].lucroMaximo += (trade.ganhoMaximo || 0);     
+      acc[chaveData].plAberto += (trade.plTotalValor || 0);       
+      acc[chaveData].dteMedioUteis += (trade.dteUteis || 0);
+      
+      return acc;
+    }, {});
+
+    return Object.values(mapaVencimentos)
+      .map(v => {
+        v.dteMedioUteis = Math.round(v.dteMedioUteis / v.contagem);
+        return v;
+      })
+      .sort((a, b) => new Date(a.dataVencimento) - new Date(b.dataVencimento));
+  },
+
+
+  _calcularConcentracao(trades) {
+    if (!trades || trades.length === 0) return [];
+
+    let totalGeral = 0;
+    const mapa = {};
+
+    // 🚀 Passagem Única (O(n) de performance)
+    trades.forEach(t => {
+      const ativo = t.tickerAtivo || 'DESCONHECIDO';
+      // Busca a exposição financeira correta
+      const nocional = parseFloat(t.nocional) || parseFloat(t.nocionalTotal) || 0; 
+      
+      if (!mapa[ativo]) mapa[ativo] = { nocional: 0, ops: 0 };
+      
+      mapa[ativo].nocional += nocional;
+      mapa[ativo].ops += 1;
+      totalGeral += nocional;
+    });
+
+    // Converte, calcula a % de peso da carteira e ordena pelo maior risco
+    return Object.keys(mapa)
+      .map(ativo => ({
+        ativo: ativo,
+        nocional: mapa[ativo].nocional, // Financeiro (Para o Card)
+        qtdOps: mapa[ativo].ops,        // Quantidade de tiros
+        pesoPct: totalGeral > 0 ? Math.round((mapa[ativo].nocional / totalGeral) * 100) : 0
+      }))
+      .sort((a, b) => b.nocional - a.nocional);
+  },
+
+
+  _calcularResultados(trades) {
+    const padrao = { lucro: 0, prejuizo: 0, breakeven: 0, total: 0, pctLucro: 0, pctPrejuizo: 0, pctBreakeven: 0, performanceKey: 'AGUARDANDO' };
+    if (!trades || trades.length === 0) return padrao;
+
+    let lucro = 0, prejuizo = 0, breakeven = 0;
+
+    trades.forEach(t => {
+      const pl = parseFloat(t.plTotalValor) || 0; 
+      
+      if (pl > 0.01) lucro++;
+      else if (pl < -0.01) prejuizo++;
+      else breakeven++;
+    });
+
+    const total = lucro + prejuizo + breakeven;
+    if (total === 0) return padrao;
+
+    const pctLucro = Math.round((lucro / total) * 100);
+
+    return {
+      lucro, prejuizo, breakeven, total,
+      pctLucro,
+      pctPrejuizo: Math.round((prejuizo / total) * 100),
+      pctBreakeven: Math.round((breakeven / total) * 100),
+      performanceKey: (pctLucro >= 60) ? 'ALTA' : (pctLucro >= 40 ? 'ESTAVEL' : 'CRITICA')
+    };
+  },
+
+  _calcularMoneyness(trades) {
+    if (!trades || trades.length === 0) return this._gerarMoneynessVazio();
+    
+    let totalOtm = 0, totalAtm = 0, totalItm = 0;
+    
+    trades.forEach(op => {
+      // CORREÇÃO: Busca as chaves sanitizadas do Tradutor V5 (moneynessCode)
+      const val = String(op.moneynessCode || op.moneyness || '').toUpperCase().trim();
+      if (val.includes('OTM')) totalOtm++;
+      else if (val.includes('ITM')) totalItm++;
+      else totalAtm++;
+    });
+
+    const total = totalOtm + totalAtm + totalItm;
+    if (total === 0) return this._gerarMoneynessVazio();
+
+    return { 
+      otm: totalOtm, atm: totalAtm, itm: totalItm, total: total,
+      otmPct: Math.round((totalOtm / total) * 100), 
+      atmPct: Math.round((totalAtm / total) * 100), 
+      itmPct: Math.round((totalItm / total) * 100),
+      statusKey: (totalOtm / total) >= 0.8 ? 'BLINDADO' : (totalOtm / total) >= 0.5 ? 'CONTROLADO' : 'ALERTA'
+    };
+  },
+
+  _calcularMoneynessPorTipo(trades) {
+    const padrao = { itm: 0, atm: 0, otm: 0, total: 0 };
+    if (!trades || trades.length === 0) {
+      return { call: { ...padrao }, put: { ...padrao }, totalOps: 0 };
+    }
+
+    const s = { 
+      call: { ...padrao }, 
+      put: { ...padrao },
+      totalOps: trades.length
+    };
+
+    trades.forEach(t => {
+      // Usa as chaves oficiais do Tradutor V5
+      const tipo = String(t.tipoOpcao || '').toUpperCase().trim();
+      const money = String(t.moneynessCode || t.moneyness || '').toUpperCase();
+      
+      const alvo = tipo.includes('CALL') ? s.call : (tipo.includes('PUT') ? s.put : null);
+      
+      if (alvo) {
+        alvo.total++;
+        if (money.includes('ITM')) alvo.itm++;
+        else if (money.includes('OTM')) alvo.otm++;
+        else alvo.atm++;
+      }
+    });
+
+    return s;
+  },
+
+  _calcularVencimentosDTE(trades) {
+    const padrao = { curto: 0, medio: 0, longo: 0, total: 0, pctCurto: 0, pctMedio: 0, pctLongo: 0 };
+    if (!trades || trades.length === 0) return padrao;
+
+    let curto = 0, medio = 0, longo = 0;
+
+    trades.forEach(t => {
+      // Usa a chave dteCorridos que definimos no Tradutor (ou calcula se não existir)
+      const dte = parseInt(t.dteCorridos, 10);
+      
+      if (!isNaN(dte)) {
+        if (dte <= 15) curto++;
+        else if (dte <= 45) medio++;
+        else longo++;
+      }
+    });
+
+    const total = curto + medio + longo;
+    if (total === 0) return padrao;
+
+    return {
+      curto, medio, longo, total,
+      pctCurto: Math.round((curto / total) * 100),
+      pctMedio: Math.round((medio / total) * 100),
+      pctLongo: Math.round((longo / total) * 100)
+    };
+  },
+
+  _enriquecerDados(trades, greeks) {
+    if (!greeks || greeks.length === 0) return trades;
+    
+    return trades.map(t => {
+      const g = greeks.find(greek => greek.tradeId === t.tradeId);
+      return g ? { ...t, ...g } : t;
+    });
+  },
+
+  /**
+   * Esqueleto de segurança.
+   */
+  _gerarCuboVazio() {
+    return {
+      meta: { status: 'EMPTY' },
+      resumoGlobal: { totalOps: 0, nocional: 0, plTotalValor: 0, plTotalPct: 0 },
+      moneynessStats: this._gerarMoneynessVazio(), // Garante que o Raio-X não venha undefined
+      distribuicaoVencimentos: [],
+      concentracaoRisco: []
+    };
+  },
+  
+  _gerarMoneynessVazio() {
+    return { otm: 0, atm: 0, itm: 0, total: 0, otmPct: 0, atmPct: 0, itmPct: 0, statusKey: 'ALERTA' };
+  }
+};
+</script>
