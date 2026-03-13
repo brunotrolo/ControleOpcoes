@@ -326,29 +326,24 @@ function testarAPI_Escrita() {
 
 function apiIntegracaoOpLab(ticker) {
   if (!ticker || String(ticker).trim() === '') {
-    return { success: false, error: "Ticker não fornecido pelo Web App." };
+    return { success: false, error: 'Ticker não fornecido.' };
   }
 
   try {
     const cleanTicker = String(ticker).toUpperCase().trim();
+    const data = OplabService.getOptionDetails(cleanTicker);
 
-    // Wrapper seguro para a função nativa getOpLabOptionDetails()
-    if (typeof getOpLabOptionDetails !== "function") {
-      throw new Error("A biblioteca de conexão com o OpLab não está acessível no servidor.");
-    }
-
-    const data = getOpLabOptionDetails(cleanTicker);
-    if (!data) return { success: false, error: `Ativo [${cleanTicker}] não encontrado ou sem liquidez.` };
+    if (!data) return { success: false, error: 'Ativo [' + cleanTicker + '] não encontrado ou sem liquidez.' };
 
     return {
       success: true,
       data: {
-        symbol: data.symbol || cleanTicker,
-        category: data.category || "N/A",
-        strike: parseFloat(data.strike || 0),
+        symbol:      data.symbol      || cleanTicker,
+        category:    data.category    || 'N/A',
+        strike:      parseFloat(data.strike            || 0),
         premioAtual: parseFloat(data.close > 0 ? data.close : (data.bid || 0)),
-        spotPrice: parseFloat(data.spot_price || 0),
-        dte: parseInt(data.days_to_maturity || 0)
+        spotPrice:   parseFloat(data.spot_price        || 0),
+        dte:         parseInt(data.days_to_maturity    || 0)
       }
     };
   } catch (e) {

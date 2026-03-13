@@ -1,52 +1,79 @@
 <template id="card-summary-template">
-  <div :class="isMobile ? 'px-0 bg-transparent border-none' : 'w-full bg-white border border-slate-200 rounded-[32px] p-5 md:p-7 shadow-sm flex flex-col transition-all'"> 
-    
+  <div
+    :class="isMobile ? 'px-0' : 'p-5 md:p-7'"
+    class="w-full rounded-[var(--radius-xl)] transition-all"
+    :style="isMobile ? 'background: transparent; border: none;' :
+            'background: var(--surface-base); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);'"
+  >
+
+    <!-- Cabeçalho -->
     <div class="flex justify-between items-center mb-6" :class="isMobile ? 'px-5' : ''">
       <div>
-        <h3 class="text-[var(--m3-on-surface)] text-lg md:text-xl font-bold tracking-tight uppercase flex items-center">
-          Sumário
-        </h3>
-        <p class="text-[var(--m3-on-surface-variant)] text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-bold mt-1">Status</p>
+        <h3 class="t-title" style="color: var(--text-primary);">Sumário</h3>
+        <p class="t-label mt-1" style="color: var(--text-muted);">Portfólio Ativo</p>
       </div>
-      <div v-if="!isLoading" class="px-3 py-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-full text-[8px] font-black uppercase tracking-widest">
+      <div
+        v-if="!isLoading"
+        class="px-3 py-1 rounded-[var(--radius-full)]"
+        style="background: var(--brand-indigo-light); color: var(--brand-indigo);
+               border: 1px solid var(--brand-indigo-muted);
+               font-size: 8px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;"
+      >
         {{ totalActiveOps }} Ativos
       </div>
     </div>
 
-    <div :class="isMobile ? 'flex overflow-x-auto gap-6 px-5 pb-8 hide-scrollbar snap-x snap-mandatory' : 'grid gap-3 md:gap-4'" 
-         :style="!isMobile ? gridColsStyle : {}">
-      
+    <!-- Grid de cards / carrossel mobile -->
+    <div
+      :class="isMobile
+        ? 'flex overflow-x-auto gap-4 px-5 pb-6 hide-scrollbar snap-x snap-mandatory'
+        : 'grid gap-3 md:gap-4'"
+      :style="!isMobile ? gridColsStyle : {}"
+    >
+
+      <!-- Skeleton -->
       <template v-if="isLoading">
-        <div v-for="n in 4" :key="'skel-sum-'+n" 
-             class="min-w-[280px] snap-center p-5 rounded-[30px] border border-slate-100 bg-slate-50/50 h-32 flex flex-col justify-between animate-pulse">
-          <div class="h-3 bg-slate-200 rounded-full w-24"></div>
+        <div
+          v-for="n in 4"
+          :key="'skel-sum-'+n"
+          class="min-w-[260px] snap-center h-32 rounded-[var(--radius-lg)] border animate-pulse flex flex-col justify-between p-5"
+          style="background: var(--surface-overlay); border-color: var(--border-subtle);"
+        >
+          <div class="h-2.5 rounded-full w-24" style="background: var(--border-default);"></div>
           <div class="flex flex-col gap-2">
-            <div class="h-10 bg-slate-200 rounded-lg w-3/4"></div>
-            <div class="h-2 bg-slate-100 rounded-full w-1/2"></div>
+            <div class="h-9 rounded-[var(--radius-sm)] w-3/4" style="background: var(--border-default);"></div>
+            <div class="h-2 rounded-full w-1/2" style="background: var(--border-subtle);"></div>
           </div>
         </div>
       </template>
 
+      <!-- Cards reais -->
       <template v-else>
-        <div v-for="field in activeFields" :key="field.key" 
-             :class="[
-               getPodStyle(field).container,
-               isMobile ? 'min-w-[280px] w-fit flex-shrink-0 snap-center shadow-xl py-5 px-8' : 'p-5 hover:scale-[1.02] shadow-sm'
-             ]"
-             class="rounded-[30px] border transition-all flex flex-col justify-between h-32"
+        <div
+          v-for="field in activeFields"
+          :key="field.key + '-' + field.order"
+          :class="isMobile ? 'min-w-[260px] flex-shrink-0 snap-center py-5 px-6' : 'p-5 hover:scale-[1.01]'"
+          class="rounded-[var(--radius-lg)] border transition-all duration-[var(--duration-std)] h-32 flex flex-col justify-between"
+          :style="getPodStyle(field).style"
         >
-          <div class="flex justify-between items-start w-full">
-            <span class="text-[11px] font-black uppercase tracking-[0.2em] opacity-80 whitespace-nowrap" :class="getPodStyle(field).text">
-              {{ field.label }}
-            </span>
-          </div>
+          <!-- Label -->
+          <span class="t-label" :style="getPodStyle(field).labelStyle">
+            {{ field.label }}
+          </span>
 
-          <div class="flex flex-col w-full">
-            <span :class="[ getPodStyle(field).text, isMobile ? 'text-4xl' : 'text-xl' ]" 
-                  class="font-mono font-black tracking-tighter whitespace-nowrap leading-none mb-1">
+          <!-- Valor + contexto -->
+          <div class="flex flex-col">
+            <span
+              :style="[
+                getPodStyle(field).valueStyle,
+                isMobile ? 'font-size: 26px' : 'font-size: 20px'
+              ]"
+              style="font-family: 'JetBrains Mono', monospace; font-weight: 700;
+                     letter-spacing: -0.03em; line-height: 1; margin-bottom: 4px;"
+            >
               {{ formatValue(field.value, field.type) }}
             </span>
-            <span class="text-[10px] font-bold uppercase opacity-50" :class="getPodStyle(field).text">
+            <span class="t-label-sm" :style="getPodStyle(field).contextStyle">
               {{ getPodStyle(field).context }}
             </span>
           </div>
@@ -58,9 +85,8 @@
 </template>
 
 <script>
-
 const summaryCurrencyFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-const summaryNumberFmt   = new Intl.NumberFormat('pt-BR');
+const summaryNumberFmt   = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 4 });
 
 window.CardSummary = {
   props: {
@@ -72,68 +98,30 @@ window.CardSummary = {
 
   data() {
     return {
-      // 🎛️ PAINEL DE CONTROLE DOS CARDS
-      // Chaves alinhadas ao resumoGlobal gerado pelo Agregador.
-      // active: true  → aparece no sumário
-      // active: false → oculto (disponível para ativar)
+      // ================================================================
+      // PAINEL DE CONTROLE — chaves alinhadas ao resumoGlobal do Agregador
+      // Campos disponíveis no resumoGlobal:
+      //   totalOps, nocional, plTotalValor, plTotalUnitario,
+      //   ganhoMaximo, perdaMaxima, premioMedio, premioAtual,
+      //   delta, gamma, vega, theta, rho, plTotalPct
+      // ================================================================
+      configCampos: [
+        // --- Financeiro (ativos por padrão) ---
+        { key: 'premioMedio',      label: 'Prêmio Médio',   type: 'currency',   active: true,  order: 1 },
+        { key: 'premioAtual',      label: 'Prêmio Atual',   type: 'currency',   active: true,  order: 2 },
+        { key: 'ganhoMaximo',      label: 'Ganho Máx.',     type: 'currency',   active: true,  order: 3 },
+        { key: 'nocional',         label: 'Nocional',       type: 'currency',   active: true,  order: 4 },
+        { key: 'plTotalPct',       label: 'Rentabilidade',  type: 'percentage', active: true,  order: 5 },
+        { key: 'plTotalValor',     label: 'P/L Aberto',     type: 'currency',   active: true,  order: 6 },
+        { key: 'perdaMaxima',      label: 'Risco Máx.',     type: 'currency',   active: false, order: 7 },
+        { key: 'plTotalUnitario',  label: 'P/L Unitário',   type: 'currency',   active: false, order: 8 },
 
-  configCampos: [
-    // --- 1. Identificação ---
-    { key: 'tradeId',          label: 'ID Trade',       type: 'texto',      active: false, order: 10 },
-    { key: 'estrategiaId',     label: 'Estratégia',     type: 'texto',      active: false, order: 11 },
-    { key: 'status',           label: 'Status',         type: 'texto',      active: false, order: 12 },
-
-    // --- 2. Temporal ---
-    { key: 'dataTrade',        label: 'Data Abertura',  type: 'texto',      active: false, order: 20 },
-    { key: 'mesTrade',         label: 'Mês Ref',        type: 'numero',     active: false, order: 21 },
-    { key: 'dataVencimento',   label: 'Vencimento',     type: 'texto',      active: false, order: 22 },
-    { key: 'mesVencimento',    label: 'Ciclo',          type: 'numero',     active: false, order: 23 },
-    { key: 'dteCorridos',      label: 'DTE Corridos',   type: 'numero',     active: false, order: 24 },
-    { key: 'dteUteis',         label: 'DTE Úteis',      type: 'numero',     active: false, order: 25 },
-
-    // --- 3. Ativo e Contrato ---
-    { key: 'simboloOpcao',     label: 'Ticker Opção',   type: 'texto',      active: false, order: 30 },
-    { key: 'tickerAtivo',      label: 'Ativo',          type: 'texto',      active: false, order: 31 },
-    { key: 'nomeEmpresa',      label: 'Empresa',        type: 'texto',      active: false, order: 32 },
-    { key: 'setor',            label: 'Setor',          type: 'texto',      active: false, order: 33 },
-    { key: 'direcaoTrade',     label: 'Direção',        type: 'texto',      active: false, order: 34 },
-    { key: 'tipoOpcao',        label: 'Tipo',           type: 'texto',      active: false, order: 35 },
-    { key: 'qtdOpcoes',        label: 'Quantidade',     type: 'numero',     active: false, order: 36 },
-    { key: 'strike',           label: 'Strike',         type: 'currency',   active: false, order: 37 },
-    { key: 'spotPrice',        label: 'Preço Spot',     type: 'currency',   active: false, order: 38 },
-
-    // --- 4. Financeiro e Risco ---
-    { key: 'moneynessCode',    label: 'Moneyness Code', type: 'texto',      active: false, order: 40 },
-    { key: 'premioMedio',      label: 'Prêmio Médio',   type: 'currency',   active: true,  order: 41 },
-    { key: 'premioAtual',      label: 'Prêmio Atual',   type: 'currency',   active: true,  order: 42 },
-    { key: 'ganhoMaximo',      label: 'Ganho Máx.',     type: 'currency',   active: true,  order: 43 },
-    { key: 'potencialLucroPct',label: 'Potencial Lucro',type: 'percentage', active: false, order: 44 },
-    { key: 'perdaMaxima',      label: 'Risco Máx.',     type: 'currency',   active: false, order: 45 },
-    { key: 'nocional',         label: 'Nocional',       type: 'currency',   active: true,  order: 46 },
-    { key: 'plTotalPct',       label: 'Rentabilidade',  type: 'percentage', active: true,  order: 47 },
-    { key: 'plTotalValor',     label: 'P/L Aberto',     type: 'currency',   active: false, order: 48 },
-    { key: 'plTotalValor',     label: 'P/L Sessão',     type: 'currency',   active: true,  order: 49 },
-    { key: 'breakEven',        label: 'Break-Even',     type: 'currency',   active: false, order: 50 },
-
-    // --- 5. Volatilidade e Probabilidade ---
-    { key: 'ivAtual',          label: 'IV Atual',       type: 'percentage', active: false, order: 60 },
-    { key: 'ivRank1y',         label: 'IV Rank 1Y',     type: 'percentage', active: false, order: 61 },
-    { key: 'variation',        label: 'Variação Ativo', type: 'percentage', active: false, order: 62 },
-    { key: 'moneyness',        label: 'Moneyness',      type: 'percentage', active: false, order: 63 },
-    { key: 'priceOpcao',       label: 'Preço Opção',    type: 'currency',   active: false, order: 64 },
-    { key: 'volatility',       label: 'Volatilidade',   type: 'percentage', active: false, order: 65 },
-    { key: 'probabilidadeSucesso', label: 'Prob. Sucesso', type: 'percentage', active: false, order: 66 },
-
-    // --- 6. Gregas ---
-    { key: 'deltaTotal',       label: 'Delta Net',      type: 'number',     active: false, order: 70 },
-    { key: 'gammaTotal',       label: 'Gamma Net',      type: 'number',     active: false, order: 71 },
-    { key: 'vegaTotal',        label: 'Vega Net',       type: 'number',     active: false, order: 72 },
-    { key: 'thetaTotal',       label: 'Theta Diário',   type: 'currency',   active: false, order: 73 },
-    { key: 'rhoTotal',         label: 'Rho',           type: 'number',     active: false, order: 74 },
-
-    // --- 7. Extras ---
-    { key: 'direcaoBias',      label: 'Bias',           type: 'texto',      active: false, order: 80 },
-    { key: 'obsControle',      label: 'Obs. Controle',  type: 'texto',      active: false, order: 81 }
+        // --- Gregas (chaves corretas: sem sufixo "Total") ---
+        { key: 'delta',            label: 'Delta Net',      type: 'number',     active: false, order: 10 },
+        { key: 'gamma',            label: 'Gamma Net',      type: 'number',     active: false, order: 11 },
+        { key: 'vega',             label: 'Vega Net',       type: 'number',     active: false, order: 12 },
+        { key: 'theta',            label: 'Theta Diário',   type: 'currency',   active: false, order: 13 },
+        { key: 'rho',              label: 'Rho',            type: 'number',     active: false, order: 14 }
       ]
     };
   },
@@ -144,27 +132,19 @@ window.CardSummary = {
     },
 
     activeFields() {
-      // 🔧 FIX: busca no resumoGlobal — onde o Agregador deposita os totais da carteira
       const stats = this.statsPreCalculados?.resumoGlobal || {};
-
       return this.configCampos
-        .filter(campo => campo.active)
+        .filter(c => c.active)
         .sort((a, b) => a.order - b.order)
-        .map(campo => ({
-          ...campo,
-          value: stats[campo.key] !== undefined ? stats[campo.key] : 0
-        }));
+        .map(c => ({ ...c, value: stats[c.key] !== undefined ? stats[c.key] : 0 }));
     },
 
     gridColsStyle() {
       const total = this.activeFields.length || 4;
-      if (this.isMobile) {
-        return { gridTemplateColumns: 'repeat(1, minmax(0, 1fr))' };
-      }
-      let cols = 1;
       const width = window.innerWidth;
-      if (width >= 640 && width < 1024) cols = 2;
-      if (width >= 1024) cols = total > 8 ? 8 : total;
+      let cols = 1;
+      if (width >= 640  && width < 1024) cols = 2;
+      if (width >= 1024) cols = Math.min(total, 8);
       return { gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` };
     }
   },
@@ -173,37 +153,59 @@ window.CardSummary = {
     formatValue(val, type) {
       if (val === undefined || val === null) return '---';
       if (type === 'currency')   return summaryCurrencyFmt.format(val);
-      if (type === 'percentage') return (val * 100).toFixed(2).replace('.', ',') + '%';
+      if (type === 'percentage') return (val).toFixed(2).replace('.', ',') + '%';
       return summaryNumberFmt.format(val);
     },
 
     getPodStyle(field) {
       const key = field.key.toUpperCase();
+      const val = parseFloat(field.value) || 0;
 
-      // Família 1: Resultado / Financeiro
-      if (key.includes('PL') || key.includes('LUCRO') || key.includes('PERDA') || key.includes('NOCIONAL') || key.includes('GANHO') || key.includes('PREMIO')) {
-        const val   = parseFloat(field.value) || 0;
-        const isNeg = key.includes('PERDA') || (!key.includes('NOCIONAL') && !key.includes('GANHO') && !key.includes('PREMIO') && val < 0);
+      // Gregas — azul
+      if (['DELTA','GAMMA','VEGA','THETA','RHO'].some(g => key.includes(g))) {
         return {
-          container: isNeg ? 'bg-red-50 border-red-100'       : 'bg-emerald-50 border-emerald-100',
-          text:      isNeg ? 'text-red-800'                    : 'text-emerald-800',
-          context:   isNeg ? 'Risco Ativo'                     : 'Resultado'
+          style:        'background: var(--brand-indigo-light); border-color: var(--brand-indigo-muted);',
+          labelStyle:   'color: var(--brand-indigo); opacity: 0.8;',
+          valueStyle:   'color: var(--brand-indigo);',
+          contextStyle: 'color: var(--brand-indigo); opacity: 0.55;',
+          context:      'Exposição'
         };
       }
 
-      // Família 2: Gregas
-      if (key.includes('THETA') || key.includes('DELTA') || key.includes('GAMMA') || key.includes('VEGA') || key.includes('RHO')) {
+      // Risco / Perda — vermelho
+      if (key.includes('PERDA') || key.includes('RISCO') ||
+          (key.includes('PL') && val < 0)) {
         return {
-          container: 'bg-blue-50 border-blue-100',
-          text:      'text-blue-800',
-          context:   'Exposição'
+          style:        'background: var(--brand-rose-light); border-color: var(--brand-rose-muted);',
+          labelStyle:   'color: var(--brand-rose); opacity: 0.8;',
+          valueStyle:   'color: var(--brand-rose);',
+          contextStyle: 'color: var(--brand-rose); opacity: 0.55;',
+          context:      'Risco Ativo'
         };
       }
 
+      // Resultado positivo / financeiro — verde
+      if (key.includes('PL') || key.includes('GANHO') || key.includes('NOCIONAL') ||
+          key.includes('PREMIO') || key.includes('RENTABILIDADE')) {
+        const isPositive = val >= 0;
+        return {
+          style:        isPositive
+            ? 'background: var(--brand-emerald-light); border-color: var(--brand-emerald-muted);'
+            : 'background: var(--brand-rose-light); border-color: var(--brand-rose-muted);',
+          labelStyle:   `color: var(--${isPositive ? 'brand-emerald' : 'brand-rose'}); opacity: 0.8;`,
+          valueStyle:   `color: var(--${isPositive ? 'brand-emerald' : 'brand-rose'});`,
+          contextStyle: `color: var(--${isPositive ? 'brand-emerald' : 'brand-rose'}); opacity: 0.55;`,
+          context:      'Resultado'
+        };
+      }
+
+      // Default — neutro
       return {
-        container: 'bg-slate-50 border-slate-100',
-        text:      'text-slate-700',
-        context:   'Dados'
+        style:        'background: var(--surface-overlay); border-color: var(--border-subtle);',
+        labelStyle:   'color: var(--text-muted);',
+        valueStyle:   'color: var(--text-primary);',
+        contextStyle: 'color: var(--text-muted);',
+        context:      'Dados'
       };
     }
   }

@@ -1,187 +1,175 @@
 <template id="card-moneyness-template">
-  <div v-if="isMobile" class="w-full bg-white border border-slate-200 rounded-[32px] pt-6 px-6 pb-8 shadow-sm flex flex-col h-full relative overflow-hidden">
-    
-    <div class="absolute bottom-0 left-0 w-full h-6 flex z-20 font-mono font-black text-[15px] text-white drop-shadow-md">
-      <div :style="{ width: (percentOtmGlobal || 0) + '%' }" class="h-full bg-emerald-500 shadow-[0_-5px_15px_rgba(16,185,129,0.2)] transition-all duration-1000 flex items-center justify-center overflow-hidden">
-        <span v-if="percentOtmGlobal > 0" class="leading-none pt-0.5">{{ percentOtmGlobal }}%</span>
+
+  <!-- MOBILE -->
+  <div v-if="isMobile"
+    class="w-full rounded-[var(--radius-xl)] pt-6 px-6 pb-8 flex flex-col h-full relative overflow-hidden"
+    style="background: var(--surface-base); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);">
+
+    <div class="absolute bottom-0 left-0 w-full h-6 flex z-20"
+         style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: white;">
+      <div :style="{ width: (percentOtmGlobal || 0) + '%' }" class="h-full transition-all duration-1000 flex items-center justify-center overflow-hidden" style="background: var(--brand-emerald);">
+        <span v-if="percentOtmGlobal > 0">{{ percentOtmGlobal }}%</span>
       </div>
-      <div :style="{ width: (percentAtmGlobal || 0) + '%' }" class="h-full bg-amber-400 transition-all duration-1000 flex items-center justify-center overflow-hidden">
-        <span v-if="percentAtmGlobal > 0" class="text-amber-900 leading-none pt-0.5">{{ percentAtmGlobal }}%</span>
+      <div :style="{ width: (percentAtmGlobal || 0) + '%' }" class="h-full transition-all duration-1000 flex items-center justify-center overflow-hidden" style="background: var(--brand-amber);">
+        <span v-if="percentAtmGlobal > 0" style="color: var(--brand-amber-dark, #78350f);">{{ percentAtmGlobal }}%</span>
       </div>
-      <div :style="{ width: (percentItmGlobal || 0) + '%' }" class="h-full bg-red-500 shadow-[0_-5px_15px_rgba(239,68,68,0.2)] transition-all duration-1000 flex items-center justify-center overflow-hidden">
-        <span v-if="percentItmGlobal > 0" class="leading-none pt-0.5">{{ percentItmGlobal }}%</span>
+      <div :style="{ width: (percentItmGlobal || 0) + '%' }" class="h-full transition-all duration-1000 flex items-center justify-center overflow-hidden" style="background: var(--brand-rose);">
+        <span v-if="percentItmGlobal > 0">{{ percentItmGlobal }}%</span>
       </div>
     </div>
 
     <div class="flex flex-col h-full relative z-10">
-      
       <div class="flex flex-col mb-2">
-        <h3 class="text-slate-900 font-black tracking-tighter uppercase text-3xl leading-none">Moneyness</h3>
-        <span class="text-slate-400 uppercase tracking-[0.2em] font-bold text-[10px] mt-2">Por Tipo de Ativo</span>
+        <h3 style="font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; text-transform: uppercase;">Moneyness</h3>
+        <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.16em; margin-top: 6px;">Por Tipo de Ativo</span>
       </div>
 
-      <div v-if="isLoading" class="flex-1 flex flex-col justify-center space-y-3 mt-2 animate-pulse">
-        <div v-for="i in 2" :key="i" class="bg-slate-50 border border-slate-100 rounded-[20px] p-3 flex flex-col">
-           <div class="flex justify-between mb-3"><div class="h-5 bg-slate-200 rounded w-16"></div><div class="h-6 bg-slate-200 rounded w-10"></div></div>
-           <div class="flex space-x-2"><div class="h-12 bg-slate-100 rounded-xl flex-1"></div><div class="h-12 bg-slate-100 rounded-xl flex-1"></div><div class="h-12 bg-slate-100 rounded-xl flex-1"></div></div>
+      <div v-if="isLoading" class="flex-1 flex flex-col justify-center gap-3 mt-2 animate-pulse">
+        <div v-for="i in 2" :key="i" class="rounded-[var(--radius-lg)] p-3 flex flex-col gap-2" style="background: var(--surface-sunken); border: 1px solid var(--border-subtle);">
+          <div class="flex justify-between mb-1">
+            <div class="h-5 rounded w-16" style="background: var(--surface-overlay);"></div>
+            <div class="h-5 rounded w-10" style="background: var(--surface-overlay);"></div>
+          </div>
+          <div class="flex gap-2">
+            <div v-for="j in 3" :key="j" class="h-10 rounded-[var(--radius-md)] flex-1" style="background: var(--surface-overlay);"></div>
+          </div>
         </div>
       </div>
 
       <template v-else>
-        <div class="flex flex-col flex-1 justify-center space-y-5 mt-2 px-1">
-          
-          <div class="flex items-center justify-between w-full border-b border-slate-100 pb-4">
-            <div class="w-1/5 flex flex-col justify-center text-left">
-              <span class="text-blue-600 font-black text-2xl uppercase tracking-tighter leading-none">CALL</span>
+        <div class="flex flex-col flex-1 justify-center gap-4 mt-2 px-1">
+          <!-- CALL -->
+          <div class="flex items-center justify-between w-full pb-3" style="border-bottom: 1px solid var(--border-subtle);">
+            <div class="w-1/5">
+              <span style="font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; color: var(--brand-indigo);">CALL</span>
             </div>
-            
             <div class="flex flex-1 justify-between px-3">
               <div v-for="m in ['ITM', 'ATM', 'OTM']" :key="'call-'+m" class="flex flex-col items-center">
-                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 leading-none">{{ m }}</span>
-                <span :class="getBadgeClassMobile(callStats[m.toLowerCase()], m)" class="text-2xl font-mono font-black leading-none drop-shadow-sm">
-                  {{ callStats[m.toLowerCase()] || 0 }}
-                </span>
+                <span style="font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px;">{{ m }}</span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; line-height: 1;" :style="getMoneynessColorStyle(m, callStats[m.toLowerCase()])">{{ callStats[m.toLowerCase()] || 0 }}</span>
               </div>
             </div>
-
-            <div class="w-1/5 flex flex-col items-end justify-center text-right">
-              <span class="text-slate-400 text-[9px] uppercase font-black tracking-widest mb-1.5 leading-none">Total</span>
-              <span class="text-blue-800 font-black text-2xl font-mono leading-none">{{ callStats.total || 0 }}</span>
+            <div class="w-1/5 text-right">
+              <span style="font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 5px;">Total</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: var(--brand-indigo);">{{ callStats.total || 0 }}</span>
             </div>
           </div>
-
+          <!-- PUT -->
           <div class="flex items-center justify-between w-full pb-2">
-            <div class="w-1/5 flex flex-col justify-center text-left">
-              <span class="text-orange-500 font-black text-2xl uppercase tracking-tighter leading-none">PUT</span>
+            <div class="w-1/5">
+              <span style="font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; color: var(--brand-amber);">PUT</span>
             </div>
-            
             <div class="flex flex-1 justify-between px-3">
               <div v-for="m in ['ITM', 'ATM', 'OTM']" :key="'put-'+m" class="flex flex-col items-center">
-                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5 leading-none">{{ m }}</span>
-                <span :class="getBadgeClassMobile(putStats[m.toLowerCase()], m)" class="text-2xl font-mono font-black leading-none drop-shadow-sm">
-                  {{ putStats[m.toLowerCase()] || 0 }}
-                </span>
+                <span style="font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 5px;">{{ m }}</span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; line-height: 1;" :style="getMoneynessColorStyle(m, putStats[m.toLowerCase()])">{{ putStats[m.toLowerCase()] || 0 }}</span>
               </div>
             </div>
-
-            <div class="w-1/5 flex flex-col items-end justify-center text-right">
-              <span class="text-slate-400 text-[9px] uppercase font-black tracking-widest mb-1.5 leading-none">Total</span>
-              <span class="text-orange-800 font-black text-2xl font-mono leading-none">{{ putStats.total || 0 }}</span>
+            <div class="w-1/5 text-right">
+              <span style="font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; display: block; margin-bottom: 5px;">Total</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; color: var(--brand-amber);">{{ putStats.total || 0 }}</span>
             </div>
           </div>
-
         </div>
       </template>
-
     </div>
   </div>
 
-  <div v-else class="w-full bg-white border border-slate-200 rounded-[32px] p-5 md:p-7 shadow-sm flex flex-col h-full transition-all hover:shadow-md">
+  <!-- DESKTOP -->
+  <div v-else
+    class="w-full rounded-[var(--radius-xl)] p-5 flex flex-col h-full transition-all duration-[var(--duration-std)]"
+    style="background: var(--surface-base); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);"
+    onmouseover="this.style.boxShadow='var(--shadow-md)'"
+    onmouseout="this.style.boxShadow='var(--shadow-sm)'">
+
     <div class="flex justify-between items-center mb-6">
       <div>
-        <h3 class="text-[var(--m3-on-surface)] text-lg md:text-xl font-bold tracking-tight uppercase flex items-center">Moneyness</h3>
-        <p class="text-[var(--m3-on-surface-variant)] text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-bold mt-1">Por Tipo de Ativo</p>
+        <h3 class="t-subtitle" style="color: var(--text-primary);">Moneyness</h3>
+        <p class="t-label mt-1" style="color: var(--text-muted);">Por Tipo de Ativo</p>
       </div>
     </div>
-    
+
     <div v-if="isLoading" class="grid grid-cols-2 gap-3 flex-1 animate-pulse">
-      <div v-for="i in 2" :key="i" class="bg-slate-50 border border-slate-100 rounded-[24px] p-4 h-44"></div>
+      <div v-for="i in 2" :key="i" class="rounded-[var(--radius-xl)] h-44" style="background: var(--surface-sunken); border: 1px solid var(--border-subtle);"></div>
     </div>
-    
-    <div v-else class="grid grid-cols-2 gap-3 md:gap-4 flex-1">
-      
-      <div class="bg-slate-50/50 rounded-[24px] p-4 md:p-5 border border-slate-100 flex flex-col justify-between transition-all">
+
+    <div v-else class="grid grid-cols-2 gap-3 flex-1">
+      <!-- CALL -->
+      <div class="rounded-[var(--radius-xl)] p-4 flex flex-col justify-between"
+           style="background: var(--brand-indigo-light); border: 1px solid var(--brand-indigo-muted);">
         <div class="flex items-center justify-between mb-3">
-          <div class="text-blue-800 font-black text-[9px] md:text-[10px] uppercase tracking-widest">CALL (Alta)</div>
+          <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--brand-indigo);">CALL (Alta)</span>
         </div>
-        <div class="flex-1 flex flex-col justify-center space-y-1">
+        <div class="flex-1 flex flex-col justify-center gap-1">
           <div v-for="m in ['ITM', 'ATM', 'OTM']" :key="m" class="flex justify-between items-center h-7">
-            <span class="text-[9px] font-bold text-slate-500 uppercase leading-none">{{ m }}</span>
-            <span :class="getBadgeClass(callStats[m.toLowerCase()], m)" class="text-[10px] font-mono w-7 h-5 flex items-center justify-center rounded-md border">
+            <span style="font-size: 9px; font-weight: 600; text-transform: uppercase; color: var(--text-muted);">{{ m }}</span>
+            <span class="w-7 h-5 flex items-center justify-center rounded-[var(--radius-sm)]"
+                  style="font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; border: 1px solid;"
+                  :style="getBadgeStyle(m, callStats[m.toLowerCase()])">
               {{ callStats[m.toLowerCase()] || 0 }}
             </span>
           </div>
         </div>
-        <div class="pt-3 border-t border-slate-200/60 flex justify-between items-center mt-2">
-          <span class="text-slate-400 text-[8px] uppercase font-black tracking-widest leading-none">Total</span>
-          <span class="text-blue-900 font-black text-sm font-mono leading-none">{{ callStats.total || 0 }}</span>
+        <div class="pt-3 flex justify-between items-center mt-2" style="border-top: 1px solid var(--brand-indigo-muted);">
+          <span style="font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--brand-indigo); opacity: 0.7;">Total</span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--brand-indigo);">{{ callStats.total || 0 }}</span>
         </div>
       </div>
 
-      <div class="bg-slate-50/50 rounded-[24px] p-4 md:p-5 border border-slate-100 flex flex-col justify-between transition-all">
+      <!-- PUT -->
+      <div class="rounded-[var(--radius-xl)] p-4 flex flex-col justify-between"
+           style="background: var(--brand-amber-light); border: 1px solid var(--brand-amber-muted);">
         <div class="flex items-center justify-between mb-3">
-          <div class="text-amber-800 font-black text-[9px] md:text-[10px] uppercase tracking-widest">PUT (Baixa)</div>
+          <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--brand-amber);">PUT (Baixa)</span>
         </div>
-        <div class="flex-1 flex flex-col justify-center space-y-1">
+        <div class="flex-1 flex flex-col justify-center gap-1">
           <div v-for="m in ['ITM', 'ATM', 'OTM']" :key="m" class="flex justify-between items-center h-7">
-            <span class="text-[9px] font-bold text-slate-500 uppercase leading-none">{{ m }}</span>
-            <span :class="getBadgeClass(putStats[m.toLowerCase()], m)" class="text-[10px] font-mono w-7 h-5 flex items-center justify-center rounded-md border">
+            <span style="font-size: 9px; font-weight: 600; text-transform: uppercase; color: var(--text-muted);">{{ m }}</span>
+            <span class="w-7 h-5 flex items-center justify-center rounded-[var(--radius-sm)]"
+                  style="font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; border: 1px solid;"
+                  :style="getBadgeStyle(m, putStats[m.toLowerCase()])">
               {{ putStats[m.toLowerCase()] || 0 }}
             </span>
           </div>
         </div>
-        <div class="pt-3 border-t border-slate-200/60 flex justify-between items-center mt-2">
-          <span class="text-slate-400 text-[8px] uppercase font-black tracking-widest leading-none">Total</span>
-          <span class="text-amber-900 font-black text-sm font-mono leading-none">{{ putStats.total || 0 }}</span>
+        <div class="pt-3 flex justify-between items-center mt-2" style="border-top: 1px solid var(--brand-amber-muted);">
+          <span style="font-size: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--brand-amber); opacity: 0.7;">Total</span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--brand-amber);">{{ putStats.total || 0 }}</span>
         </div>
       </div>
-
     </div>
   </div>
 </template>
 
 <script>
 window.CardMoneyness = {
-  props: { 
-    isMobile: Boolean, 
-    isLoading: Boolean,
-    statsPreCalculados: Object
-  },
+  props: { isMobile: Boolean, isLoading: Boolean, statsPreCalculados: Object },
   template: '#card-moneyness-template',
-  
   computed: {
     stats() {
-      // 🛡️ TRAVA DE SEGURANÇA: Garante que o objeto tenha TODA a estrutura esperada pelo HTML,
-      // mesmo antes do Agregador injetar os dados
       const padrao = { itm: 0, atm: 0, otm: 0, total: 0 };
-      
-      if (!this.statsPreCalculados || !this.statsPreCalculados.moneynessPorTipo) {
-        return { call: padrao, put: padrao, totalOps: 0 };
-      }
-      
+      if (!this.statsPreCalculados?.moneynessPorTipo) return { call: padrao, put: padrao, totalOps: 0 };
       return this.statsPreCalculados.moneynessPorTipo;
     },
-    
     totalOperacoes() { return this.stats.totalOps || 0; },
-    callStats() { return this.stats.call || { itm: 0, atm: 0, otm: 0, total: 0 }; }, // Blindagem extra
-    putStats() { return this.stats.put || { itm: 0, atm: 0, otm: 0, total: 0 }; },   // Blindagem extra
-    
-    percentOtmGlobal() {
-      if (this.totalOperacoes === 0) return 0;
-      return Math.round(((this.callStats.otm + this.putStats.otm) / this.totalOperacoes) * 100);
-    },
-    percentAtmGlobal() {
-      if (this.totalOperacoes === 0) return 0;
-      return Math.round(((this.callStats.atm + this.putStats.atm) / this.totalOperacoes) * 100);
-    },
-    percentItmGlobal() {
-      if (this.totalOperacoes === 0) return 0;
-      return Math.round(((this.callStats.itm + this.putStats.itm) / this.totalOperacoes) * 100);
-    }
+    callStats() { return this.stats.call || { itm: 0, atm: 0, otm: 0, total: 0 }; },
+    putStats()  { return this.stats.put  || { itm: 0, atm: 0, otm: 0, total: 0 }; },
+    percentOtmGlobal() { return this.totalOperacoes === 0 ? 0 : Math.round(((this.callStats.otm + this.putStats.otm) / this.totalOperacoes) * 100); },
+    percentAtmGlobal() { return this.totalOperacoes === 0 ? 0 : Math.round(((this.callStats.atm + this.putStats.atm) / this.totalOperacoes) * 100); },
+    percentItmGlobal() { return this.totalOperacoes === 0 ? 0 : Math.round(((this.callStats.itm + this.putStats.itm) / this.totalOperacoes) * 100); }
   },
-  
   methods: {
-    getBadgeClass(val, money) {
-      if (!val || val === 0) return 'text-slate-300 border-transparent';
-      if (money === 'ITM') return 'text-red-700 bg-red-100/60 font-black border-red-200';
-      if (money === 'ATM') return 'text-amber-700 bg-amber-100/60 font-black border-amber-200';
-      return 'text-emerald-700 bg-emerald-100/60 font-black border-emerald-200';
+    getMoneynessColorStyle(m, val) {
+      if (!val || val === 0) return 'color: var(--border-default);';
+      if (m === 'ITM') return 'color: var(--brand-rose);';
+      if (m === 'ATM') return 'color: var(--brand-amber);';
+      return 'color: var(--brand-emerald);';
     },
-    getBadgeClassMobile(val, money) {
-      if (!val || val === 0) return 'text-slate-300';
-      if (money === 'ITM') return 'text-red-600';
-      if (money === 'ATM') return 'text-amber-500';
-      return 'text-emerald-500';
+    getBadgeStyle(m, val) {
+      if (!val || val === 0) return 'color: var(--border-default); background: transparent; border-color: var(--border-subtle);';
+      if (m === 'ITM') return 'color: var(--brand-rose);   background: var(--brand-rose-light);   border-color: var(--brand-rose-muted);';
+      if (m === 'ATM') return 'color: var(--brand-amber); background: var(--brand-amber-light); border-color: var(--brand-amber-muted);';
+      return                  'color: var(--brand-emerald); background: var(--brand-emerald-light); border-color: var(--brand-emerald-muted);';
     }
   }
 };

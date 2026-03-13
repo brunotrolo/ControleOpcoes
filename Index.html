@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
   <head>
     <base target="_top">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css">
     <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
 
     <?!= include('Styles'); ?>
-    
+
     <style>
       [v-cloak] { display: none; }
       .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -19,112 +19,194 @@
     </style>
   </head>
 
-      <body class="bg-[var(--app-bg)] text-[var(--m3-on-surface)] font-sans antialiased overflow-hidden">
+  <body style="background: var(--app-bg); color: var(--text-primary);" class="font-sans antialiased overflow-hidden">
 
-      <div id="app" v-cloak class="flex h-screen w-screen overflow-hidden">
-        
-        <menu-sidebar 
-            :menu="menu" 
-            :active-view="currentView" 
-            :status="status"
-            :is-collapsed="isCollapsed"
-            :is-loading="isLoading"
-            @navigate="navigate"
-            @toggle="toggleSidebar"> 
-        </menu-sidebar>
+    <div id="app" v-cloak class="flex h-screen w-screen overflow-hidden">
 
-        <main :class="isMobile ? 'pt-5 pb-[140px]' : 'p-8'" class="flex-1 overflow-y-auto relative transition-all duration-300 ease-in-out w-full bg-slate-50/50"> 
-          <div class="w-[95%] max-w-[1600px] mx-auto">  
-            
-            <header class="mb-6 px-5 md:px-0">
-              <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4"> 
-                <div>
-                  <h2 class="text-2xl md:text-3xl font-bold text-[var(--m3-on-surface)] uppercase tracking-wider">{{ currentMenuLabel }}</h2>
-                  <p class="text-[var(--m3-on-surface-variant)] text-xs md:text-sm flex flex-wrap items-center gap-2 md:gap-3 mt-1">
-                    <span>Atualizado: {{ db.resumoGerencial.timestamp || '--:--' }}</span>
-                    
-                   <span v-if="tempoCarga" class="px-2 py-0.5 bg-white rounded text-[9px] md:text-[10px] font-mono font-bold text-indigo-900 border border-white shadow-sm">
-                      {{ tempoCarga }}
-                   </span>
+      <!-- ================================================================
+           MENU SIDEBAR
+           🔧 FIX: props e eventos alinhados ao novo MenuSidebar.html:
+             - :active-view   → :current-view
+             - :status        → removido (MenuSidebar não usa)
+             - :is-loading    → removido (MenuSidebar não usa)
+             - :last-sync     → adicionado
+             - @toggle        → @toggle-sidebar
+             - :is-mobile     → adicionado
+           ================================================================ -->
+      <menu-sidebar
+        :menu="menu"
+        :current-view="currentView"
+        :is-collapsed="isCollapsed"
+        :is-mobile="isMobile"
+        :last-sync="lastSync"
+        @navigate="navigate"
+        @toggle-sidebar="toggleSidebar">
+      </menu-sidebar>
 
-                    <span v-if="!isOrquestrando && isAutoSyncEnabled" class="px-2 py-0.5 bg-slate-100 rounded text-[9px] md:text-[10px] font-mono font-bold text-slate-500 border border-slate-200">
-                      PRÓXIMA ATUALIZAÇÃO EM: {{ formatCountdown }}
-                    </span>
-                    <span v-else-if="isOrquestrando" class="px-2 py-0.5 bg-indigo-50 rounded text-[9px] md:text-[10px] font-black uppercase tracking-widest text-brand-indigo border border-indigo-100 animate-pulse">
-                      ⚙️ SINCRONIZANDO...
-                    </span>
-                  </p>
+      <!-- ================================================================
+           ÁREA PRINCIPAL
+           ================================================================ -->
+      <main
+        :class="isMobile ? 'pt-5 pb-[80px]' : 'p-8'"
+        class="flex-1 overflow-y-auto relative transition-all duration-300 ease-in-out w-full"
+        style="background: var(--surface-sunken);"
+      >
+        <div class="w-[95%] max-w-[1600px] mx-auto">
+
+          <!-- Header -->
+          <header class="mb-6 px-5 md:px-0">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+
+              <!-- Título da view -->
+              <div>
+                <h1 class="t-title" style="color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.06em;">
+                  {{ currentMenuLabel }}
+                </h1>
+                <p class="flex flex-wrap items-center gap-2 md:gap-3 mt-1.5" style="color: var(--text-tertiary);">
+
+                  <span class="t-value-sm">
+                    Atualizado: {{ db.resumoGerencial.timestamp || '--:--' }}
+                  </span>
+
+                  <span
+                    v-if="tempoCarga"
+                    class="px-2 py-0.5 rounded-[var(--radius-xs)]"
+                    style="font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
+                           background: var(--surface-overlay); color: var(--brand-indigo); border: 1px solid var(--border-subtle);"
+                  >
+                    {{ tempoCarga }}
+                  </span>
+
+                  <span
+                    v-if="!isOrquestrando && isAutoSyncEnabled"
+                    class="px-2 py-0.5 rounded-[var(--radius-xs)]"
+                    style="font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
+                           background: var(--surface-overlay); color: var(--text-muted); border: 1px solid var(--border-subtle);"
+                  >
+                    PRÓXIMA SYNC: {{ formatCountdown }}
+                  </span>
+
+                  <span
+                    v-else-if="isOrquestrando"
+                    class="px-2 py-0.5 rounded-[var(--radius-xs)] animate-pulse"
+                    style="font-size: 9px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+                           background: var(--brand-indigo-light); color: var(--brand-indigo); border: 1px solid var(--brand-indigo-muted);"
+                  >
+                    ⚙ SINCRONIZANDO...
+                  </span>
+
+                </p>
+              </div>
+
+              <!-- Controles direita -->
+              <div
+                class="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-4 md:gap-2 mt-1 pt-3 md:pt-0"
+                :class="isMobile ? 'border-t' : ''"
+                :style="isMobile ? 'border-color: var(--border-subtle)' : ''"
+              >
+                <!-- Status do sistema -->
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700;
+                             color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em;">
+                  System:
+                  <span :style="status === 'Online' ? 'color: var(--brand-emerald)' : 'color: var(--brand-amber)'">
+                    {{ status }}
+                  </span>
                 </div>
 
-                <div class="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-4 md:gap-2 mt-1 border-t border-slate-200 md:border-none pt-3 md:pt-0">
-                  <div class="text-[9px] md:text-[10px] font-mono text-[var(--m3-on-surface-variant)] uppercase tracking-widest">
-                    System: <span :class="status === 'Online' ? 'text-emerald-500' : 'text-amber-500'">{{ status }}</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <span class="text-[9px] font-black uppercase tracking-widest transition-colors duration-300" :class="isAutoSyncEnabled ? 'text-brand-indigo' : 'text-slate-400'">
-                      Smart Polling {{ isAutoSyncEnabled ? 'ON' : 'OFF' }}
-                    </span>
-                    <button @click="toggleAutoSync" :class="isAutoSyncEnabled ? 'bg-brand-indigo' : 'bg-slate-300'" class="relative inline-flex h-4 w-8 items-center rounded-full transition-colors duration-300 shadow-inner">
-                      <span :class="isAutoSyncEnabled ? 'translate-x-4' : 'translate-x-0.5'" class="inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-300 shadow-sm"></span>
-                    </button>
-                  </div>
+                <!-- Toggle Smart Polling -->
+                <div class="flex items-center gap-2">
+                  <span
+                    class="t-label transition-colors duration-300"
+                    :style="isAutoSyncEnabled ? 'color: var(--brand-indigo)' : 'color: var(--text-muted)'"
+                  >
+                    Smart Polling {{ isAutoSyncEnabled ? 'ON' : 'OFF' }}
+                  </span>
+                  <button
+                    @click="toggleAutoSync"
+                    class="relative inline-flex h-4 w-8 items-center rounded-full transition-colors duration-300 shadow-inner"
+                    :style="isAutoSyncEnabled ? 'background: var(--brand-indigo)' : 'background: var(--border-strong)'"
+                  >
+                    <span
+                      :class="isAutoSyncEnabled ? 'translate-x-4' : 'translate-x-0.5'"
+                      class="inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-300 shadow-sm"
+                    ></span>
+                  </button>
                 </div>
               </div>
 
-        </header> 
+            </div>
+          </header>
+          <!-- /Header -->
+
+          <!-- Grid superior -->
           <div v-if="topGridComponents.length > 0" class="grid grid-cols-12 gap-4 md:gap-8 px-5 md:px-0 mb-4 md:mb-8">
-              <div v-for="comp in topGridComponents" :key="comp.id" :class="comp.cols || 'col-span-12'" class="transition-all duration-500">
+            <div
+              v-for="comp in topGridComponents"
+              :key="comp.id"
+              :class="comp.cols || 'col-span-12'"
+              class="transition-all duration-500"
+            >
+              <component :is="comp.component" v-bind="getComponentProps(comp)" @refresh="handleRefresh"></component>
+            </div>
+          </div>
+
+          <!-- Carrossel mobile -->
+          <section v-if="mobileCarouselComponents.length > 0" class="mb-8 -mx-5">
+            <div :class="[MOBILE_ORCHESTRATOR_CONFIG.settings.gap, 'flex overflow-x-auto pb-6 px-5 hide-scrollbar snap-x snap-mandatory']">
+              <div
+                v-for="comp in mobileCarouselComponents"
+                :key="'carousel-' + comp.id"
+                :class="[MOBILE_ORCHESTRATOR_CONFIG.settings.cardWidth, MOBILE_ORCHESTRATOR_CONFIG.settings.cardHeight, MOBILE_ORCHESTRATOR_CONFIG.settings.snap, 'flex-shrink-0']"
+              >
                 <component :is="comp.component" v-bind="getComponentProps(comp)" @refresh="handleRefresh"></component>
               </div>
             </div>
+          </section>
 
-            <section v-if="mobileCarouselComponents.length > 0" class="mb-8 -mx-5">
-              <div :class="[MOBILE_ORCHESTRATOR_CONFIG.settings.gap, 'flex overflow-x-auto pb-6 px-5 hide-scrollbar snap-x snap-mandatory']">
-                <div v-for="comp in mobileCarouselComponents" :key="'carousel-' + comp.id"
-                    :class="[MOBILE_ORCHESTRATOR_CONFIG.settings.cardWidth, MOBILE_ORCHESTRATOR_CONFIG.settings.cardHeight, MOBILE_ORCHESTRATOR_CONFIG.settings.snap, 'flex-shrink-0']">
-                  <component :is="comp.component" v-bind="getComponentProps(comp)" @refresh="handleRefresh"></component>
-                </div>
-              </div>
-            </section>
-
-            <div v-if="bottomGridComponents.length > 0" class="grid grid-cols-12 gap-4 md:gap-8 px-5 md:px-0">
-              <div v-for="comp in bottomGridComponents" :key="comp.id" :class="comp.cols || 'col-span-12'" class="transition-all duration-500">
-                <component :is="comp.component" v-bind="getComponentProps(comp)" @refresh="handleRefresh"></component>
-              </div>
+          <!-- Grid inferior -->
+          <div v-if="bottomGridComponents.length > 0" class="grid grid-cols-12 gap-4 md:gap-8 px-5 md:px-0">
+            <div
+              v-for="comp in bottomGridComponents"
+              :key="comp.id"
+              :class="comp.cols || 'col-span-12'"
+              class="transition-all duration-500"
+            >
+              <component :is="comp.component" v-bind="getComponentProps(comp)" @refresh="handleRefresh"></component>
             </div>
+          </div>
 
-          </div> 
-        </main>
+        </div>
+      </main>
 
-      </div>
+    </div><!-- /#app -->
 
-      <?!= include('LayoutConfig'); ?>
-      <?!= include('MenuSidebar'); ?>
-      <?!= include('Tradutor'); ?> 
-      <?!= include('Agregador'); ?> 
-      
-      <?!= include('ConsultoriaView'); ?>
-      <?!= include('CardTickerTape'); ?>
-      <?!= include('CardSummary'); ?>
-      <?!= include('CardDistribMoneyness'); ?>
-      <?!= include('CardMoneyness'); ?>
-      <?!= include('CardVencimentos'); ?> 
-      <?!= include('CardConcentracao'); ?>
-      <?!= include('CardResultado'); ?>
-      <?!= include('CarouselAtivas'); ?>
-      <?!= include('CockpitTable'); ?>
-      
-      <?!= include('SettingsView'); ?> 
-      <?!= include('AutomationView'); ?>
-      <?!= include('LogConsole'); ?>
-      <?!= include('ComparativoView'); ?>
-      <?!= include('ScannerView'); ?>
-      <?!= include('NectonImport'); ?>
-      <?!= include('GestaoAtivos'); ?>
-      <?!= include('GestaoAtivosSidebar'); ?>
-      <?!= include('BancoDeDados'); ?>
+    <?!= include('LayoutConfig'); ?>
+    <?!= include('MenuSidebar'); ?>
+    <?!= include('Tradutor'); ?>
+    <?!= include('Agregador'); ?>
 
-      <?!= include('AppCore'); ?>
+    <?!= include('ConsultoriaView'); ?>
+    <?!= include('CardTickerTape'); ?>
+    <?!= include('CardSummary'); ?>
+    <?!= include('CardDistribMoneyness'); ?>
+    <?!= include('CardMoneyness'); ?>
+    <?!= include('CardVencimentos'); ?>
+    <?!= include('CardConcentracao'); ?>
+    <?!= include('CardResultado'); ?>
+    <?!= include('CarouselAtivas'); ?>
+    <?!= include('CockpitTable'); ?>
 
-    </body>
+    <?!= include('SettingsView'); ?>
+    <?!= include('AutomationView'); ?>
+    <?!= include('LogConsole'); ?>
+    <?!= include('ComparativoView'); ?>
+    <?!= include('ScannerView'); ?>
+    <?!= include('NectonImport'); ?>
+    <?!= include('GestaoAtivos'); ?>
+    <?!= include('GestaoAtivosSidebar'); ?>
+    <?!= include('BancoDeDados'); ?>
+
+    <?!= include('AppCore'); ?>
+
+  </body>
 </html>

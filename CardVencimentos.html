@@ -1,99 +1,108 @@
 <template id="card-vencimentos-template">
-  <div v-if="isMobile" class="w-full bg-white border border-slate-200 rounded-[32px] pt-6 px-6 pb-8 shadow-sm flex flex-col h-full relative overflow-hidden">
-    
-    <div class="absolute bottom-0 left-0 w-full h-6 flex z-20 font-mono font-black text-[15px] text-white drop-shadow-md">
-      <div :style="{ width: (stats.pctCurto || 0) + '%' }" class="h-full bg-red-500 flex items-center justify-center overflow-hidden border-r border-white/10 shadow-[0_-5px_15px_rgba(239,68,68,0.2)]">
-        <span v-if="stats.pctCurto > 0" class="leading-none pt-0.5">{{ stats.pctCurto }}%</span>
+
+  <!-- MOBILE -->
+  <div v-if="isMobile"
+    class="w-full rounded-[var(--radius-xl)] pt-6 px-6 pb-8 flex flex-col h-full relative overflow-hidden"
+    style="background: var(--surface-base); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);">
+
+    <div class="absolute bottom-0 left-0 w-full h-6 flex z-20"
+         style="font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: white;">
+      <div :style="{ width: (stats.pctCurto || 0) + '%' }" class="h-full transition-all duration-1000 flex items-center justify-center overflow-hidden" style="background: var(--brand-rose);">
+        <span v-if="stats.pctCurto > 0">{{ stats.pctCurto }}%</span>
       </div>
-      <div :style="{ width: (stats.pctMedio || 0) + '%' }" class="h-full bg-amber-400 flex items-center justify-center overflow-hidden border-r border-white/10">
-        <span v-if="stats.pctMedio > 0" class="text-amber-900 leading-none pt-0.5">{{ stats.pctMedio }}%</span>
+      <div :style="{ width: (stats.pctMedio || 0) + '%' }" class="h-full transition-all duration-1000 flex items-center justify-center overflow-hidden" style="background: var(--brand-amber);">
+        <span v-if="stats.pctMedio > 0" style="color: var(--brand-amber-dark, #78350f);">{{ stats.pctMedio }}%</span>
       </div>
-      <div :style="{ width: (stats.pctLongo || 0) + '%' }" class="h-full bg-emerald-500 flex items-center justify-center overflow-hidden shadow-[0_-5px_15px_rgba(16,185,129,0.2)]">
-        <span v-if="stats.pctLongo > 0" class="leading-none pt-0.5">{{ stats.pctLongo }}%</span>
+      <div :style="{ width: (stats.pctLongo || 0) + '%' }" class="h-full transition-all duration-1000 flex items-center justify-center overflow-hidden" style="background: var(--brand-emerald);">
+        <span v-if="stats.pctLongo > 0">{{ stats.pctLongo }}%</span>
       </div>
     </div>
 
     <div class="flex flex-col h-full relative z-10">
-      
       <div class="flex flex-col mb-2">
-        <h3 class="text-slate-900 font-black tracking-tighter uppercase text-3xl leading-none">Vencimentos</h3>
-        
-        <div class="flex items-center mt-1 space-x-2">
-          <span class="text-slate-400 uppercase tracking-[0.2em] font-bold text-[10px]">Expiração</span>
+        <h3 style="font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; text-transform: uppercase;">Vencimentos</h3>
+        <div class="flex items-center mt-1 gap-2">
+          <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.16em;">Expiração</span>
           <template v-if="!isLoading && stats.total > 0">
-            <span class="w-1.5 h-1.5 rounded-full" :class="statusVencimento.bgClass"></span>
-            <span class="text-[10px] font-black tracking-widest uppercase" :class="statusVencimento.textClass">
-              {{ statusVencimento.labelClean }}
-            </span>
+            <span class="w-2 h-2 rounded-full" :style="statusVencimento.dotStyle"></span>
+            <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;" :style="statusVencimento.textStyle">{{ statusVencimento.labelClean }}</span>
           </template>
         </div>
       </div>
 
-      <div v-if="isLoading" class="flex-1 flex flex-col justify-center space-y-4 animate-pulse">
-        <div v-for="i in 3" :key="i" class="flex items-center justify-between pb-2 border-b border-slate-50">
-          <div class="h-6 bg-slate-100 rounded w-1/4"></div>
-          <div class="h-8 bg-slate-100 rounded w-1/4"></div>
-          <div class="h-6 bg-slate-100 rounded w-1/4"></div>
+      <div v-if="isLoading" class="flex-1 flex flex-col justify-center gap-4 animate-pulse">
+        <div v-for="i in 3" :key="i" class="flex items-center justify-between pb-2" style="border-bottom: 1px solid var(--border-subtle);">
+          <div class="h-6 rounded w-1/4" style="background: var(--surface-overlay);"></div>
+          <div class="h-8 rounded w-1/4" style="background: var(--surface-overlay);"></div>
+          <div class="h-6 rounded w-1/4" style="background: var(--surface-overlay);"></div>
         </div>
       </div>
 
       <template v-else>
-        <div class="flex flex-col flex-1 justify-center space-y-0.5 mt-0 px-1">
-          
-          <div v-for="p in ['Curto', 'Medio', 'Longo']" :key="p" 
-               class="flex items-center justify-between w-full border-b border-slate-50/50 pb-1 pt-0 last:border-0">
-            
-            <div class="w-[32%] flex flex-col justify-center">
-              <span class="font-black text-2xl uppercase tracking-tighter leading-none" :class="getPrazoStyleMobile(p).text">
+        <div class="flex flex-col flex-1 justify-center gap-0.5 px-1">
+          <div v-for="p in ['Curto', 'Medio', 'Longo']" :key="p"
+               class="flex items-center justify-between w-full pb-1 pt-0 last:border-0"
+               style="border-bottom: 1px solid var(--border-subtle);">
+            <div class="w-[32%] flex flex-col">
+              <span style="font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1;"
+                    :style="getPrazoColorStyle(p)">
                 {{ p === 'Medio' ? 'MÉDIO' : p.toUpperCase() }}
               </span>
-              <span class="text-slate-400 text-[10px] font-bold uppercase tracking-widest leading-none mt-0.5">
-                {{ getPrazoDesc(p).split(' ')[0] }} {{ getPrazoDesc(p).split(' ')[2] || '' }}d
+              <span style="font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; line-height: 1; margin-top: 2px;">
+                {{ getPrazoDesc(p) }}
               </span>
             </div>
-            
             <div class="flex flex-col items-center flex-1">
-              <span class="text-slate-400 text-[8px] uppercase font-black tracking-widest mb-0.5 leading-none">Ops</span>
-              <span class="text-slate-800 font-mono font-black text-3xl leading-none">{{ stats[p.toLowerCase()] || 0 }}</span>
+              <span style="font-size: 8px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px;">Ops</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 700; color: var(--text-primary); line-height: 1;">{{ stats[p.toLowerCase()] || 0 }}</span>
             </div>
-
-            <div class="w-[28%] flex flex-col items-end justify-center">
-              <span class="text-slate-400 text-[8px] uppercase font-black tracking-widest mb-0.5 leading-none">Peso</span>
-              <span class="font-black text-2xl font-mono leading-none" :class="getPrazoStyleMobile(p).text">{{ stats['pct'+p] || 0 }}%</span>
+            <div class="w-[28%] flex flex-col items-end">
+              <span style="font-size: 8px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px;">Peso</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; line-height: 1;" :style="getPrazoColorStyle(p)">{{ stats['pct'+p] || 0 }}%</span>
             </div>
-
           </div>
         </div>
       </template>
     </div>
   </div>
 
-  <div v-else class="w-full bg-white border border-slate-200 rounded-[32px] p-5 md:p-7 shadow-sm h-full flex flex-col transition-all hover:shadow-md">
+  <!-- DESKTOP -->
+  <div v-else
+    class="w-full rounded-[var(--radius-xl)] p-5 h-full flex flex-col transition-all duration-[var(--duration-std)]"
+    style="background: var(--surface-base); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);"
+    onmouseover="this.style.boxShadow='var(--shadow-md)'"
+    onmouseout="this.style.boxShadow='var(--shadow-sm)'">
+
     <div class="flex justify-between items-center mb-6">
       <div>
-        <h3 class="text-[var(--m3-on-surface)] text-lg md:text-xl font-bold tracking-tight uppercase flex items-center">Vencimentos</h3>
-        <p class="text-[var(--m3-on-surface-variant)] text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-bold mt-1">Por Prazo</p>
+        <h3 class="t-subtitle" style="color: var(--text-primary);">Vencimentos</h3>
+        <p class="t-label mt-1" style="color: var(--text-muted);">Por Prazo</p>
       </div>
     </div>
-    
-    <div v-if="isLoading" class="flex-1 flex flex-col justify-center space-y-5 animate-pulse">
-      <div v-for="i in 3" :key="i" class="h-16 bg-slate-50 border border-slate-100 rounded-2xl"></div>
+
+    <div v-if="isLoading" class="flex-1 flex flex-col justify-center gap-4 animate-pulse">
+      <div v-for="i in 3" :key="i" class="h-16 rounded-[var(--radius-lg)]" style="background: var(--surface-sunken); border: 1px solid var(--border-subtle);"></div>
     </div>
-    
-    <div v-else class="flex-1 flex flex-col justify-center space-y-4">
-      <div v-for="p in ['Curto', 'Medio', 'Longo']" :key="p" :class="getPrazoStyle(p).container" class="p-3 rounded-2xl border transition-all hover:shadow-sm">
+
+    <div v-else class="flex-1 flex flex-col justify-center gap-3">
+      <div v-for="p in ['Curto', 'Medio', 'Longo']" :key="p"
+           class="p-3 rounded-[var(--radius-lg)]"
+           style="border: 1px solid; transition: box-shadow var(--duration-fast);"
+           :style="getPrazoContainerStyle(p)"
+           onmouseover="this.style.boxShadow='var(--shadow-sm)'"
+           onmouseout="this.style.boxShadow='none'">
         <div class="flex justify-between items-end mb-2">
           <div class="flex flex-col">
-            <span class="text-[10px] font-black uppercase tracking-wider" :class="getPrazoStyle(p).text">{{ getPrazoLabel(p) }}</span>
-            <span class="text-[8px] font-bold opacity-70" :class="getPrazoStyle(p).text">{{ getPrazoDesc(p) }}</span>
+            <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;" :style="getPrazoColorStyle(p)">{{ getPrazoLabel(p) }}</span>
+            <span style="font-size: 8px; font-weight: 600; opacity: 0.7;" :style="getPrazoColorStyle(p)">{{ getPrazoDesc(p) }}</span>
           </div>
           <div class="text-right flex flex-col">
-            <span class="font-black text-sm" :class="getPrazoStyle(p).text">{{ stats['pct'+p] || 0 }}%</span>
-            <span class="text-[8px] font-bold opacity-60 uppercase" :class="getPrazoStyle(p).text">{{ stats[p.toLowerCase()] || 0 }} OPS</span>
+            <span style="font-size: 13px; font-weight: 700; font-family: 'JetBrains Mono', monospace;" :style="getPrazoColorStyle(p)">{{ stats['pct'+p] || 0 }}%</span>
+            <span style="font-size: 8px; font-weight: 600; opacity: 0.6; text-transform: uppercase;" :style="getPrazoColorStyle(p)">{{ stats[p.toLowerCase()] || 0 }} OPS</span>
           </div>
         </div>
-        <div class="w-full h-2.5 bg-white rounded-full overflow-hidden flex border border-black/5">
-          <div :style="{ width: (stats['pct'+p] || 0) + '%' }" :class="getPrazoStyle(p).bar" class="h-full transition-all duration-1000 ease-out"></div>
+        <div class="w-full h-2.5 rounded-[var(--radius-full)] overflow-hidden" style="background: var(--surface-base); border: 1px solid rgba(0,0,0,0.05);">
+          <div :style="{ width: (stats['pct'+p] || 0) + '%' }" class="h-full transition-all duration-1000" :style="getPrazoBarStyle(p)"></div>
         </div>
       </div>
     </div>
@@ -102,39 +111,36 @@
 
 <script>
 window.CardVencimentos = {
-  props: { 
-    isMobile: Boolean, 
-    isLoading: Boolean,
-    statsPreCalculados: Object
-  },
+  props: { isMobile: Boolean, isLoading: Boolean, statsPreCalculados: Object },
   template: '#card-vencimentos-template',
   computed: {
     stats() {
-      // 🛡️ TRAVA DE SEGURANÇA: Retorna um objeto zerado perfeito se não houver dados do Cubo
-      if (!this.statsPreCalculados || !this.statsPreCalculados.vencimentosDteStats) {
+      if (!this.statsPreCalculados?.vencimentosDteStats)
         return { curto: 0, medio: 0, longo: 0, pctCurto: 0, pctMedio: 0, pctLongo: 0, total: 0 };
-      }
       return this.statsPreCalculados.vencimentosDteStats;
     },
     statusVencimento() {
-      if (!this.stats || this.stats.total === 0) return { labelClean: 'Aguardando', bgClass: 'bg-slate-300', textClass: 'text-slate-500' };
-      if (this.stats.pctCurto > 40) return { labelClean: 'Risco Imediato', bgClass: 'bg-red-500 animate-pulse', textClass: 'text-red-600' };
-      if (this.stats.pctLongo > 40) return { labelClean: 'Posição Tranquila', bgClass: 'bg-emerald-500', textClass: 'text-emerald-600' };
-      return { labelClean: 'Equilibrado', bgClass: 'bg-amber-400', textClass: 'text-amber-600' };
+      if (!this.stats || this.stats.total === 0) return { labelClean: 'Aguardando', dotStyle: 'background: var(--text-muted);', textStyle: 'color: var(--text-muted);' };
+      if (this.stats.pctCurto > 40) return { labelClean: 'Risco Imediato', dotStyle: 'background: var(--brand-rose);', textStyle: 'color: var(--brand-rose);' };
+      if (this.stats.pctLongo > 40) return { labelClean: 'Posição Tranquila', dotStyle: 'background: var(--brand-emerald);', textStyle: 'color: var(--brand-emerald);' };
+      return { labelClean: 'Equilibrado', dotStyle: 'background: var(--brand-amber);', textStyle: 'color: var(--brand-amber);' };
     }
   },
   methods: {
     getPrazoLabel(p) { return { Curto: 'Curto Prazo', Medio: 'Médio Prazo', Longo: 'Longo Prazo' }[p]; },
-    getPrazoDesc(p) { return { Curto: '0 a 15 dias', Medio: '16 a 45 dias', Longo: 'Acima de 46 dias' }[p]; },
-    getPrazoStyle(p) {
-      if (p === 'Curto') return { container: 'bg-red-50/50 border-red-100', text: 'text-red-800', bar: 'bg-red-600' };
-      if (p === 'Medio') return { container: 'bg-amber-50/50 border-amber-100', text: 'text-amber-800', bar: 'bg-amber-500' };
-      return { container: 'bg-emerald-50/50 border-emerald-100', text: 'text-emerald-800', bar: 'bg-emerald-600' };
+    getPrazoDesc(p)  { return { Curto: '0–15 dias', Medio: '16–45 dias', Longo: '+46 dias' }[p]; },
+    getPrazoColorStyle(p) {
+      return { Curto: 'color: var(--brand-rose);', Medio: 'color: var(--brand-amber);', Longo: 'color: var(--brand-emerald);' }[p];
     },
-    getPrazoStyleMobile(p) {
-      if (p === 'Curto') return { text: 'text-red-600' };
-      if (p === 'Medio') return { text: 'text-amber-500' };
-      return { text: 'text-emerald-500' };
+    getPrazoContainerStyle(p) {
+      return {
+        Curto: 'background: var(--brand-rose-light);   border-color: var(--brand-rose-muted);',
+        Medio: 'background: var(--brand-amber-light); border-color: var(--brand-amber-muted);',
+        Longo: 'background: var(--brand-emerald-light); border-color: var(--brand-emerald-muted);'
+      }[p];
+    },
+    getPrazoBarStyle(p) {
+      return { Curto: 'background: var(--brand-rose);', Medio: 'background: var(--brand-amber);', Longo: 'background: var(--brand-emerald);' }[p];
     }
   }
 };

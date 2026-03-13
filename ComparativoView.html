@@ -1,272 +1,442 @@
 <template id="comparativo-view-template">
-  <div class="max-w-[95%] mx-auto flex flex-col font-sans space-y-8 mt-6 animate-fade-in mb-16">
+  <div style="max-width: 95%; margin: 1.5rem auto 4rem; display: flex; flex-direction: column; gap: 2rem;">
 
-    <div class="premium-card px-8 py-6 flex flex-col xl:flex-row justify-between items-center gap-6 z-30 relative shrink-0">
-      <div class="flex items-center gap-5">
-        <div class="p-3 bg-indigo-50 text-brand-indigo rounded-2xl shadow-sm border border-indigo-100/50">
-          <i data-lucide="swords" class="w-6 h-6"></i>
+    <!-- ══ HEADER ══ -->
+    <div class="premium-card"
+         style="padding: 1.5rem 2rem; display: flex; flex-wrap: wrap; justify-content: space-between;
+                align-items: center; gap: 1.5rem; position: relative; z-index: 30;">
+      <div style="display: flex; align-items: center; gap: 1.25rem;">
+        <div style="padding: 0.75rem; background: var(--brand-indigo-light); color: var(--brand-indigo);
+                    border-radius: var(--radius-lg); border: 1px solid var(--brand-indigo-muted);">
+          <i data-lucide="swords" style="width: 1.5rem; height: 1.5rem;"></i>
         </div>
         <div>
-          <h2 class="text-2xl font-black text-slate-900 tracking-tight leading-none">Comparador de PUT</h2>
-          <div class="flex items-center gap-2 mt-1.5">
-            <span class="flex h-2 w-2 rounded-full bg-brand-emerald animate-pulse shadow-sm shadow-emerald-200"></span>
-            <p class="text-slate-400 text-[10px] uppercase tracking-[0.25em] font-bold">Simulação de Estresse e Payoff</p>
+          <h2 class="t-title" style="color: var(--text-primary); letter-spacing: -0.02em;">Comparador de PUT</h2>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.375rem;">
+            <span style="width: 0.5rem; height: 0.5rem; border-radius: 50%;
+                         background: var(--brand-emerald); display: inline-block;
+                         animation: comp-pulse 2s ease-in-out infinite;"></span>
+            <p class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.25em;">
+              Simulação de Estresse e Payoff
+            </p>
           </div>
         </div>
       </div>
 
-      <div class="flex items-center gap-3 bg-slate-50/80 p-1.5 rounded-2xl border border-slate-100 shadow-inner">
-        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-3">Cenário:</label>
+      <!-- Controles -->
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+                  background: var(--surface-overlay); padding: 0.375rem 0.75rem;
+                  border-radius: var(--radius-xl); border: 1px solid var(--border-subtle);">
+        <label class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase;
+                                         letter-spacing: 0.16em; margin-left: 0.25rem;">Cenário:</label>
         <select v-model.number="simulacaoQueda" @change="processarComparacao"
-          class="bg-white text-slate-700 text-xs font-bold border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-indigo/30 transition-all min-w-[160px] cursor-pointer shadow-sm appearance-none">
+                style="background: var(--surface-base); color: var(--text-primary); font-size: 12px;
+                       font-weight: 700; border: 1px solid var(--border-default); border-radius: var(--radius-md);
+                       padding: 0.5rem 1rem; outline: none; min-width: 160px; cursor: pointer;
+                       font-family: 'DM Sans', sans-serif; appearance: none;"
+                onfocus="this.style.borderColor='var(--brand-indigo)'"
+                onblur="this.style.borderColor='var(--border-default)'">
           <option :value="0">0% - Realista</option>
           <option :value="5">-5% - Queda Técnica</option>
           <option :value="10">-10% - Estresse Forte</option>
           <option :value="20">-20% - Cenário Crash</option>
         </select>
-        <div class="w-px h-6 bg-slate-200 mx-1"></div>
-        <div class="flex items-center gap-2">
-          <div class="flex items-center bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm transition-all focus-within:ring-2 focus-within:ring-brand-indigo/30">
-            <i data-lucide="arrow-down-up" class="w-3.5 h-3.5 text-slate-400 mr-2"></i>
-            <select v-model="ordenarPor" @change="ordenarArena" class="text-[10px] font-black text-slate-600 uppercase tracking-widest outline-none bg-transparent cursor-pointer appearance-none min-w-[140px]">
-              <option value="padrao">Ordem Padrão</option>
-              <option value="lucro">💰 Maior Lucro %</option>
-              <option value="seguranca">🛡️ Maior Segurança</option>
-              <option value="premio">💵 Maior Prêmio</option>
-            </select>
+
+        <div style="width: 1px; height: 1.5rem; background: var(--border-subtle);"></div>
+
+        <div style="display: flex; align-items: center; background: var(--surface-base);
+                    border: 1px solid var(--border-default); border-radius: var(--radius-md);
+                    padding: 0.5rem 0.75rem; gap: 0.5rem;">
+          <i data-lucide="arrow-down-up" style="width: 0.875rem; height: 0.875rem; color: var(--text-muted);"></i>
+          <select v-model="ordenarPor" @change="ordenarArena"
+                  style="font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;
+                         letter-spacing: 0.1em; outline: none; background: transparent; cursor: pointer;
+                         appearance: none; min-width: 140px; font-family: 'DM Sans', sans-serif;">
+            <option value="padrao">Ordem Padrão</option>
+            <option value="lucro">💰 Maior Lucro %</option>
+            <option value="seguranca">🛡️ Maior Segurança</option>
+            <option value="premio">💵 Maior Prêmio</option>
+          </select>
+        </div>
+
+        <div style="width: 1px; height: 1.5rem; background: var(--border-subtle);"></div>
+
+        <button @click="limparArena"
+                style="padding: 0.5rem 0.75rem; background: var(--surface-base); border: 1px solid var(--border-default);
+                       color: var(--text-muted); border-radius: var(--radius-md); cursor: pointer;"
+                title="Limpar Arena"
+                onmouseover="this.style.color='var(--brand-rose)'; this.style.borderColor='var(--brand-rose-muted)'"
+                onmouseout="this.style.color='var(--text-muted)'; this.style.borderColor='var(--border-default)'">
+          <i data-lucide="eraser" style="width: 1rem; height: 1rem;"></i>
+        </button>
+
+        <button @click="adicionarCard" class="btn-action btn-action-primary"
+                style="padding: 0.5rem 1.25rem; border-radius: var(--radius-md);">
+          <i data-lucide="plus" style="width: 1rem; height: 1rem;"></i>
+          <span style="margin-left: 0.25rem; font-size: 10px; font-weight: 700;
+                       text-transform: uppercase; letter-spacing: 0.12em;">Adicionar</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ ARENA ══ -->
+    <div style="display: flex; flex-direction: column;">
+      <div style="display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 1.5rem;
+                  align-items: flex-start; padding: 0.5rem 0.5rem 1.5rem; margin: 0 -0.5rem;
+                  position: relative; z-index: 10;" class="log-scrollbar">
+
+        <!-- Skeleton -->
+        <template v-if="isLoading && cards.length === 0">
+          <div v-for="n in 3" :key="'skel-comp-'+n"
+               style="width: 320px; height: 500px; border-radius: var(--radius-xl); flex-shrink: 0;
+                      background: var(--surface-base); border: 1px solid var(--border-subtle);
+                      animation: comp-pulse 1.5s ease-in-out infinite;"></div>
+        </template>
+
+        <!-- Cards de opção -->
+        <div v-for="(card, index) in cards" :key="card.id"
+             style="width: 320px; flex-shrink: 0; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm);
+                    display: flex; flex-direction: column; overflow: hidden; position: relative;
+                    transition: box-shadow 0.3s, border-color 0.3s;"
+             :style="getCardBorderStyle(card)"
+             onmouseover="this.style.boxShadow='var(--shadow-md)'"
+             onmouseout="this.style.boxShadow='var(--shadow-sm)'">
+
+          <!-- Badge de destaque -->
+          <div v-if="mostrarResultados && rankingRentabilidade.id === card.id && rankingSeguranca.id === card.id"
+               style="background: linear-gradient(to right, var(--brand-emerald), var(--brand-indigo));
+                      color: #fff; font-size: 9px; font-weight: 700; text-transform: uppercase;
+                      padding: 0.375rem; text-align: center; letter-spacing: 0.12em;">
+            🏆 MAIOR LUCRO E 🛡️ MAIS SEGURA
           </div>
-          <div class="w-px h-6 bg-slate-200 mx-1"></div>
-          <button @click="limparArena" 
-            class="btn-action bg-white border border-slate-200 text-slate-400 hover:text-rose-600 shadow-sm px-3 py-2.5 rounded-xl" title="Limpar Arena">
-            <i data-lucide="eraser" class="w-4 h-4"></i>
+          <div v-else-if="mostrarResultados && rankingRentabilidade.id === card.id"
+               style="background: var(--brand-emerald); color: #fff; font-size: 9px; font-weight: 700;
+                      text-transform: uppercase; padding: 0.375rem; text-align: center; letter-spacing: 0.12em;">
+            🏆 OPÇÃO MAIS RENTÁVEL
+          </div>
+          <div v-else-if="mostrarResultados && rankingSeguranca.id === card.id"
+               style="background: var(--brand-indigo); color: #fff; font-size: 9px; font-weight: 700;
+                      text-transform: uppercase; padding: 0.375rem; text-align: center; letter-spacing: 0.12em;">
+            🛡️ OPÇÃO MAIS SEGURA
+          </div>
+
+          <!-- Botão remover -->
+          <button @click.stop="removerCard(card.id)" v-if="cards.length > 2"
+                  class="comp-delete-btn"
+                  style="position: absolute; top: 0.5rem; right: 0.5rem; z-index: 40;
+                         padding: 0.25rem; background: var(--surface-base); color: var(--text-muted);
+                         border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);
+                         cursor: pointer; opacity: 0; transition: opacity 0.2s;"
+                  onmouseover="this.style.background='var(--brand-rose-light)'; this.style.color='var(--brand-rose)'"
+                  onmouseout="this.style.background='var(--surface-base)'; this.style.color='var(--text-muted)'">
+            <i data-lucide="x" style="width: 0.875rem; height: 0.875rem;"></i>
           </button>
-          <button @click="adicionarCard" 
-            class="btn-action btn-action-primary px-5 py-2.5 rounded-xl shadow-md">
-            <i data-lucide="plus" class="w-4 h-4"></i>
-            <span class="ml-1 text-[10px] font-black uppercase tracking-widest">Adicionar</span>
+
+          <!-- Input do ticker -->
+          <div style="padding: 1rem; background: var(--surface-overlay);
+                      border-bottom: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+              <label class="t-label-sm" style="color: var(--brand-indigo); text-transform: uppercase;
+                                               letter-spacing: 0.16em; margin-left: 0.25rem;">Código do Ativo</label>
+              <div style="position: relative;">
+                <input v-model="card.ticker" @change="buscarDadosAPI(card)" @keyup.enter="buscarDadosAPI(card)" type="text"
+                       placeholder="EX: PETRP280"
+                       style="width: 100%; background: var(--surface-base); border: 1px solid var(--border-default);
+                              font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; font-weight: 700;
+                              border-radius: var(--radius-md); padding: 0.5rem 0.75rem; text-transform: uppercase;
+                              color: var(--text-primary); outline: none; transition: border-color 0.2s;"
+                       onfocus="this.style.borderColor='var(--brand-indigo)'"
+                       onblur="this.style.borderColor='var(--border-default)'">
+                <div v-if="card.loading"
+                     style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
+                            width: 1rem; height: 1rem; border-radius: 50%;
+                            border: 2px solid var(--brand-indigo-muted); border-top-color: var(--brand-indigo);
+                            animation: comp-spin 0.7s linear infinite;"></div>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;
+                        padding: 0.375rem 0.625rem; background: var(--surface-base);
+                        border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);">
+              <span class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase;">Vencimento</span>
+              <span class="font-mono-data" style="font-size: 1rem; font-weight: 700; color: var(--brand-indigo);">
+                {{ card.api.isValid ? card.api.dte + ' d' : '---' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Corpo do card -->
+          <div style="padding: 1rem; flex: 1; display: flex; flex-direction: column; gap: 1rem;
+                      background: var(--surface-base);">
+
+            <!-- Empty state / erro -->
+            <div v-if="!card.api.isValid && !card.loading"
+                 style="padding: 2.5rem 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+              <template v-if="card.error">
+                <i data-lucide="alert-circle" style="width: 1.75rem; height: 1.75rem; color: var(--brand-rose); margin-bottom: 0.25rem;"></i>
+                <p class="t-label-sm" style="color: var(--brand-rose); text-transform: uppercase;
+                                             text-align: center; line-height: 1.5; font-size: 9px;">{{ card.error }}</p>
+              </template>
+              <template v-else>
+                <i data-lucide="search" style="width: 2rem; height: 2rem; color: var(--text-muted); opacity: 0.4; margin-bottom: 0.25rem;"></i>
+                <p class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase;
+                                             text-align: center; line-height: 1.4; opacity: 0.4;">Aguardando<br>Dados</p>
+              </template>
+            </div>
+
+            <!-- Dados da opção -->
+            <div v-else-if="card.api.isValid" style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <div style="padding: 0.5rem; background: var(--surface-overlay); border-radius: var(--radius-md);
+                             border: 1px solid var(--border-subtle); text-align: center;">
+                  <span class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase;
+                                                   display: block; margin-bottom: 0.25rem;">Spot</span>
+                  <span class="font-mono-data" style="font-size: 15px; font-weight: 700; line-height: 1;"
+                        :style="simulacaoQueda > 0 ? 'color: var(--text-muted); text-decoration: line-through;' : 'color: var(--text-primary);'">
+                    {{ formatMoney(card.api.spotPrice) }}
+                  </span>
+                </div>
+                <div style="padding: 0.5rem; background: var(--surface-overlay); border-radius: var(--radius-md);
+                             border: 1px solid var(--border-subtle); text-align: center;">
+                  <span class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase;
+                                                   display: block; margin-bottom: 0.25rem;">Strike</span>
+                  <span class="font-mono-data" style="font-size: 15px; font-weight: 700; color: var(--text-primary); line-height: 1;">
+                    {{ formatMoney(card.api.strike) }}
+                  </span>
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center;
+                           padding: 0.5rem 0.75rem; background: var(--surface-overlay);
+                           border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+                <span class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">
+                  Margem de Segurança
+                </span>
+                <span class="font-mono-data" style="font-size: 13px; font-weight: 700; color: var(--brand-indigo);">
+                  {{ getDistanciaBreakEven(card) }}
+                </span>
+              </div>
+
+              <!-- Prêmio com ajuste -->
+              <div style="display: flex; flex-direction: column; gap: 0.25rem; padding: 0.625rem 0.75rem;
+                           background: var(--brand-indigo-light); border: 1px solid var(--brand-indigo-muted);
+                           border-radius: var(--radius-md);">
+                <span class="t-label-sm" style="color: var(--brand-indigo); text-transform: uppercase;
+                                                 letter-spacing: 0.1em; text-align: center;">Prêmio</span>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <button @click="ajustarPremio(card, -0.01)"
+                          style="width: 1.75rem; height: 1.75rem; display: flex; align-items: center;
+                                 justify-content: center; border-radius: var(--radius-sm);
+                                 background: var(--surface-base); border: 1px solid var(--brand-indigo-muted);
+                                 color: var(--brand-indigo); cursor: pointer; font-size: 1rem; font-weight: 700;">−</button>
+                  <span class="font-mono-data" style="font-size: 1.5rem; font-weight: 700; color: var(--brand-indigo);">
+                    {{ formatMoney(card.api.premioAtual).replace('R$', '') }}
+                  </span>
+                  <button @click="ajustarPremio(card, 0.01)"
+                          style="width: 1.75rem; height: 1.75rem; display: flex; align-items: center;
+                                 justify-content: center; border-radius: var(--radius-sm);
+                                 background: var(--surface-base); border: 1px solid var(--brand-indigo-muted);
+                                 color: var(--brand-indigo); cursor: pointer; font-size: 1rem; font-weight: 700;">+</button>
+                </div>
+              </div>
+
+              <!-- Lucro % -->
+              <div style="display: flex; justify-content: space-between; align-items: center;
+                           padding: 0.625rem 0.75rem; background: var(--brand-emerald-light);
+                           border: 1px solid var(--brand-emerald-muted); border-radius: var(--radius-md);">
+                <span class="t-label-sm" style="color: var(--brand-emerald); text-transform: uppercase; font-weight: 700;">Lucro %</span>
+                <span class="font-mono-data" style="font-size: 1.125rem; font-weight: 700; color: var(--brand-emerald); line-height: 1;">
+                  {{ formatPct(calcLucroPct(card)) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer do card -->
+          <div style="padding: 1rem; background: var(--surface-overlay);
+                      border-top: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Lotes (100+)</span>
+              <div style="display: flex; align-items: center; background: var(--surface-base);
+                           border-radius: var(--radius-md); border: 1px solid var(--border-default);
+                           padding: 0.25rem; box-shadow: var(--shadow-sm);">
+                <button @click="ajustarQtd(card, -100)"
+                        style="width: 1.75rem; height: 1.75rem; display: flex; align-items: center; justify-content: center;
+                               color: var(--text-muted); cursor: pointer; border: none; background: transparent;
+                               font-size: 1.25rem; font-weight: 700; border-radius: var(--radius-sm);"
+                        onmouseover="this.style.color='var(--brand-indigo)'"
+                        onmouseout="this.style.color='var(--text-muted)'">−</button>
+                <input v-model.number="card.qtd" type="number"
+                       style="width: 4rem; text-align: center; font-family: 'JetBrains Mono', monospace;
+                              font-size: 14px; font-weight: 700; color: var(--text-primary); outline: none;
+                              background: transparent; border: none; line-height: 1;">
+                <button @click="ajustarQtd(card, 100)"
+                        style="width: 1.75rem; height: 1.75rem; display: flex; align-items: center; justify-content: center;
+                               color: var(--text-muted); cursor: pointer; border: none; background: transparent;
+                               font-size: 1.25rem; font-weight: 700; border-radius: var(--radius-sm);"
+                        onmouseover="this.style.color='var(--brand-indigo)'"
+                        onmouseout="this.style.color='var(--text-muted)'">+</button>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;
+                         border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Notional</span>
+                <span class="font-mono-data" style="font-size: 14px; font-weight: 700; color: var(--text-secondary);">
+                  {{ card.api.isValid ? formatMoney(calcNotional(card)) : 'R$ 0,00' }}
+                </span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="t-label-sm" style="color: var(--brand-emerald); text-transform: uppercase;
+                                                 letter-spacing: 0.1em; font-weight: 700;">Crédito</span>
+                <span class="font-mono-data" style="font-size: 1.5rem; font-weight: 700; color: var(--brand-emerald); line-height: 1;">
+                  {{ card.api.isValid ? formatMoney(calcPremioTotal(card)) : 'R$ 0,00' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══ BASKET AGREGADO ══ -->
+      <div v-if="agregadoBasket"
+           class="premium-card"
+           style="padding: 1rem 1.5rem; display: flex; flex-wrap: wrap; align-items: center;
+                  justify-content: space-between; gap: 1.5rem; margin-top: -0.5rem;
+                  position: relative; overflow: hidden; z-index: 20;">
+        <div style="position: absolute; left: -2.5rem; top: -2.5rem; width: 8rem; height: 8rem;
+                    background: var(--brand-indigo-light); border-radius: 50%; filter: blur(30px);
+                    opacity: 0.6; pointer-events: none;"></div>
+
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem; position: relative; z-index: 1;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; padding-right: 0.5rem;">
+            <div style="width: 2rem; height: 2rem; background: var(--brand-indigo-light); border-radius: var(--radius-md);
+                         display: flex; align-items: center; justify-content: center; border: 1px solid var(--brand-indigo-muted);">
+              <i data-lucide="calculator" style="width: 1rem; height: 1rem; color: var(--brand-indigo);"></i>
+            </div>
+            <div>
+              <span class="t-label-sm" style="color: var(--text-primary); text-transform: uppercase;
+                                               letter-spacing: 0.12em; display: block;">Cesta</span>
+              <span style="font-size: 8px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+                {{ agregadoBasket.qtdCards }} opções
+              </span>
+            </div>
+          </div>
+
+          <div style="width: 1px; height: 2rem; background: var(--border-subtle);"></div>
+
+          <div v-for="(item, i) in basketItems" :key="i" style="display: flex; align-items: center; gap: 1.5rem;">
+            <div>
+              <span style="display: block; font-size: 8px; font-weight: 700; color: var(--text-muted);
+                            text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.125rem;">
+                {{ item.label }}
+              </span>
+              <div style="display: flex; align-items: baseline; gap: 0.375rem;">
+                <span class="font-mono-data" style="font-size: 14px; font-weight: 700; color: var(--text-primary);"
+                      :style="item.color ? `color: ${item.color}` : ''">
+                  {{ item.value }}
+                </span>
+                <span v-if="item.sub" class="font-mono-data"
+                      style="font-size: 12px; font-weight: 600; color: var(--text-muted);">{{ item.sub }}</span>
+              </div>
+            </div>
+            <div style="width: 1px; height: 2rem; background: var(--border-subtle);"></div>
+          </div>
+        </div>
+
+        <div style="position: relative; z-index: 1; flex-shrink: 0;">
+          <button @click="processarComparacao"
+                  style="padding: 0.875rem 2rem; background: var(--surface-base); color: var(--text-secondary);
+                         border: 1px solid var(--border-default); border-radius: var(--radius-lg);
+                         font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.25em;
+                         cursor: pointer; display: flex; align-items: center; gap: 0.75rem;
+                         transition: all 0.3s; box-shadow: var(--shadow-sm);"
+                  onmouseover="this.style.color='var(--brand-indigo)'; this.style.borderColor='var(--brand-indigo-muted)'; this.style.background='var(--brand-indigo-light)'; this.style.boxShadow='var(--shadow-md)'"
+                  onmouseout="this.style.color='var(--text-secondary)'; this.style.borderColor='var(--border-default)'; this.style.background='var(--surface-base)'; this.style.boxShadow='var(--shadow-sm)'">
+            Iniciar Batalha
           </button>
         </div>
       </div>
     </div>
 
-    <div class="flex flex-col">
-      <div class="flex flex-nowrap overflow-x-auto gap-6 items-start relative z-10 pb-6 pt-2 px-2 -mx-2 log-scrollbar custom-scrollbar-mobile">  
+    <!-- ══ RESULTADOS ══ -->
+    <div v-if="mostrarResultados"
+         style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 2rem; padding-bottom: 8rem; margin-top: 1rem;">
 
-        <template v-if="isLoading && cards.length === 0">
-           <div v-for="n in 3" :key="'skel-comp-'+n" class="w-[320px] h-[500px] bg-white border border-slate-100 rounded-[24px] animate-pulse shrink-0"></div>
-        </template>
-
-        <div v-for="(card, index) in cards" :key="card.id"
-            :class="[
-              'w-[320px] shrink-0 bg-white rounded-[24px] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group relative border',
-              isMobile ? 'snap-center' : '',
-              mostrarResultados && rankingRentabilidade.id === card.id && rankingSeguranca.id === card.id ? 'border-emerald-400 shadow-emerald-200/50' :
-              mostrarResultados && rankingRentabilidade.id === card.id ? 'border-emerald-500 shadow-emerald-200/50' :
-              mostrarResultados && rankingSeguranca.id === card.id ? 'border-indigo-500 shadow-indigo-200/50' :
-              'border-slate-200'
-            ]">
-
-            <button @click="removerCard(card.id)" v-if="cards.length > 2"
-              class="absolute top-2 right-2 z-40 p-1 bg-white/90 hover:bg-rose-50 text-slate-300 hover:text-rose-500 rounded-lg transition-all opacity-0 group-hover:opacity-100 border border-slate-100 shadow-sm">
-              <i data-lucide="x" class="w-3.5 h-3.5"></i>
-            </button>
-
-            <div v-if="mostrarResultados && rankingRentabilidade.id === card.id && rankingSeguranca.id === card.id"
-              class="bg-gradient-to-r from-emerald-500 to-indigo-500 text-white text-[9px] font-black uppercase py-1.5 text-center tracking-widest shadow-sm">
-              🏆 MAIOR LUCRO E 🛡️ MAIS SEGURA
-            </div>
-            <div v-else-if="mostrarResultados && rankingRentabilidade.id === card.id"
-              class="bg-emerald-500 text-white text-[9px] font-black uppercase py-1.5 text-center tracking-widest shadow-sm">
-              🏆 OPÇÃO MAIS RENTÁVEL
-            </div>
-            <div v-else-if="mostrarResultados && rankingSeguranca.id === card.id"
-              class="bg-indigo-500 text-white text-[9px] font-black uppercase py-1.5 text-center tracking-widest shadow-sm">
-              🛡️ OPÇÃO MAIS SEGURA
-            </div>
-
-            <div class="p-4 bg-slate-50/50 border-b border-slate-100 space-y-3">
-              <div class="flex flex-col gap-1">
-                <label class="text-[9px] font-black text-indigo-400 uppercase tracking-widest ml-1">Código do Ativo</label>
-                <div class="relative">
-                  <input v-model="card.ticker" @change="buscarDadosAPI(card)" type="text" placeholder="EX: PETRP280"
-                    class="w-full bg-white border border-slate-200 text-2xl font-mono font-black rounded-xl px-3 py-2 uppercase focus:border-indigo-500 outline-none transition-all shadow-inner leading-none">
-                  <div v-if="card.loading" class="absolute right-3 top-1/2 -translate-y-1/2">
-                    <div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                  </div>
-                </div>
-              </div>
-              <div class="flex justify-between items-center px-2.5 py-1.5 bg-white border border-slate-100 rounded-lg shadow-sm">
-                <span class="text-[9px] font-black text-slate-400 uppercase">Vencimento</span>
-                <span class="text-base font-mono font-black text-indigo-600 leading-none">
-                  {{ card.api.isValid ? card.api.dte + ' d' : '---' }}
-                </span>
-              </div>
-            </div>
-
-            <div class="px-4 py-3 flex-1 flex flex-col gap-4">
-              <div v-if="!card.api.isValid && !card.loading" class="py-12 flex flex-col items-center opacity-20">
-                <i data-lucide="search" class="w-8 h-8 mb-2"></i>
-                <p class="text-[9px] font-black uppercase tracking-widest text-center leading-tight">Aguardando<br>Dados</p>
-              </div>
-
-              <div v-else-if="card.api.isValid" class="flex flex-col gap-3 animate-fade-in">
-                <div class="grid grid-cols-2 gap-2">
-                  <div class="p-2 bg-slate-50 rounded-xl border border-slate-100 text-center">
-                    <span class="text-[9px] font-black text-slate-400 uppercase block mb-1">Spot</span>
-                    <span class="text-[15px] font-mono font-black leading-none" :class="simulacaoQueda > 0 ? 'text-slate-300 line-through' : 'text-slate-800'">
-                      {{ formatMoney(card.api.spotPrice) }}
-                    </span>
-                  </div>
-                  <div class="p-2 bg-slate-50 rounded-xl border border-slate-100 text-center">
-                    <span class="text-[9px] font-black text-slate-400 uppercase block mb-1">Strike</span>
-                    <span class="text-[15px] font-mono font-black text-slate-700 leading-none">{{ formatMoney(card.api.strike) }}</span>
-                  </div>
-                </div>
-
-                <div class="flex justify-between items-center py-2 px-3 bg-slate-50 border border-slate-100 rounded-xl">
-                  <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Margem de Segurança</span>
-                  <span class="text-[13px] font-mono font-black text-indigo-600 leading-none">
-                    {{ getDistanciaBreakEven(card) }}
-                  </span>
-                </div>
-
-                <div class="flex flex-col gap-1 py-1.5 px-3 bg-indigo-50/30 border border-indigo-100/50 rounded-xl mt-1">
-                  <span class="text-[9px] font-black text-indigo-400 uppercase tracking-widest text-center">Prêmio</span>
-                  <div class="flex items-center justify-between">
-                    <button @click="ajustarPremio(card, -0.01)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-indigo-200 text-indigo-600 shadow-sm">-</button>
-                    <span class="text-2xl font-mono font-black text-indigo-700">
-                      {{ formatMoney(card.api.premioAtual).replace('R$', '') }}
-                    </span>
-                    <button @click="ajustarPremio(card, 0.01)" class="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-indigo-200 text-indigo-600 shadow-sm">+</button>
-                  </div>
-                </div>
-
-                <div class="flex justify-between items-center py-2.5 px-3 bg-emerald-50 border border-emerald-100 rounded-xl">
-                  <span class="text-[11px] font-black text-emerald-800 uppercase">Lucro %</span>
-                  <span class="text-lg font-mono font-black text-emerald-800 leading-none">{{ formatPct(calcLucroPct(card)) }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-auto p-4 bg-slate-50 border-t border-slate-100 space-y-4">
-              <div class="flex justify-between items-center">
-                <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Lotes (100+)</span>
-                <div class="flex items-center bg-white rounded-xl border border-slate-200 p-1 shadow-sm">
-                  <button @click="ajustarQtd(card, -100)" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-brand-indigo transition-all text-xl font-bold">-</button>
-                  <input v-model.number="card.qtd" type="number" 
-                    class="w-16 text-center text-base font-mono font-black text-slate-700 outline-none bg-transparent leading-none">
-                  <button @click="ajustarQtd(card, 100)" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-brand-indigo transition-all text-xl font-bold">+</button>
-                </div>
-              </div>
-
-              <div class="space-y-2 border-t border-slate-200/50 pt-4">
-                <div class="flex justify-between items-center">
-                  <span class="text-[10px] uppercase font-black text-slate-400 tracking-widest">Notional</span>
-                  <span class="text-base font-mono font-bold text-slate-600 leading-none">
-                    {{ card.api.isValid ? formatMoney(calcNotional(card)) : 'R$ 0,00' }}
-                  </span>
-                </div>
-                <div class="flex justify-between items-center">
-                  <span class="text-[11px] uppercase font-black text-emerald-600 tracking-widest">Crédito</span>
-                  <span class="text-2xl font-mono font-black text-emerald-600 leading-none">
-                    {{ card.api.isValid ? formatMoney(calcPremioTotal(card)) : 'R$ 0,00' }}
-                  </span>
-                </div>
-              </div>
-            </div>
+      <!-- Rentabilidade -->
+      <div class="premium-card"
+           style="padding: 2.5rem; border-color: var(--brand-emerald-muted);
+                  background: var(--surface-base); position: relative; overflow: hidden;">
+        <div style="position: absolute; right: -1.5rem; top: -1.5rem; font-size: 6rem; font-weight: 800;
+                    font-style: italic; color: var(--brand-emerald); opacity: 0.06;
+                    pointer-events: none; font-family: 'Syne', sans-serif; line-height: 1;">ROC</div>
+        <span style="padding: 0.375rem 1rem; background: var(--brand-emerald-light); color: var(--brand-emerald);
+                      border-radius: var(--radius-md); font-size: 9px; font-weight: 700; text-transform: uppercase;
+                      letter-spacing: 0.12em; margin-bottom: 1.5rem; display: inline-block;
+                      border: 1px solid var(--brand-emerald-muted);">
+          Eficiência Financeira
+        </span>
+        <div style="display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.5rem;">
+          <h3 class="font-mono-data" style="font-size: 3rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.04em;">
+            {{ rankingRentabilidade.ticker }}
+          </h3>
+          <span class="font-mono-data" style="font-size: 1.25rem; font-weight: 700; color: var(--brand-emerald);">
+            {{ formatPct(rankingRentabilidade.anualizado) }} a.a.
+          </span>
         </div>
-      </div>
-
-      <div v-if="agregadoBasket" class="w-full bg-white rounded-2xl px-6 py-4 shadow-lg border border-slate-200 flex flex-col xl:flex-row items-center justify-between gap-6 -mt-2 animate-fade-in relative overflow-hidden z-20">
-        <div class="absolute -left-10 -top-10 w-32 h-32 bg-indigo-50/50 blur-2xl rounded-full pointer-events-none"></div>
-
-        <div class="flex flex-wrap md:flex-nowrap items-center gap-4 xl:gap-8 w-full xl:w-auto relative z-10">
-          <div class="flex items-center gap-2 pr-2">
-            <div class="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center border border-indigo-100">
-              <i data-lucide="calculator" class="w-4 h-4 text-brand-indigo"></i>
-            </div>
-            <div class="flex flex-col">
-              <span class="text-[9px] font-black text-slate-800 uppercase tracking-widest leading-none mb-0.5">Cesta</span>
-              <span class="text-[8px] font-bold text-slate-400 uppercase">{{ agregadoBasket.qtdCards }} opções</span>
-            </div>
-          </div>
-          <div class="w-px h-8 bg-slate-100 hidden md:block"></div>
-
-          <div class="text-left">
-            <span class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Lotes (Soma)</span>
-            <span class="text-base font-mono font-black text-slate-900 leading-none">{{ agregadoBasket.somaLotes }}</span>
-          </div>
-          <div class="w-px h-8 bg-slate-100 hidden md:block"></div>
-
-          <div class="text-left">
-            <span class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Prêmio Unit.</span>
-            <div class="flex items-baseline gap-1.5">
-              <span class="text-base font-mono font-black text-slate-900 leading-none">{{ formatMoney(agregadoBasket.somaPremioUnitario) }}</span>
-              <span class="text-[12px] font-bold text-slate-400">méd: {{ formatMoney(agregadoBasket.mediaPremioUnitario) }}</span>
-            </div>
-          </div>
-          <div class="w-px h-8 bg-slate-100 hidden md:block"></div>
-
-          <div class="text-left">
-            <span class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Lucro (Média)</span>
-            <span class="text-base font-mono font-black text-brand-emerald leading-none">{{ formatPct(agregadoBasket.mediaLucroPct) }}</span>
-          </div>
-          <div class="w-px h-8 bg-slate-100 hidden md:block"></div>
-
-          <div class="text-left">
-            <span class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Notional (Soma)</span>
-            <span class="text-base font-mono font-black text-slate-700 leading-none">{{ formatMoney(agregadoBasket.somaNotional) }}</span>
-          </div>
-          <div class="w-px h-8 bg-slate-100 hidden md:block"></div>
-
-          <div class="text-left">
-            <span class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Crédito Recebido</span>
-            <div class="flex items-baseline gap-1.5">
-              <span class="text-lg font-mono font-black text-brand-emerald leading-none">{{ formatMoney(agregadoBasket.somaCredito) }}</span>
-              <span class="text-[12px] font-bold text-slate-400">méd: {{ formatMoney(agregadoBasket.mediaCredito) }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="relative z-10 shrink-0 w-full xl:w-auto mt-4 xl:mt-0 border-t xl:border-t-0 border-slate-100 pt-4 xl:pt-0 pl-0 xl:pl-4">
-          <button @click="processarComparacao"
-            class="w-full xl:w-auto px-8 py-3.5 bg-gradient-to-br from-white to-slate-50 text-slate-700 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-[0.3em] shadow-sm hover:text-brand-indigo hover:border-indigo-200 hover:bg-indigo-50/30 hover:shadow-md hover:shadow-indigo-500/10 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center justify-center gap-3">
-            Iniciar Batalha
-          </button>
-        </div>
-      </div>
-    </div> 
-
-    <div v-if="mostrarResultados" class="max-w-[1400px] mx-auto mt-16 grid grid-cols-1 md:grid-cols-2 gap-8 pb-32">
-      
-      <div class="premium-card p-10 bg-gradient-to-br from-white to-emerald-50/50 border-emerald-100 shadow-xl relative overflow-hidden">
-        <div class="absolute -right-6 -top-6 text-9xl opacity-5 italic font-black text-emerald-900 pointer-events-none">ROC</div>
-        <span class="px-4 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-[9px] font-black uppercase tracking-widest mb-6 inline-block">Eficiência Financeira</span>
-        <div class="flex items-baseline gap-4 mb-2">
-          <h3 class="text-5xl font-black font-mono text-emerald-950 tracking-tighter">{{ rankingRentabilidade.ticker }}</h3>
-          <span class="text-xl font-black text-emerald-600 font-mono">{{ formatPct(rankingRentabilidade.anualizado) }} a.a.</span>
-        </div>
-        <p class="text-[9px] font-black text-emerald-700/60 uppercase tracking-[0.3em] mb-8">Onde seu dinheiro rende mais por dia</p>
-        <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-emerald-100 shadow-sm">
-          <h4 class="text-[11px] font-black text-emerald-900 uppercase mb-4 flex items-center gap-3 underline decoration-emerald-200 underline-offset-4">Veredito de Alocação</h4>
-          <p class="text-sm text-slate-700 leading-relaxed font-medium">
-            Esta é a opção vencedora para quem busca <b>renda mensal pura</b>. O sistema calculou que ela devolve <b>{{ formatMoney(rankingRentabilidade.premioPorMil) }}</b> de prêmio para cada R$ 1.000,00 que você deixa em garantia. É o cavalo mais rápido para gerar caixa rápido.
+        <p class="t-label-sm" style="color: var(--brand-emerald); opacity: 0.7; text-transform: uppercase;
+                                     letter-spacing: 0.25em; margin-bottom: 2rem;">
+          Onde seu dinheiro rende mais por dia
+        </p>
+        <div style="background: var(--surface-overlay); border-radius: var(--radius-lg); padding: 2rem;
+                     border: 1px solid var(--brand-emerald-muted);">
+          <h4 class="t-label" style="color: var(--text-primary); text-transform: uppercase; margin-bottom: 1rem;
+                                     text-decoration: underline; text-underline-offset: 4px;">Veredito de Alocação</h4>
+          <p class="t-body" style="color: var(--text-secondary); line-height: 1.7;">
+            Esta é a opção vencedora para quem busca <strong style="color: var(--text-primary);">renda mensal pura</strong>.
+            O sistema calculou que ela devolve <strong style="color: var(--text-primary);">{{ formatMoney(rankingRentabilidade.premioPorMil) }}</strong>
+            de prêmio para cada R$ 1.000,00 em garantia. É o cavalo mais rápido para gerar caixa.
           </p>
         </div>
       </div>
 
-      <div class="premium-card p-10 bg-gradient-to-br from-white to-indigo-50/50 border-indigo-100 shadow-xl relative overflow-hidden">
-        <div class="absolute -right-6 -top-6 text-9xl opacity-5 italic font-black text-indigo-900 pointer-events-none">SAFE</div>
-        <span class="px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-[9px] font-black uppercase tracking-widest mb-6 inline-block">Proteção Patrimonial</span>
-        <div class="flex items-baseline gap-4 mb-2">
-          <h3 class="text-5xl font-black font-mono text-indigo-950 tracking-tighter">{{ rankingSeguranca.ticker }}</h3>
-          <span class="text-xl font-black text-indigo-600 font-mono">{{ formatPct(rankingSeguranca.margemQueda) }} de folga</span>
+      <!-- Segurança -->
+      <div class="premium-card"
+           style="padding: 2.5rem; border-color: var(--brand-indigo-muted);
+                  background: var(--surface-base); position: relative; overflow: hidden;">
+        <div style="position: absolute; right: -1.5rem; top: -1.5rem; font-size: 6rem; font-weight: 800;
+                    font-style: italic; color: var(--brand-indigo); opacity: 0.06;
+                    pointer-events: none; font-family: 'Syne', sans-serif; line-height: 1;">SAFE</div>
+        <span style="padding: 0.375rem 1rem; background: var(--brand-indigo-light); color: var(--brand-indigo);
+                      border-radius: var(--radius-md); font-size: 9px; font-weight: 700; text-transform: uppercase;
+                      letter-spacing: 0.12em; margin-bottom: 1.5rem; display: inline-block;
+                      border: 1px solid var(--brand-indigo-muted);">
+          Proteção Patrimonial
+        </span>
+        <div style="display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.5rem;">
+          <h3 class="font-mono-data" style="font-size: 3rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.04em;">
+            {{ rankingSeguranca.ticker }}
+          </h3>
+          <span class="font-mono-data" style="font-size: 1.25rem; font-weight: 700; color: var(--brand-indigo);">
+            {{ formatPct(rankingSeguranca.margemQueda) }} de folga
+          </span>
         </div>
-        <p class="text-[9px] font-black text-indigo-700/60 uppercase tracking-[0.3em] mb-8">Menor risco de ser exercido</p>
-        <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-indigo-100 shadow-sm">
-          <h4 class="text-[11px] font-black text-indigo-900 uppercase mb-4 flex items-center gap-3 underline decoration-indigo-200 underline-offset-4">Veredito de Risco</h4>
-          <p class="text-sm text-slate-700 leading-relaxed font-medium">
-            No cenário simulado de <b>{{ simulacaoQueda }}% de queda</b>, esta PUT provou ser a mais resiliente. O ativo precisaria cair mais do que <b>{{ formatPct(rankingSeguranca.margemQueda) }}</b> <i>além</i> do cenário simulado para você ser exercido. O seu break-even está em <b>{{ formatMoney(rankingSeguranca.breakeven) }}</b>.
+        <p class="t-label-sm" style="color: var(--brand-indigo); opacity: 0.7; text-transform: uppercase;
+                                     letter-spacing: 0.25em; margin-bottom: 2rem;">
+          Menor risco de ser exercido
+        </p>
+        <div style="background: var(--surface-overlay); border-radius: var(--radius-lg); padding: 2rem;
+                     border: 1px solid var(--brand-indigo-muted);">
+          <h4 class="t-label" style="color: var(--text-primary); text-transform: uppercase; margin-bottom: 1rem;
+                                     text-decoration: underline; text-underline-offset: 4px;">Veredito de Risco</h4>
+          <p class="t-body" style="color: var(--text-secondary); line-height: 1.7;">
+            No cenário simulado de <strong style="color: var(--text-primary);">{{ simulacaoQueda }}% de queda</strong>,
+            esta PUT provou ser a mais resiliente. O ativo precisaria cair mais do que
+            <strong style="color: var(--text-primary);">{{ formatPct(rankingSeguranca.margemQueda) }}</strong>
+            <em>além</em> do cenário simulado para o exercício ocorrer. Break-even em
+            <strong style="color: var(--text-primary);">{{ formatMoney(rankingSeguranca.breakeven) }}</strong>.
           </p>
         </div>
       </div>
@@ -275,10 +445,19 @@
   </div>
 </template>
 
+<style>
+  .comp-card:hover .comp-delete-btn { opacity: 1 !important; }
+  /* hover via JS onmouseover nos cards individuais */
+  div:hover > .comp-delete-btn { opacity: 1 !important; }
+
+  @keyframes comp-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  @keyframes comp-spin  { to { transform: rotate(360deg); } }
+</style>
+
 <script>
 window.ComparativoView = {
   template: '#comparativo-view-template',
-  props: ['isMobile', 'isLoading'], // 🚀 Injetados pelo AppCore
+  props: ['isMobile', 'isLoading'],
   data() {
     return {
       cardCounter: 2,
@@ -290,55 +469,82 @@ window.ComparativoView = {
       rankingSeguranca: {}
     };
   },
+
   computed: {
-    legendaEstresse() {
-      const msgs = { 0: "Análise baseada no cenário atual da B3.", 5: "Simula uma correção de 'suporte de médias'.", 10: "Simula um dia de forte estresse setorial.", 20: "Cenário de pânico (Crash)." };
-      return msgs[this.simulacaoQueda];
-    },
     agregadoBasket() {
       const validos = this.cards.filter(c => c.api.isValid);
-      const qtdCards = validos.length;
-      if (qtdCards < 2) return null;
-      let somaPremioUnitario = 0; let somaLucroPct = 0; let somaLotes = 0; let somaNotional = 0; let somaCredito = 0;
+      if (validos.length < 2) return null;
+      let somaPremio = 0, somaLucro = 0, somaLotes = 0, somaNotional = 0, somaCredito = 0;
       validos.forEach(c => {
-        somaPremioUnitario += parseFloat(c.api.premioAtual || 0);
-        somaLucroPct += this.calcLucroPct(c);
-        somaLotes += parseInt(c.qtd || 0);
+        somaPremio   += parseFloat(c.api.premioAtual || 0);
+        somaLucro    += this.calcLucroPct(c);
+        somaLotes    += parseInt(c.qtd || 0);
         somaNotional += this.calcNotional(c);
-        somaCredito += this.calcPremioTotal(c);
+        somaCredito  += this.calcPremioTotal(c);
       });
-      return { qtdCards, somaPremioUnitario, mediaPremioUnitario: somaPremioUnitario / qtdCards, mediaLucroPct: somaLucroPct / qtdCards, somaLotes, somaNotional, somaCredito, mediaCredito: somaCredito / qtdCards };
+      const n = validos.length;
+      return { qtdCards: n, somaPremioUnitario: somaPremio, mediaPremioUnitario: somaPremio / n,
+               mediaLucroPct: somaLucro / n, somaLotes, somaNotional, somaCredito, mediaCredito: somaCredito / n };
+    },
+
+    // Items do basket para v-for no template (evita repetição de HTML)
+    basketItems() {
+      if (!this.agregadoBasket) return [];
+      const b = this.agregadoBasket;
+      return [
+        { label: 'Lotes (Soma)',    value: b.somaLotes },
+        { label: 'Prêmio Unit.',    value: this.formatMoney(b.somaPremioUnitario),
+          sub: 'méd: ' + this.formatMoney(b.mediaPremioUnitario) },
+        { label: 'Lucro (Média)',   value: this.formatPct(b.mediaLucroPct), color: 'var(--brand-emerald)' },
+        { label: 'Notional (Soma)', value: this.formatMoney(b.somaNotional) },
+        { label: 'Crédito Recebido', value: this.formatMoney(b.somaCredito), color: 'var(--brand-emerald)',
+          sub: 'méd: ' + this.formatMoney(b.mediaCredito) }
+      ];
     }
   },
-  created() {
-    this.carregarCache();
-  },
+
+  created() { this.carregarCache(); },
+
   watch: {
-    cards: { 
-      handler() { 
-        this.salvarCache(); 
-        this.$nextTick(() => { if(window.lucide) lucide.createIcons(); });
-      }, 
-      deep: true 
+    cards: {
+      handler() {
+        this.salvarCache();
+        this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+      },
+      deep: true
     }
   },
+
   methods: {
+    // Border style como função — sem classes Tailwind hardcoded com cores
+    getCardBorderStyle(card) {
+      if (!this.mostrarResultados)
+        return 'background: var(--surface-base); border: 1px solid var(--border-default);';
+      const isRent = this.rankingRentabilidade.id === card.id;
+      const isSafe = this.rankingSeguranca.id === card.id;
+      if (isRent && isSafe) return 'background: var(--surface-base); border: 2px solid var(--brand-emerald); box-shadow: 0 0 0 4px var(--brand-emerald-muted);';
+      if (isRent)           return 'background: var(--surface-base); border: 2px solid var(--brand-emerald);';
+      if (isSafe)           return 'background: var(--surface-base); border: 2px solid var(--brand-indigo);';
+      return 'background: var(--surface-base); border: 1px solid var(--border-default);';
+    },
+
     limparArena() {
       localStorage.removeItem('arena_put_cache');
       this.cards = [this.criarCardVazio(1), this.criarCardVazio(2)];
-      this.cardCounter = 2; this.mostrarResultados = false; this.simulacaoQueda = 0; this.ordenarPor = 'padrao';
+      this.cardCounter = 2; this.mostrarResultados = false;
+      this.simulacaoQueda = 0; this.ordenarPor = 'padrao';
       this.$nextTick(() => lucide.createIcons());
     },
     salvarCache() {
-      localStorage.setItem('arena_put_cache', JSON.stringify({ cards: this.cards, cardCounter: this.cardCounter, simulacaoQueda: this.simulacaoQueda }));
+      localStorage.setItem('arena_put_cache', JSON.stringify(
+        { cards: this.cards, cardCounter: this.cardCounter, simulacaoQueda: this.simulacaoQueda }
+      ));
     },
     carregarCache() {
       const cache = localStorage.getItem('arena_put_cache');
       if (cache) {
-        const parsed = JSON.parse(cache);
-        this.cards = parsed.cards;
-        this.cardCounter = parsed.cardCounter;
-        this.simulacaoQueda = parsed.simulacaoQueda || 0;
+        const p = JSON.parse(cache);
+        this.cards = p.cards; this.cardCounter = p.cardCounter; this.simulacaoQueda = p.simulacaoQueda || 0;
         if (this.cards.some(c => c.api.isValid)) this.processarComparacao();
       } else {
         this.cards = [this.criarCardVazio(1), this.criarCardVazio(2)];
@@ -346,17 +552,17 @@ window.ComparativoView = {
       this.$nextTick(() => lucide.createIcons());
     },
     criarCardVazio(id) {
-      return { id, ticker: '', qtd: 100, loading: false, error: '', api: { spotPrice: 0, strike: 0, premioAtual: 0, dte: 0, trades: 0, isValid: false } };
+      return { id, ticker: '', qtd: 100, loading: false, error: '',
+               api: { spotPrice: 0, strike: 0, premioAtual: 0, dte: 0, trades: 0, isValid: false } };
     },
     adicionarCard() {
       this.cardCounter++;
       this.cards.push(this.criarCardVazio(this.cardCounter));
-      this.mostrarResultados = false;
-      this.ordenarPor = 'padrao';
+      this.mostrarResultados = false; this.ordenarPor = 'padrao';
       this.$nextTick(() => {
         lucide.createIcons();
-        const container = this.$el.querySelector('.overflow-x-auto');
-        if(container) container.scrollTo({ left: container.scrollWidth, behavior: 'smooth' });
+        const c = this.$el.querySelector('[style*="overflow-x: auto"]');
+        if (c) c.scrollTo({ left: c.scrollWidth, behavior: 'smooth' });
       });
     },
     removerCard(id) {
@@ -371,60 +577,68 @@ window.ComparativoView = {
       this.cards.sort((a, b) => {
         if (a.api.isValid && !b.api.isValid) return -1;
         if (!a.api.isValid && b.api.isValid) return 1;
-        if (this.ordenarPor === 'lucro') return this.calcLucroPct(b) - this.calcLucroPct(a);
+        if (this.ordenarPor === 'lucro')     return this.calcLucroPct(b) - this.calcLucroPct(a);
         if (this.ordenarPor === 'seguranca') return this.getDistanciaNumerica(b) - this.getDistanciaNumerica(a);
-        if (this.ordenarPor === 'premio') return (b.api.premioAtual || 0) - (a.api.premioAtual || 0);
+        if (this.ordenarPor === 'premio')    return (b.api.premioAtual || 0) - (a.api.premioAtual || 0);
         return 0;
       });
     },
     ajustarPremio(card, delta) {
-      let p = parseFloat(card.api.premioAtual || 0);
-      card.api.premioAtual = Math.max(0.01, parseFloat((p + delta).toFixed(2)));
+      card.api.premioAtual = Math.max(0.01, parseFloat((parseFloat(card.api.premioAtual || 0) + delta).toFixed(2)));
       this.mostrarResultados = false;
     },
-    ajustarQtd(card, valor) {
-      card.qtd = Math.max(100, card.qtd + valor);
-      this.mostrarResultados = false;
-    },
+    ajustarQtd(card, valor) { card.qtd = Math.max(100, card.qtd + valor); this.mostrarResultados = false; },
     buscarDadosAPI(card) {
       if (!card.ticker || card.ticker.length < 4) return;
       card.loading = true; card.error = ''; card.api.isValid = false; this.mostrarResultados = false;
-      google.script.run.withSuccessHandler((res) => {
+      google.script.run
+        .withSuccessHandler((res) => {
           card.loading = false;
-          if (res && res.success) { card.api = { ...res.data, isValid: true }; this.ordenarArena(); }
+          if (res && res.success) {
+            card.api = { ...res.data, isValid: true };
+            this.ordenarArena();
+          } else {
+            card.error = (res && res.error) || 'Ativo não encontrado.';
+          }
           this.$nextTick(() => lucide.createIcons());
-      }).apiIntegracaoOpLab(card.ticker);
+        })
+        .withFailureHandler((err) => {
+          card.loading = false;
+          card.error = String(err.message || err);
+          this.$nextTick(() => lucide.createIcons());
+        })
+        .apiIntegracaoOpLab(card.ticker);
     },
-    calcPremioTotal(card) { return (card.api.premioAtual || 0) * (card.qtd || 0); },
-    calcNotional(card) { return (card.api.strike || 0) * (card.qtd || 0); },
-    formatMoney(val) { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0); },
-    formatPct(val) { return (val || 0).toFixed(2).replace('.', ',') + '%'; },
-    calcLucroPct(card) { return card.api.strike ? (card.api.premioAtual / card.api.strike) * 100 : 0; },
-    getDistanciaNumerica(card) {
-      if (!card.api.strike) return -999;
-      const be = card.api.strike - card.api.premioAtual;
-      return ((card.api.spotPrice - be) / card.api.spotPrice) * 100;
+    calcPremioTotal(c)   { return (c.api.premioAtual || 0) * (c.qtd || 0); },
+    calcNotional(c)      { return (c.api.strike || 0) * (c.qtd || 0); },
+    calcLucroPct(c)      { return c.api.strike ? (c.api.premioAtual / c.api.strike) * 100 : 0; },
+    formatMoney(val)     { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0); },
+    formatPct(val)       { return (val || 0).toFixed(2).replace('.', ',') + '%'; },
+    getDistanciaNumerica(c) {
+      if (!c.api.strike) return -999;
+      const be = c.api.strike - c.api.premioAtual;
+      return ((c.api.spotPrice - be) / c.api.spotPrice) * 100;
     },
-    getDistanciaBreakEven(card) {
-      const dist = this.getDistanciaNumerica(card);
-      return dist === -999 ? "---" : (dist > 0 ? `+${dist.toFixed(1)}%` : `${dist.toFixed(1)}% risco`);
+    getDistanciaBreakEven(c) {
+      const d = this.getDistanciaNumerica(c);
+      return d === -999 ? '---' : (d > 0 ? `+${d.toFixed(1)}%` : `${d.toFixed(1)}% risco`);
     },
     processarComparacao() {
       const v = this.cards.filter(c => c.api.isValid && c.api.premioAtual > 0);
       if (v.length < 2) return;
       const analise = v.map(c => {
-        const premioTotal = this.calcPremioTotal(c);
-        const notional = this.calcNotional(c);
-        const rocBruto = (premioTotal / notional) * 100;
-        const anualizado = c.api.dte > 0 ? (rocBruto / c.api.dte) * 252 : rocBruto;
-        const breakeven = c.api.strike - c.api.premioAtual;
-        const premioPorMil = (premioTotal / notional) * 1000;
-        const spotSimulado = c.api.spotPrice * (1 - (this.simulacaoQueda / 100));
-        const margemQueda = spotSimulado > 0 ? ((spotSimulado - breakeven) / spotSimulado) * 100 : 0;
+        const premioTotal   = this.calcPremioTotal(c);
+        const notional      = this.calcNotional(c);
+        const rocBruto      = (premioTotal / notional) * 100;
+        const anualizado    = c.api.dte > 0 ? (rocBruto / c.api.dte) * 252 : rocBruto;
+        const breakeven     = c.api.strike - c.api.premioAtual;
+        const premioPorMil  = (premioTotal / notional) * 1000;
+        const spotSimulado  = c.api.spotPrice * (1 - this.simulacaoQueda / 100);
+        const margemQueda   = spotSimulado > 0 ? ((spotSimulado - breakeven) / spotSimulado) * 100 : 0;
         return { id: c.id, ticker: c.ticker.toUpperCase(), rocBruto, anualizado, breakeven, margemQueda, premioPorMil, dte: c.api.dte, spot: spotSimulado };
       });
       this.rankingRentabilidade = [...analise].sort((a, b) => b.anualizado - a.anualizado)[0];
-      this.rankingSeguranca = [...analise].sort((a, b) => b.margemQueda - a.margemQueda)[0];
+      this.rankingSeguranca     = [...analise].sort((a, b) => b.margemQueda - a.margemQueda)[0];
       this.mostrarResultados = true;
       if (this.ordenarPor === 'padrao') { this.ordenarPor = 'lucro'; this.ordenarArena(); }
       this.$nextTick(() => lucide.createIcons());
