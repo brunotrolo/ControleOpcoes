@@ -168,12 +168,22 @@ function apiAdicionarLinhas(nomeAba, dadosMatriz) {
     if (!sheet) throw new Error(`Aba [${nomeAba}] não existe no banco de dados.`);
     if (!dadosMatriz || dadosMatriz.length === 0) return { success: true, message: "Nenhum dado para inserir." };
 
-    const startRow = sheet.getLastRow() + 1;
+    // 🔧 FIX: getLastRow() conta linhas que já tiveram conteúdo (mesmo deletadas),
+    //         causando gaps quando rows são excluídas. A solução correta é varrer
+    //         a coluna A e encontrar a primeira célula realmente vazia.
+    const colA = sheet.getRange(1, 1, sheet.getMaxRows(), 1).getValues();
+    let startRow = colA.length + 1; // fallback: fim da aba
+    for (let i = 0; i < colA.length; i++) {
+      if (String(colA[i][0]).trim() === '') {
+        startRow = i + 1; // índice 1-based
+        break;
+      }
+    }
 
     sheet.getRange(startRow, 1, dadosMatriz.length, dadosMatriz[0].length).setValues(dadosMatriz);
-    SpreadsheetApp.flush(); // 🔒 Trava de segurança: Força a gravação física imediata
+    SpreadsheetApp.flush();
 
-    return { success: true, message: `${dadosMatriz.length} linhas adicionadas em [${nomeAba}].` };
+    return { success: true, message: `${dadosMatriz.length} linhas adicionadas em [${nomeAba}] a partir da linha ${startRow}.` };
   } catch (e) {
     return { success: false, error: e.message };
   }

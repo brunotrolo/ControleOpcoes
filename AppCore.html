@@ -177,7 +177,10 @@ const app = createApp({
     };
 
     // --- 🚚 FASE 2: CARGA PESADA (Background) ---
+    let _abasPesadasEmVoo = false;
     const carregarAbasPesadas = () => {
+      if (_abasPesadasEmVoo) return;
+      _abasPesadasEmVoo = true;
       const st = document.getElementById('debug-status');
       if (st) st.innerText = "Baixando dados técnicos (Background)...";
 
@@ -224,8 +227,11 @@ const app = createApp({
 
           } catch (err) {
             console.error("Erro no processamento background:", err);
+          } finally {
+            _abasPesadasEmVoo = false;
           }
         })
+        .withFailureHandler(() => { _abasPesadasEmVoo = false; })
         .getAbasPesadas();
     };
 
@@ -392,6 +398,9 @@ const app = createApp({
       // NAVEGAÇÃO E LAYOUT
       currentView, navigate, isCollapsed, toggleSidebar, isMobile,
       menu, currentMenuLabel, currentLayout, dynamicSummaryData,
+      // ⚠️ INDEX: menu-sidebar precisa receber: :menu="menu" :current-view="currentView"
+      //           :is-collapsed="isCollapsed" :is-mobile="isMobile" :last-sync="lastSync"
+      //           @navigate="navigate" @toggle-sidebar="toggleSidebar"
 
       // COMPONENTES DE INTERFACE
       topGridComponents,
@@ -401,7 +410,7 @@ const app = createApp({
 
       // LÓGICA E SINCRONIZAÇÃO
       getComponentProps,
-      handleRefresh:       sincronizarDashboard,
+      handleRefresh:       () => sincronizarDashboard(),
       timerVisual,
       formatCountdown,
       isOrquestrando,

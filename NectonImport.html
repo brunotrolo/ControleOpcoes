@@ -1,8 +1,8 @@
 <template id="necton-import-template">
   <div style="max-width:95%;margin:0 auto;padding-bottom:4rem;padding-top:1.5rem;display:flex;flex-direction:column;gap:2rem;">
 
-    <!-- ── HEADER ── -->
-    <div class="premium-card" style="padding:1.5rem 2rem;display:flex;align-items:center;gap:1.25rem;position:relative;z-index:10;">
+    <!-- HEADER -->
+    <div class="premium-card" style="padding:1.5rem 2rem;display:flex;align-items:center;gap:1.25rem;">
       <div style="padding:0.75rem;background:var(--brand-indigo-light);color:var(--brand-indigo);border-radius:var(--radius-lg);border:1px solid var(--brand-indigo-muted);flex-shrink:0;">
         <i data-lucide="download-cloud" style="width:24px;height:24px;display:block;"></i>
       </div>
@@ -12,9 +12,8 @@
       </div>
     </div>
 
-    <!-- ── INGESTÃO ── -->
+    <!-- INGESTÃO -->
     <div class="premium-card" style="padding:2rem;">
-
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border-subtle);">
         <div style="display:flex;align-items:center;gap:1rem;">
           <div style="width:3rem;height:3rem;border-radius:var(--radius-lg);background:var(--brand-indigo-light);display:flex;align-items:center;justify-content:center;color:var(--brand-indigo);border:1px solid var(--brand-indigo-muted);flex-shrink:0;">
@@ -31,10 +30,9 @@
         </div>
       </div>
 
-      <textarea
-        v-model="rawText"
+      <textarea v-model="rawText"
         placeholder="Cole as colunas aqui (Ativo, Status, Tipo, Dir, Qtd...)"
-        style="width:100%;height:8rem;background:var(--surface-sunken);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:1.25rem;font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--text-secondary);resize:none;box-shadow:inset 0 1px 4px rgba(0,0,0,0.04);transition:border-color var(--duration-std) var(--ease-standard),background var(--duration-std);box-sizing:border-box;"
+        style="width:100%;height:8rem;background:var(--surface-sunken);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:1.25rem;font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--text-secondary);resize:none;box-shadow:inset 0 1px 4px rgba(0,0,0,0.04);box-sizing:border-box;"
         onfocus="this.style.borderColor='var(--brand-indigo)';this.style.background='var(--surface-base)'"
         onblur="this.style.borderColor='var(--border-default)';this.style.background='var(--surface-sunken)'"
       ></textarea>
@@ -46,16 +44,14 @@
           style="background:var(--surface-base);border:1px solid var(--border-default);color:var(--text-tertiary);">
           Limpar
         </button>
-
         <button v-if="parsedData.length === 0"
           @click="parseData" :disabled="rawText.length === 0"
           class="btn-action btn-action-primary">
           Analisar Dados
         </button>
-
         <button v-if="parsedData.length > 0"
           @click="salvar" :disabled="isSaving"
-          style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.6rem 1.25rem;border-radius:var(--radius-md);border:none;background:var(--brand-emerald);color:#fff;font-weight:700;font-size:0.8rem;cursor:pointer;box-shadow:var(--shadow-md);transition:background var(--duration-fast),transform var(--duration-fast);"
+          style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.6rem 1.25rem;border-radius:var(--radius-md);border:none;background:var(--brand-emerald);color:#fff;font-weight:700;font-size:0.8rem;cursor:pointer;box-shadow:var(--shadow-md);"
           onmouseover="if(!this.disabled)this.style.background='#047857'"
           onmouseout="this.style.background='var(--brand-emerald)'">
           <span v-if="isSaving" style="display:inline-block;width:1rem;height:1rem;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:necton-spin 0.7s linear infinite;"></span>
@@ -75,8 +71,7 @@
             <thead>
               <tr style="position:sticky;top:0;background:var(--surface-base);box-shadow:0 1px 0 var(--border-subtle);z-index:10;">
                 <th v-for="h in ['Ativo','Status','Tipo','Dir.','Qtd.Oferta','Qtd.Aparente','Qtd.Exec','Qtd.Rest','P.Limite','Disp.Baixo','Disp.Cima','P.Médio','Último','Data','—']"
-                  :key="h"
-                  class="t-label-sm"
+                  :key="h" class="t-label-sm"
                   style="padding:0.75rem 1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:var(--text-muted);text-align:left;">
                   {{ h }}
                 </th>
@@ -88,20 +83,16 @@
                 <td style="padding:0.6rem 1rem;" class="t-label-sm">{{ row[1] }}</td>
                 <td style="padding:0.6rem 1rem;" class="t-label-sm">{{ row[2] }}</td>
                 <td style="padding:0.6rem 1rem;text-align:center;">
-                  <span :style="row[3]==='C'
-                    ? 'background:var(--brand-emerald-light);color:var(--brand-emerald);border:1px solid rgba(5,150,105,0.25);'
-                    : 'background:var(--brand-rose-light);color:var(--brand-rose);border:1px solid rgba(225,29,72,0.2);'"
+                  <span :style="row[3]==='C' ? 'background:var(--brand-emerald-light);color:var(--brand-emerald);border:1px solid rgba(5,150,105,0.25);' : 'background:var(--brand-rose-light);color:var(--brand-rose);border:1px solid rgba(225,29,72,0.2);'"
                     style="padding:0.15rem 0.5rem;border-radius:var(--radius-xs);font-size:0.7rem;font-weight:700;">
                     {{ row[3] }}
                   </span>
                 </td>
                 <td v-for="n in [4,5,6,7,8,9,10,11,12,13]" :key="n"
-                  style="padding:0.6rem 1rem;text-align:right;color:var(--text-tertiary);"
-                  class="t-value-sm font-mono-data">{{ row[n] }}</td>
+                  style="padding:0.6rem 1rem;text-align:right;color:var(--text-tertiary);" class="t-value-sm font-mono-data">{{ row[n] }}</td>
                 <td style="padding:0.6rem 1rem;text-align:center;">
-                  <button @click="removerLinhaPreview(idx)"
-                    class="necton-del-btn"
-                    style="padding:0.25rem;border-radius:var(--radius-xs);border:none;background:transparent;color:var(--text-muted);cursor:pointer;transition:color var(--duration-fast),background var(--duration-fast);"
+                  <button @click="removerLinhaPreview(idx)" class="necton-del-btn"
+                    style="padding:0.25rem;border-radius:var(--radius-xs);border:none;background:transparent;color:var(--text-muted);cursor:pointer;"
                     title="Remover desta importação">
                     <i data-lucide="x" style="width:16px;height:16px;display:block;"></i>
                   </button>
@@ -113,9 +104,8 @@
       </div>
     </div>
 
-    <!-- ── HISTÓRICO ── -->
+    <!-- HISTÓRICO -->
     <div class="premium-card" style="padding:2rem;">
-
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border-subtle);">
         <div style="display:flex;align-items:center;gap:1rem;">
           <div style="width:3rem;height:3rem;border-radius:var(--radius-lg);background:var(--brand-indigo-light);display:flex;align-items:center;justify-content:center;color:var(--brand-indigo);border:1px solid var(--brand-indigo-muted);flex-shrink:0;">
@@ -126,21 +116,18 @@
             <p class="t-label-sm" style="color:var(--text-muted);text-transform:uppercase;letter-spacing:0.18em;margin-top:0.2rem;">Registros salvos na base</p>
           </div>
         </div>
-        <button @click="$emit('refresh')"
-          class="btn-action"
+        <button @click="$emit('refresh')" class="btn-action"
           style="background:var(--surface-base);border:1px solid var(--border-default);color:var(--text-muted);padding:0.5rem 0.75rem;"
           title="Atualizar Histórico">
           <i data-lucide="refresh-cw" style="width:16px;height:16px;display:block;"></i>
         </button>
       </div>
 
-      <!-- Loading -->
       <div v-if="isLoadingHistory" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem 0;">
         <div style="width:2rem;height:2rem;border:3px solid var(--brand-indigo-light);border-top-color:var(--brand-indigo);border-radius:50%;animation:necton-spin 0.7s linear infinite;margin-bottom:1rem;"></div>
         <span class="t-label-sm" style="color:var(--brand-indigo);font-weight:700;text-transform:uppercase;letter-spacing:0.2em;">Sincronizando...</span>
       </div>
 
-      <!-- Empty -->
       <div v-else-if="history.length === 0"
         style="text-align:center;padding:4rem 0;background:var(--surface-base);border:1px dashed var(--border-default);border-radius:var(--radius-lg);">
         <span style="font-size:3rem;display:block;margin-bottom:1rem;opacity:0.4;">📭</span>
@@ -148,33 +135,25 @@
         <p class="t-label-sm" style="color:var(--text-muted);text-transform:uppercase;letter-spacing:0.18em;margin-top:0.5rem;">A aba Necton_Import está vazia.</p>
       </div>
 
-      <!-- Tabela -->
       <div v-else class="log-scrollbar" style="overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border-default);">
         <table style="width:100%;border-collapse:collapse;white-space:nowrap;">
           <thead>
             <tr style="background:var(--surface-overlay);border-bottom:1px solid var(--border-subtle);">
-              <th v-for="h in ['Linha','Ativo','Tipo / Dir','Data','Preço','Ação']" :key="h"
-                class="t-label-sm"
+              <th v-for="h in ['Linha','Ativo','Tipo / Dir','Data','Preço','Ação']" :key="h" class="t-label-sm"
                 style="padding:1rem 1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:var(--text-muted);text-align:left;">
                 {{ h }}
               </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="item in history" :key="item.linhaReal"
-              class="necton-hist-row"
-              style="border-bottom:1px solid var(--border-subtle);transition:background var(--duration-fast);">
-              <td style="padding:0.75rem 1.25rem;" class="t-label-sm" style="color:var(--text-muted);">#{{ item.linhaReal }}</td>
+            <tr v-for="item in history" :key="item.linhaReal" class="necton-hist-row"
+              style="border-bottom:1px solid var(--border-subtle);">
+              <td style="padding:0.75rem 1.25rem;color:var(--text-muted);" class="t-label-sm">#{{ item.linhaReal }}</td>
               <td style="padding:0.75rem 1.25rem;font-weight:700;color:var(--text-primary);" class="t-value-sm font-mono-data">{{ item.ativo }}</td>
               <td style="padding:0.75rem 1.25rem;">
                 <div style="display:flex;align-items:center;gap:0.5rem;">
-                  <span class="t-label-sm"
-                    style="font-weight:700;text-transform:uppercase;color:var(--text-tertiary);border:1px solid var(--border-default);padding:0.1rem 0.4rem;border-radius:var(--radius-xs);background:var(--surface-base);">
-                    {{ item.tipo }}
-                  </span>
-                  <span :style="item.direcao==='C'
-                    ? 'color:var(--brand-emerald);background:var(--brand-emerald-light);border:1px solid rgba(5,150,105,0.25);'
-                    : 'color:var(--brand-rose);background:var(--brand-rose-light);border:1px solid rgba(225,29,72,0.2);'"
+                  <span class="t-label-sm" style="font-weight:700;text-transform:uppercase;color:var(--text-tertiary);border:1px solid var(--border-default);padding:0.1rem 0.4rem;border-radius:var(--radius-xs);background:var(--surface-base);">{{ item.tipo }}</span>
+                  <span :style="item.direcao==='C' ? 'color:var(--brand-emerald);background:var(--brand-emerald-light);border:1px solid rgba(5,150,105,0.25);' : 'color:var(--brand-rose);background:var(--brand-rose-light);border:1px solid rgba(225,29,72,0.2);'"
                     style="padding:0.1rem 0.5rem;border-radius:var(--radius-xs);font-size:0.7rem;font-weight:700;">
                     {{ item.direcao }}
                   </span>
@@ -184,13 +163,14 @@
               <td style="padding:0.75rem 1.25rem;font-weight:700;color:var(--text-primary);text-align:right;" class="t-value-sm font-mono-data">{{ item.preco }}</td>
               <td style="padding:0.75rem 1.25rem;text-align:center;">
                 <button @click="confirmarExclusao(item.linhaReal, item.ativo)"
-                  :disabled="isDeleting === item.linhaReal"
-                  class="necton-del-btn"
-                  style="padding:0.4rem;border-radius:var(--radius-sm);border:none;background:transparent;color:var(--text-muted);cursor:pointer;transition:color var(--duration-fast),background var(--duration-fast);"
+                  :disabled="isDeleting === item.linhaReal" class="necton-del-btn"
+                  style="padding:0.4rem;border-radius:var(--radius-sm);border:none;background:transparent;color:var(--text-muted);cursor:pointer;"
                   title="Excluir Registro da Planilha">
                   <div v-if="isDeleting === item.linhaReal"
                     style="width:1rem;height:1rem;border:2px solid var(--brand-rose-light);border-top-color:var(--brand-rose);border-radius:50%;animation:necton-spin 0.7s linear infinite;"></div>
-                  <i v-else data-lucide="trash-2" style="width:16px;height:16px;display:block;"></i>
+                  <div v-show="isDeleting !== item.linhaReal">
+                    <i data-lucide="trash-2" style="width:16px;height:16px;display:block;"></i>
+                  </div>
                 </button>
               </td>
             </tr>
@@ -199,8 +179,8 @@
       </div>
     </div>
 
-    <!-- ── MODAL EXCLUSÃO ── -->
-    <transition name="necton-fade">
+    <!-- MODAL — estrutura idêntica à versão estável, sem teleport -->
+    <transition name="fade">
       <div v-if="modalExclusao.isOpen"
         style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(15,17,23,0.45);backdrop-filter:blur(6px);">
         <div style="background:var(--surface-base);border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);border:1px solid var(--border-default);width:100%;max-width:22rem;overflow:hidden;text-align:center;">
@@ -214,19 +194,17 @@
               <strong style="color:var(--brand-indigo);">{{ modalExclusao.ativo }}</strong>
               na linha {{ modalExclusao.linhaReal }}.
             </p>
-            <span class="t-label-sm"
-              style="display:block;background:var(--brand-rose-light);color:var(--brand-rose);font-weight:700;text-transform:uppercase;letter-spacing:0.18em;padding:0.4rem 1rem;border-radius:var(--radius-sm);">
+            <span class="t-label-sm" style="display:block;background:var(--brand-rose-light);color:var(--brand-rose);font-weight:700;text-transform:uppercase;letter-spacing:0.18em;padding:0.4rem 1rem;border-radius:var(--radius-sm);">
               Ação irreversível
             </span>
           </div>
           <div style="display:flex;gap:0.75rem;padding:1rem 1.25rem;background:var(--surface-overlay);border-top:1px solid var(--border-subtle);">
-            <button @click="fecharModal"
-              class="btn-action"
+            <button @click="fecharModal" class="btn-action"
               style="flex:1;background:var(--surface-base);border:1px solid var(--border-default);color:var(--text-tertiary);">
               Cancelar
             </button>
             <button @click="executarExclusao"
-              style="flex:1;padding:0.6rem 1rem;border-radius:var(--radius-md);border:none;background:var(--brand-rose);color:#fff;font-weight:700;font-size:0.85rem;cursor:pointer;box-shadow:var(--shadow-md);transition:background var(--duration-fast);"
+              style="flex:1;padding:0.6rem 1rem;border-radius:var(--radius-md);border:none;background:var(--brand-rose);color:#fff;font-weight:700;font-size:0.85rem;cursor:pointer;box-shadow:var(--shadow-md);"
               onmouseover="this.style.background='#be123c'"
               onmouseout="this.style.background='var(--brand-rose)'">
               Sim, Excluir
@@ -242,21 +220,18 @@
 <style>
   @keyframes necton-spin  { to { transform: rotate(360deg); } }
   @keyframes necton-pulse { 0%,100% { opacity:1; } 50% { opacity:0.65; } }
-
   .necton-preview-row:hover { background: var(--surface-overlay); }
   .necton-preview-row:hover .necton-del-btn,
-  .necton-hist-row:hover .necton-del-btn { color: var(--brand-rose) !important; background: var(--brand-rose-light) !important; }
+  .necton-hist-row:hover    .necton-del-btn { color: var(--brand-rose) !important; background: var(--brand-rose-light) !important; }
   .necton-hist-row:hover { background: var(--surface-overlay); }
-
-  .necton-fade-enter-active, .necton-fade-leave-active { transition: opacity var(--duration-std) var(--ease-standard); }
-  .necton-fade-enter-from, .necton-fade-leave-to { opacity: 0; }
 </style>
 
 <script>
+
 window.NectonImport = {
   template: '#necton-import-template',
   props: {
-    data: { type: Array, default: () => [] }
+    data: { type: Array, default: () => [] } 
   },
   data() {
     return {
@@ -264,74 +239,106 @@ window.NectonImport = {
       parsedData: [],
       isSaving: false,
       isDeleting: null,
-      modalExclusao: { isOpen: false, linhaReal: null, ativo: null }
+      modalExclusao: { isOpen: false, linhaReal: null, ativo: null } 
     };
   },
   computed: {
     history() {
       if (!this.data || this.data.length === 0) return [];
+      
       return this.data.map((item, index) => {
         let dataFormatada = '---';
         if (item.timestampOrdem instanceof Date) {
-          dataFormatada = item.timestampOrdem.toLocaleString('pt-BR');
+            dataFormatada = item.timestampOrdem.toLocaleString('pt-BR');
         } else if (item.timestampOrdem) {
-          dataFormatada = String(item.timestampOrdem);
+            dataFormatada = String(item.timestampOrdem);
         }
+
         return {
-          linhaReal: item.linhaRealExcel || (index + 2),
-          ativo:     item.simboloOpcao   || '---',
-          status:    item.orderStatus    || '---',
-          tipo:      item.orderType      || '---',
-          direcao:   item.direcaoTrade   || '---',
-          qtd:       item.quantidade     || item.quantidadeOferta || 0,
-          preco:     window.Tradutor ? window.Tradutor.formatarMoeda(item.premioAtual) : item.premioAtual,
-          data:      dataFormatada
+          // 🚀 FIX: Tenta usar o carimbo absoluto primeiro, se falhar, usa o index
+          linhaReal: item.linhaRealExcel || (index + 2), 
+          ativo: item.simboloOpcao || '---',
+          status: item.orderStatus || '---',
+          tipo: item.orderType || '---',
+          direcao: item.direcaoTrade || '---',
+          qtd: item.quantidade || item.quantidadeOferta || 0,
+          preco: window.Tradutor ? window.Tradutor.formatarMoeda(item.premioAtual) : item.premioAtual,
+          data: dataFormatada 
         };
       });
     },
-    isLoadingHistory() { return false; }
-  },
+    isLoadingHistory() {
+      return false; 
+      }
+    },
   mounted() {
-    if (typeof lucide !== 'undefined') lucide.createIcons();
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
   },
+  // 🚀 A SOLUÇÃO DO BOTÃO INVISÍVEL ESTÁ AQUI:
   updated() {
-    if (typeof lucide !== 'undefined') this.$nextTick(() => lucide.createIcons());
+    if (typeof lucide !== 'undefined') {
+      this.$nextTick(() => lucide.createIcons());
+    }
   },
   methods: {
     parseData() {
-      if (!this.rawText || this.rawText.trim() === '') { this.parsedData = []; return; }
+      if (!this.rawText || this.rawText.trim() === '') {
+        this.parsedData = [];
+        return;
+      }
+      
       const rawLines = this.rawText.split('\n');
       const lines = rawLines.map(l => l.trim()).filter(l => l.length > 0);
       const validData = [];
+
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
+        
         if (line.includes('\t')) {
           const numCols = line.split('\t').map(c => c.trim());
           if (numCols.length >= 8 && i >= 4) {
-            const direcao = lines[i - 1].trim().toUpperCase();
-            const tipo    = lines[i - 2].replace(/\t/g, '').trim();
-            const status  = lines[i - 3].trim();
-            const ativo   = lines[i - 4].trim().toUpperCase();
-            const row = [ativo, status, tipo, direcao,
-              numCols[0], numCols[1], numCols[2], numCols[3],
-              numCols[4], numCols[5], numCols[6], numCols[7],
-              numCols[8], numCols[9], ''];
+            let direcao = lines[i - 1].trim().toUpperCase();
+            let tipo = lines[i - 2].replace(/\t/g, '').trim(); 
+            let status = lines[i - 3].trim();
+            let ativo = lines[i - 4].trim().toUpperCase();
+
+            const row = [
+              ativo, status, tipo, direcao, 
+              numCols[0], numCols[1], numCols[2], numCols[3], 
+              numCols[4], numCols[5], numCols[6], numCols[7], 
+              numCols[8], numCols[9], ''
+            ];
+
             if (ativo !== 'ATIVO') validData.push(row);
           }
         }
       }
       this.parsedData = validData;
     },
-    removerLinhaPreview(index) { this.parsedData.splice(index, 1); },
-    limpar() { this.rawText = ''; this.parsedData = []; },
+
+    removerLinhaPreview(index) {
+      this.parsedData.splice(index, 1);
+    },
+
+    limpar() {
+      this.rawText = '';
+      this.parsedData = [];
+    },
+
     salvar() {
       if (this.parsedData.length === 0) return;
       this.isSaving = true;
       google.script.run
         .withSuccessHandler((res) => {
           this.isSaving = false;
-          if (res && res.success) { this.limpar(); this.$emit('refresh'); }
-          else alert("Erro ao salvar: " + (res.error || res.message));
+          if (res && res.success) {
+            this.limpar();
+            this.$emit('refresh'); 
+          } else {
+            alert("Erro ao salvar: " + (res.error || res.message));
+          }
         })
         .withFailureHandler((err) => {
           this.isSaving = false;
@@ -339,34 +346,45 @@ window.NectonImport = {
         })
         .apiAdicionarLinhas('Necton_Import', this.parsedData);
     },
+
     confirmarExclusao(linhaReal, ativo) {
       this.modalExclusao = { isOpen: true, linhaReal, ativo };
     },
+
     fecharModal() {
       this.modalExclusao = { isOpen: false, linhaReal: null, ativo: null };
     },
+
     executarExclusao() {
+      // 🚀 FIX: Trava matemática que evita enviar comandos "null" para o Sheets
       const linhaAlvo = parseInt(this.modalExclusao.linhaReal, 10);
       const ativoAlvo = String(this.modalExclusao.ativo);
+      
       this.isDeleting = linhaAlvo;
-      this.fecharModal();
+      this.fecharModal(); 
+      
       if (isNaN(linhaAlvo) || linhaAlvo < 1) {
-        alert("Erro de segurança: Número de linha inválido.");
-        this.isDeleting = null;
-        return;
+          alert("Erro de segurança: Número de linha inválido.");
+          this.isDeleting = null;
+          return;
       }
+      
       google.script.run
         .withSuccessHandler((res) => {
-          if (res && res.success) this.$emit('refresh');
-          else alert(res.error || "Erro ao excluir a linha.");
-          this.isDeleting = null;
+          if (res && res.success) {
+            this.$emit('refresh'); 
+          } else {
+            alert(res.error || "Erro ao excluir a linha.");
+          }
+          this.isDeleting = null; 
         })
         .withFailureHandler((err) => {
           alert("Falha de conexão com a planilha: " + err);
-          this.isDeleting = null;
+          this.isDeleting = null; 
         })
-        .apiExcluirLinhaSegura('Necton_Import', linhaAlvo, ativoAlvo);
+        .apiExcluirLinhaSegura('Necton_Import', linhaAlvo, ativoAlvo); 
     }
   }
 };
+
 </script>
