@@ -32,37 +32,29 @@ window.LAYOUT_MAP = {
       props: {}
     },
     {
-      id: 'resumo-executivo',
-      component: 'card-summary',
+      id: 'card-alerta',
+      component: 'card-alerta',
       cols: 'col-span-12',
       props: {
-        configFields: ['plTotalValor', 'theta', 'nocional', 'ivAtual']
+        dteUrgente: 14,
+        configKpis: [
+          { key: 'nocional',     label: 'Notional',     active: true,  order: 1, type: 'currency'   },
+          { key: 'plTotalValor', label: 'P&L atual',    active: true,  order: 2, type: 'currency'   },
+          { key: 'ganhoMaximo',  label: 'Ganho máximo', active: true,  order: 3, type: 'currency'   },
+          { key: 'premioMedio',  label: 'Prêmio médio', active: false, order: 4, type: 'currency'   },
+          { key: 'premioAtual',  label: 'Prêmio atual', active: false, order: 5, type: 'currency'   },
+          { key: 'plTotalPct',   label: 'P&L %',        active: false, order: 6, type: 'percentage' },
+          { key: 'totalOps',     label: 'Operações',    active: false, order: 7, type: 'number'     },
+        ],
+        configDetalhes: [
+          { key: 'strike',     label: 'Strike', active: true,  order: 1 },
+          { key: 'spotPrice',  label: 'Spot',   active: true,  order: 2 },
+          { key: 'dteCorridos',label: 'DTE',    active: true,  order: 3 },
+          { key: 'nocional',   label: 'Noc.',   active: true,  order: 4 },
+          { key: 'premioMedio',label: 'PM',     active: false, order: 5 },
+          { key: 'premioAtual',label: 'PA',     active: false, order: 6 },
+        ]
       }
-    },
-    {
-      id: 'distribuicao-risco',
-      component: 'card-distrib-moneyness',
-      cols: 'col-span-12 md:col-span-6'
-    },
-    {
-      id: 'resultado',
-      component: 'card-resultado',
-      cols: 'col-span-12 md:col-span-6'
-    },
-    {
-      id: 'moneyness',
-      component: 'card-moneyness',
-      cols: 'col-span-12 md:col-span-4'
-    },
-    {
-      id: 'vencimentos',
-      component: 'card-vencimentos',
-      cols: 'col-span-12 md:col-span-4'
-    },
-    {
-      id: 'concentracao',
-      component: 'card-concentracao',
-      cols: 'col-span-12 md:col-span-4'
     },
     {
       id: 'carousel',
@@ -190,12 +182,7 @@ window.MOBILE_ORCHESTRATOR_CONFIG = {
     gap:        'gap-5',
     snap:       'snap-center'
   },
-  sequence: [
-    { id: 'distribuicao-risco', component: 'card-distrib-moneyness' },
-    { id: 'resultado',          component: 'card-resultado' },
-    { id: 'moneyness',          component: 'card-moneyness' },
-    { id: 'vencimentos',        component: 'card-vencimentos' },
-    { id: 'concentracao',       component: 'card-concentracao' }
-  ]
+  sequence: []
+  // CardAlerta fica no topGrid (full-width, antes do carrossel de outros cards)
 };
 </script>

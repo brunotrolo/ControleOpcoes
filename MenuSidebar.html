@@ -17,17 +17,17 @@
     <div class="flex items-center h-16 px-4 shrink-0" :style="{ borderBottom: '1px solid var(--border-subtle)' }">
       <div class="flex items-center gap-3 overflow-hidden">
         <!-- Ícone do app — sempre visível -->
-        <div class="w-9 h-9 rounded-[var(--radius-md)] flex items-center justify-center shrink-0 shadow-sm"
+        <!-- <div class="w-9 h-9 rounded-[var(--radius-md)] flex items-center justify-center shrink-0 shadow-sm"
              style="background: var(--brand-indigo);">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM17.5 14l4 7h-8l4-7z" fill="white" fill-opacity="0.9"/>
           </svg>
-        </div>
+        </div> -->
         <!-- Nome — oculto quando collapsed -->
         <transition name="sidebar-label">
           <div v-show="!isCollapsed" class="flex flex-col leading-none overflow-hidden">
-            <span style="font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; color: var(--text-primary); letter-spacing: -0.03em; white-space: nowrap;">
-              NexoApp
+            <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 15px; color: var(--text-primary); letter-spacing: -0.03em; white-space: nowrap;">
+              StockOps
             </span>
             <span style="font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;">
               Portfólio · Opções
@@ -168,7 +168,21 @@
       </span>
     </button>
 
-    <!-- Toggle tema — visível diretamente na bottom bar -->
+    <!-- Botão Atualizar — chama fluxo mestre direto -->
+    <button
+      @click="acionarAtualizar"
+      :disabled="atualizandoLocal || isLoading"
+      class="flex-1 flex flex-col items-center justify-center gap-2 py-4 transition-all duration-[150ms] mobile-nav-idle"
+      style="position:relative;"
+    >
+      <i data-lucide="refresh-cw" class="w-9 h-9 shrink-0"
+         :style="(atualizandoLocal || isLoading) ? 'animation:sidebar-spin 0.8s linear infinite;' : ''"></i>
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.04em;">
+        {{ (atualizandoLocal || isLoading) ? 'Atualizando' : 'Atualizar' }}
+      </span>
+    </button>
+
+    <!-- Toggle tema -->
     <button
       @click="toggleTema"
       class="flex-1 flex flex-col items-center justify-center gap-2 py-4 transition-all duration-[150ms] mobile-nav-idle"
@@ -217,7 +231,7 @@
 
         <!-- Título -->
         <div class="px-6 py-3" style="border-bottom: 1px solid var(--border-subtle);">
-          <p style="font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">
+          <p style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">
             Menu Completo
           </p>
         </div>
@@ -287,6 +301,7 @@
   }
 
   /* --- Transição label sidebar (collapse/expand) --- */
+  @keyframes sidebar-spin { to { transform: rotate(360deg); } }
   .sidebar-label-enter-active { transition: opacity 200ms ease, max-width 300ms cubic-bezier(0.2,0,0,1); }
   .sidebar-label-leave-active { transition: opacity 100ms ease, max-width 250ms cubic-bezier(0.3,0,1,1); }
   .sidebar-label-enter-from, .sidebar-label-leave-to { opacity: 0; max-width: 0; }
@@ -311,18 +326,20 @@ window.MenuSidebar = {
     currentView: { type: String,  default: 'cockpit' },
     isCollapsed: { type: Boolean, default: true },
     isMobile:    { type: Boolean, default: false },
-    lastSync:    { type: String,  default: '' }
+    lastSync:    { type: String,  default: '' },
+    isLoading:   { type: Boolean, default: false }
   },
 
-  emits: ['navigate', 'toggle-sidebar'],
+  emits: ['navigate', 'toggle-sidebar', 'atualizar'],
 
   data() {
     return {
       isDark: false,
       drawerAberto: false,
+      atualizandoLocal: false,
 
-      // Itens fixos na bottom bar mobile — os 4 mais usados
-      mobileMenuIds: ['cockpit', 'consultoria', 'automacao', 'comparador'],
+      // Itens fixos na bottom bar mobile
+      mobileMenuIds: ['cockpit', 'comparador'],
     };
   },
 
@@ -403,6 +420,34 @@ window.MenuSidebar = {
     navegarDrawer(viewId) {
       this.$emit('navigate', viewId);
       this.fecharDrawer();
+    },
+
+    acionarAtualizar() {
+      if (this.atualizandoLocal) return; // evita duplo clique
+      this.atualizandoLocal = true;
+
+      if (typeof google === 'undefined') {
+        // Dev: simula delay
+        setTimeout(() => {
+          this.atualizandoLocal = false;
+          this.$emit('atualizar');
+        }, 2000);
+        return;
+      }
+
+      // 1. Roda o fluxo mestre no GAS (atualiza planilha)
+      // 2. Depois emite 'atualizar' para o AppCore reler os dados
+      google.script.run
+        .withSuccessHandler(() => {
+          this.atualizandoLocal = false;
+          this.$emit('atualizar');
+        })
+        .withFailureHandler((err) => {
+          console.error('Erro no fluxo mestre:', err);
+          this.atualizandoLocal = false;
+          this.$emit('atualizar');
+        })
+        .executarFluxoSequencial();
     }
   }
 };

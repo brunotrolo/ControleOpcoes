@@ -97,7 +97,9 @@ const app = createApp({
       if (!isMobile.value) return currentLayout.value;
       const config = window.MOBILE_ORCHESTRATOR_CONFIG || { sequence: [] };
       const seqIds = config.sequence.map(s => s.id);
-      const idx    = currentLayout.value.findIndex(c => seqIds.includes(c.id));
+      // Se não há carrossel, todos vão pro topGrid em mobile
+      if (!seqIds.length) return currentLayout.value;
+      const idx = currentLayout.value.findIndex(c => seqIds.includes(c.id));
       return idx === -1 ? currentLayout.value : currentLayout.value.slice(0, idx);
     });
 
@@ -105,6 +107,7 @@ const app = createApp({
       if (!isMobile.value) return [];
       const config = window.MOBILE_ORCHESTRATOR_CONFIG || { sequence: [] };
       const seqIds = config.sequence.map(s => s.id);
+      if (!seqIds.length) return [];
       return currentLayout.value.filter(c => seqIds.includes(c.id));
     });
 
@@ -112,7 +115,8 @@ const app = createApp({
       if (!isMobile.value) return [];
       const config = window.MOBILE_ORCHESTRATOR_CONFIG || { sequence: [] };
       const seqIds = config.sequence.map(s => s.id);
-      const idx    = currentLayout.value.findIndex(c => seqIds.includes(c.id));
+      if (!seqIds.length) return [];
+      const idx = currentLayout.value.findIndex(c => seqIds.includes(c.id));
       if (idx === -1) return [];
       return currentLayout.value.slice(idx).filter(c => !seqIds.includes(c.id));
     });
@@ -341,13 +345,15 @@ const app = createApp({
           currentView: currentView.value,
           isCollapsed: isCollapsed.value,
           isMobile:    isMobile.value,
-          lastSync:    lastSync.value
+          lastSync:    lastSync.value,
+          isLoading:   isLoading.value
         },
 
         // =========================================================
         // 1. HOME & COCKPIT
         // =========================================================
         'ticker-tape':            { ativos: ativosDaHome },
+        'card-alerta':            { statsPreCalculados: { ...cuboOlap.value, cockpit: db.value.cockpit || [] }, isMobile: isMobile.value },
         'card-summary':           { statsPreCalculados: cuboOlap.value },
         'card-distrib-moneyness': { statsPreCalculados: cuboOlap.value },
         'card-vencimentos':       { statsPreCalculados: cuboOlap.value },
@@ -431,6 +437,7 @@ const COMPONENTES_V5 = [
 
   // 1. HOME & COCKPIT
   ['ticker-tape',            window.TickerTape],
+  ['card-alerta',            window.CardAlerta],
   ['card-summary',           window.CardSummary],
   ['card-distrib-moneyness', window.CardDistribMoneyness],
   ['card-vencimentos',       window.CardVencimentos],

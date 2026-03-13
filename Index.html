@@ -40,7 +40,8 @@
         :is-mobile="isMobile"
         :last-sync="lastSync"
         @navigate="navigate"
-        @toggle-sidebar="toggleSidebar">
+        @toggle-sidebar="toggleSidebar"
+        @atualizar="handleRefresh">
       </menu-sidebar>
 
       <!-- ================================================================
@@ -139,7 +140,7 @@
           <!-- /Header -->
 
           <!-- Grid superior -->
-          <div v-if="topGridComponents.length > 0" class="grid grid-cols-12 gap-4 md:gap-8 px-5 md:px-0 mb-4 md:mb-8">
+          <div v-if="topGridComponents.length > 0" class="grid grid-cols-12 gap-4 md:gap-8 px-3 md:px-0 mb-4 md:mb-8">
             <div
               v-for="comp in topGridComponents"
               :key="comp.id"
@@ -187,6 +188,7 @@
 
     <?!= include('ConsultoriaView'); ?>
     <?!= include('CardTickerTape'); ?>
+    <?!= include('CardAlerta'); ?>
     <?!= include('CardSummary'); ?>
     <?!= include('CardDistribMoneyness'); ?>
     <?!= include('CardMoneyness'); ?>

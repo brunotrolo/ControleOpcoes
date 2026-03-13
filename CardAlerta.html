@@ -9,31 +9,60 @@
       </div>
 
       <!-- Skeleton -->
-      <div v-if="isLoading"
-        class="flex overflow-x-auto hide-scrollbar gap-px"
-        style="background:var(--border-subtle);">
-        <div v-for="n in 3" :key="n"
-          style="background:var(--surface-base);padding:1.25rem 1.5rem;min-width:33.333%;flex-shrink:0;animation:alerta-pulse 1.5s ease infinite;">
+      <div v-if="isLoading" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--border-subtle);">
+        <div v-for="n in 3" :key="n" style="background:var(--surface-base);padding:1.25rem 1.5rem;animation:alerta-pulse 1.5s ease infinite;">
           <div style="height:11px;background:var(--surface-overlay);border-radius:4px;width:55%;margin-bottom:10px;"></div>
           <div style="height:26px;background:var(--surface-overlay);border-radius:4px;width:75%;"></div>
         </div>
       </div>
 
-      <!-- KPIs — padrão CardSummary: min-w fixo + flex carrossel -->
-      <!-- min-width:120px garante ~3 visíveis no mobile (360px / 120px = 3), resto rola -->
-      <div v-else
-        class="flex overflow-x-auto hide-scrollbar snap-x snap-mandatory"
-        style="background:var(--border-subtle);gap:1px;">
-        <div
-          v-for="kpi in kpisAtivos"
-          :key="kpi.key"
-          class="snap-start flex-shrink-0 flex-grow"
-          style="background:var(--surface-base);padding:1.25rem 1rem;min-width:120px;">
-          <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.5rem;white-space:nowrap;">{{ kpi.label }}</div>
-          <div class="font-mono-data"
-            :style="kpi.colorFn ? kpi.colorFn(getKpiValue(kpi.key)) : 'color:var(--text-primary);'"
-            style="font-size:1.4rem;font-weight:700;white-space:nowrap;">
-            {{ formatKpi(kpi.key, getKpiValue(kpi.key)) }}
+      <!-- Desktop: grid 100% largura, até 10 campos; overflow em carrossel -->
+      <div v-else-if="!isMobile">
+        <div style="display:grid;gap:1px;background:var(--border-subtle);"
+          :style="{ gridTemplateColumns: `repeat(${Math.min(kpisAtivos.length, 10)}, minmax(0, 1fr))` }">
+          <div v-for="kpi in kpisAtivos.slice(0, 10)" :key="kpi.key"
+            style="background:var(--surface-base);padding:1.5rem 1.75rem;">
+            <div style="font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:0.625rem;">{{ kpi.label }}</div>
+            <div class="font-mono-data"
+              :style="kpi.colorFn ? kpi.colorFn(getKpiValue(kpi.key)) : 'color:var(--text-primary);'"
+              style="font-size:2.5rem;font-weight:700;">{{ formatKpi(kpi.key, getKpiValue(kpi.key)) }}</div>
+          </div>
+        </div>
+        <div v-if="kpisAtivos.length > 10"
+          style="overflow-x:auto;border-top:1px solid var(--border-subtle);">
+          <div style="display:flex;gap:1px;background:var(--border-subtle);width:max-content;">
+            <div v-for="kpi in kpisAtivos.slice(10)" :key="kpi.key"
+              style="background:var(--surface-base);padding:1.5rem 1.75rem;min-width:180px;flex-shrink:0;">
+              <div style="font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);margin-bottom:0.625rem;">{{ kpi.label }}</div>
+              <div class="font-mono-data"
+                :style="kpi.colorFn ? kpi.colorFn(getKpiValue(kpi.key)) : 'color:var(--text-primary);'"
+                style="font-size:2.5rem;font-weight:700;">{{ formatKpi(kpi.key, getKpiValue(kpi.key)) }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile: 3 fixos + carrossel a partir do 4º -->
+      <div v-else style="display:flex;flex-direction:column;">
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--border-subtle);">
+          <div v-for="kpi in kpisAtivos.slice(0, 3)" :key="kpi.key"
+            style="background:var(--surface-base);padding:1.25rem 0.875rem;">
+            <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:0.5rem;">{{ kpi.label }}</div>
+            <div class="font-mono-data"
+              :style="kpi.colorFn ? kpi.colorFn(getKpiValue(kpi.key)) : 'color:var(--text-primary);'"
+              style="font-size:1.6rem;font-weight:700;">{{ formatKpi(kpi.key, getKpiValue(kpi.key)) }}</div>
+          </div>
+        </div>
+        <div v-if="kpisAtivos.length > 3"
+          style="overflow-x:auto;border-top:1px solid var(--border-subtle);-webkit-overflow-scrolling:touch;">
+          <div style="display:flex;gap:1px;background:var(--border-subtle);width:max-content;">
+            <div v-for="kpi in kpisAtivos.slice(3)" :key="kpi.key"
+              style="background:var(--surface-base);padding:1.25rem 0.875rem;min-width:120px;">
+              <div style="font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);margin-bottom:0.5rem;">{{ kpi.label }}</div>
+              <div class="font-mono-data"
+                :style="kpi.colorFn ? kpi.colorFn(getKpiValue(kpi.key)) : 'color:var(--text-primary);'"
+                style="font-size:1.6rem;font-weight:700;">{{ formatKpi(kpi.key, getKpiValue(kpi.key)) }}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -149,8 +178,6 @@
   .alerta-hl-amber   { color:var(--brand-amber);  font-weight:700; }
   .alerta-hl-emerald { color:var(--brand-emerald);font-weight:700; }
   .alerta-hl-indigo  { color:var(--brand-indigo); font-weight:700; }
-
-  /* KPI layout: flex carrossel universal — mesmo padrão do CardSummary */
 </style>
 
 <script>
@@ -161,87 +188,33 @@ window.CardAlerta = {
     statsPreCalculados: { type: Object,  default: () => ({}) },
     isMobile:           { type: Boolean, default: false },
     isLoading:          { type: Boolean, default: false },
-  },
 
-  // 🎛️ PAINEL DE CONTROLE DO CARD ALERTA
-  // Ajuste 'active' para ligar/desligar campos.
-  // Ajuste 'order' para reordenar (menor = mais à esquerda / mais acima).
-  // Ajuste 'label' para renomear o campo exibido.
-  data() {
-    return {
+    configKpis: {
+      type: Array,
+      default: () => [
+        { key: 'nocional',     label: 'Notional',     active: true,  order: 1, type: 'currency'   },
+        { key: 'plTotalValor', label: 'P&L atual',    active: true,  order: 2, type: 'currency'   },
+        { key: 'ganhoMaximo',  label: 'Ganho máximo', active: true,  order: 3, type: 'currency'   },
+        { key: 'premioMedio',  label: 'Prêmio médio', active: false, order: 4, type: 'currency'   },
+        { key: 'premioAtual',  label: 'Prêmio atual', active: false, order: 5, type: 'currency'   },
+        { key: 'plTotalPct',   label: 'P&L %',        active: false, order: 6, type: 'percentage' },
+        { key: 'totalOps',     label: 'Operações',    active: false, order: 7, type: 'number'     },
+      ]
+    },
 
-      dteUrgente: 14, // dias corridos — abaixo disto é grupo "vencimento iminente"
+    configDetalhes: {
+      type: Array,
+      default: () => [
+        { key: 'strike',     label: 'Strike', active: true,  order: 1 },
+        { key: 'spotPrice',  label: 'Spot',   active: true,  order: 2 },
+        { key: 'dteCorridos',label: 'DTE',    active: true,  order: 3 },
+        { key: 'nocional',   label: 'Noc.',   active: true,  order: 4 },
+        { key: 'premioMedio',label: 'PM',     active: false, order: 5 },
+        { key: 'premioAtual',label: 'PA',     active: false, order: 6 },
+      ]
+    },
 
-      // ── RESUMO DO PORTFÓLIO (KPIs do topo) ──────────────────────────────
-      // Campos disponíveis para o topo do card.
-      // Desktop: até 10 em grid, excedente em carrossel horizontal.
-      // Mobile: 3 fixos, excedente em carrossel horizontal.
-      configKpis: [
-        // --- Financeiro ---
-        { key: 'nocional',          label: 'Nocional',      active: true,  order: 1,  type: 'currency'   },
-        { key: 'plTotalValor',      label: 'P/L Sessão',    active: true,  order: 2,  type: 'currency'   },
-        { key: 'ganhoMaximo',       label: 'Ganho Máx.',    active: true,  order: 3,  type: 'currency'   },
-        { key: 'premioMedio',       label: 'Prêmio Médio',  active: true, order: 4,  type: 'currency'   },
-        { key: 'premioAtual',       label: 'Prêmio Atual',  active: true, order: 5,  type: 'currency'   },
-        { key: 'plTotalPct',        label: 'Rentabilidade', active: false, order: 6,  type: 'percentage' },
-        { key: 'totalOps',          label: 'Operações',     active: false, order: 7,  type: 'number'     },
-        { key: 'perdaMaxima',       label: 'Risco Máx.',    active: false, order: 8,  type: 'currency'   },
-        { key: 'potencialLucroPct', label: 'Pot. Lucro',    active: false, order: 9,  type: 'percentage' },
-        // --- Gregas agregadas ---
-        { key: 'delta',             label: 'Delta Net',     active: false, order: 10, type: 'number'     },
-        { key: 'gamma',             label: 'Gamma Net',     active: false, order: 11, type: 'number'     },
-        { key: 'vega',              label: 'Vega Net',      active: false, order: 12, type: 'number'     },
-        { key: 'theta',             label: 'Theta Diário',  active: false, order: 13, type: 'currency'   },
-        { key: 'rho',               label: 'Rho',           active: false, order: 14, type: 'number'     },
-      ],
-
-      // ── DETALHE DE CADA LINHA DE ALERTA ─────────────────────────────────
-      // Campos exibidos dentro de cada posição listada.
-      // Moneyness badge e % lucro garantido são sempre visíveis (não configuráveis aqui).
-      configDetalhes: [
-        // --- Ativos por padrão ---
-        { key: 'strike',            label: 'Strike',     active: true,  order: 1,  type: 'currency'   },
-        { key: 'spotPrice',         label: 'Spot',       active: true,  order: 2,  type: 'currency'   },
-        { key: 'dteCorridos',       label: 'DTE',        active: true,  order: 3,  type: 'numero'     },
-        { key: 'nocional',          label: 'Noc.',       active: true,  order: 4,  type: 'currency'   },
-        { key: 'premioMedio',       label: 'PM',         active: true,  order: 5,  type: 'currency'   },
-        { key: 'premioAtual',       label: 'PA',         active: true,  order: 6,  type: 'currency'   },
-        // --- Desligados por padrão ---
-        { key: 'tradeId',           label: 'Trade',      active: false, order: 10, type: 'texto'      },
-        { key: 'estrategiaId',      label: 'Estratégia', active: false, order: 11, type: 'texto'      },
-        { key: 'status',            label: 'Status',     active: false, order: 12, type: 'texto'      },
-        { key: 'dataTrade',         label: 'Abertura',   active: false, order: 20, type: 'texto'      },
-        { key: 'dataVencimento',    label: 'Vencimento', active: false, order: 22, type: 'texto'      },
-        { key: 'dteUteis',          label: 'DTE úteis',  active: false, order: 25, type: 'numero'     },
-        { key: 'simboloOpcao',      label: 'Ticker Op.', active: false, order: 30, type: 'texto'      },
-        { key: 'tickerAtivo',       label: 'Ativo',      active: false, order: 31, type: 'texto'      },
-        { key: 'nomeEmpresa',       label: 'Empresa',    active: false, order: 32, type: 'texto'      },
-        { key: 'setor',             label: 'Setor',      active: false, order: 33, type: 'texto'      },
-        { key: 'direcaoTrade',      label: 'Direção',    active: false, order: 34, type: 'texto'      },
-        { key: 'tipoOpcao',         label: 'Tipo',       active: false, order: 35, type: 'texto'      },
-        { key: 'quantidade',        label: 'Qtd',        active: false, order: 36, type: 'numero'     },
-        { key: 'moneynessCode',     label: 'Moneyness',  active: false, order: 40, type: 'texto'      },
-        { key: 'ganhoMaximo',       label: 'Ganho Máx.', active: false, order: 43, type: 'currency'   },
-        { key: 'potencialLucroPct', label: 'Pot. Lucro', active: false, order: 44, type: 'percentage' },
-        { key: 'perdaMaxima',       label: 'Risco Máx.', active: false, order: 45, type: 'currency'   },
-        { key: 'plTotalPct',        label: 'Rentab.',    active: false, order: 47, type: 'percentage' },
-        { key: 'plTotalValor',      label: 'P/L',        active: false, order: 48, type: 'currency'   },
-        { key: 'breakEven',         label: 'Break-Even', active: false, order: 50, type: 'currency'   },
-        { key: 'ivAtual',           label: 'IV',         active: false, order: 60, type: 'percentage' },
-        { key: 'ivRank',            label: 'IV Rank',    active: false, order: 61, type: 'percentage' },
-        { key: 'variacao',          label: 'Variação',   active: false, order: 62, type: 'percentage' },
-        { key: 'moneynessRatio',    label: 'Moneyness%', active: false, order: 63, type: 'percentage' },
-        { key: 'volatilidadeImpl',  label: 'Vol. Impl.', active: false, order: 65, type: 'percentage' },
-        { key: 'poe',               label: 'POE',        active: false, order: 66, type: 'percentage' },
-        { key: 'delta',             label: 'Delta',      active: false, order: 70, type: 'number'     },
-        { key: 'gamma',             label: 'Gamma',      active: false, order: 71, type: 'number'     },
-        { key: 'vega',              label: 'Vega',       active: false, order: 72, type: 'number'     },
-        { key: 'theta',             label: 'Theta',      active: false, order: 73, type: 'currency'   },
-        { key: 'rho',               label: 'Rho',        active: false, order: 74, type: 'number'     },
-        { key: 'directionFlag',     label: 'Dir. Flag',  active: false, order: 80, type: 'texto'      },
-        { key: 'controlFlag',       label: 'Ctrl. Flag', active: false, order: 81, type: 'texto'      },
-      ],
-    };
+    dteUrgente: { type: Number, default: 14 },
   },
 
   computed: {
@@ -413,75 +386,15 @@ window.CardAlerta = {
     },
 
     formatDetalhe(key, op) {
-      // Resolve valor — tenta chave semântica, depois uppercase, depois aliases conhecidos
-      const aliases = {
-        quantidade:       ['quantidade', 'qtdOpcoes', 'QUANTITY'],
-        ivAtual:          ['ivAtual', 'IV'],
-        ivRank:           ['ivRank', 'ivRank1y', 'IV_RANK'],
-        variacao:         ['variacao', 'variation', 'VARIATION'],
-        moneynessRatio:   ['moneynessRatio', 'moneyness', 'MONEYNESS_RATIO'],
-        volatilidadeImpl: ['volatilidadeImpl', 'ivCalc', 'IV_CALC'],
-        poe:              ['poe', 'POE'],
-        directionFlag:    ['directionFlag', 'DIRECTION_FLAG'],
-        controlFlag:      ['controlFlag', 'CONTROL_FLAG'],
-        potencialLucroPct:['potencialLucroPct', 'maxProfitPct', 'MAX_PROFIT_PCT'],
-        perdaMaxima:      ['perdaMaxima', 'maxLoss', 'MAX_LOSS'],
-        breakEven:        ['breakEven', 'BREAK_EVEN'],
-        plTotalValor:     ['plTotalValor', 'plValue', 'PL_VALUE'],
-        plTotalPct:       ['plTotalPct', 'plPct', 'PL_PCT'],
-        ganhoMaximo:      ['ganhoMaximo', 'maxGain', 'MAX_GAIN'],
-        dteUteis:         ['dteUteis', 'DTE'],
-        dataVencimento:   ['dataVencimento', 'expiry', 'EXPIRY'],
-        dataTrade:        ['dataTrade', 'tradeDate', 'TRADE_DATE'],
-        nomeEmpresa:      ['nomeEmpresa', 'COMPANY_NAME'],
-        estrategiaId:     ['estrategiaId', 'ID_STRATEGY'],
-        tradeId:          ['tradeId', 'ID_TRADE'],
-        direcaoTrade:     ['direcaoTrade', 'SIDE'],
-        tipoOpcao:        ['tipoOpcao', 'OPTION_TYPE'],
-      };
-
-      let raw = op[key];
-      if ((raw === null || raw === undefined) && aliases[key]) {
-        for (const a of aliases[key]) {
-          if (op[a] !== undefined && op[a] !== null) { raw = op[a]; break; }
-        }
-      }
-      if (raw === null || raw === undefined) raw = op[key.toUpperCase()];
+      const raw = op[key] ?? op[key.toUpperCase()] ?? null;
       if (raw === null || raw === undefined) return '—';
-
-      // Determina tipo a partir do configDetalhes
-      const cfg = this.configDetalhes.find(c => c.key === key);
-      const tipo = cfg?.type || 'texto';
-
-      // Campos texto — retorna direto
-      if (tipo === 'texto') return String(raw) || '—';
-
       const n = parseFloat(raw);
       if (isNaN(n)) return String(raw);
-
-      if (tipo === 'currency') {
-        const abs = Math.abs(n);
-        const prefix = n < 0 ? '-R$' : 'R$';
-        if (key === 'nocional' || key === 'perdaMaxima' || key === 'ganhoMaximo') {
-          if (abs >= 1000) return prefix + (abs / 1000).toFixed(1) + 'k';
-          return prefix + Math.round(abs).toLocaleString('pt-BR');
-        }
-        return prefix + n.toFixed(2);
-      }
-
-      if (tipo === 'percentage') {
-        // Valores já em % (ex: 75.3) ou decimal (ex: 0.753)
-        const pct = Math.abs(n) <= 1 ? n * 100 : n;
-        return pct.toFixed(1) + '%';
-      }
-
-      if (tipo === 'numero') {
-        if (key === 'dteCorridos' || key === 'dteUteis') return Math.round(n) + 'd';
-        return n.toLocaleString('pt-BR');
-      }
-
-      // number (gregas) — 4 casas decimais
-      return n.toFixed(4);
+      if (key === 'strike' || key === 'spotPrice') return 'R$' + n.toFixed(2);
+      if (key === 'nocional') return 'R$' + Math.round(n).toLocaleString('pt-BR');
+      if (key === 'premioMedio' || key === 'premioAtual') return 'R$' + n.toFixed(2);
+      if (key === 'dteCorridos') return Math.round(n) + 'd';
+      return String(raw);
     },
 
     getSeverityBar(op) {
