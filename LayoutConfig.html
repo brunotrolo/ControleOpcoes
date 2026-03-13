@@ -11,6 +11,7 @@ window.APP_MENU = [
   { id: 'necton-import', label: 'Importação Necton',      icon: 'file-down' },
   { id: 'automacao',     label: 'Automação',              icon: 'zap' },
   { id: 'bancodedados',  label: 'Base de Dados',          icon: 'hard-drive' },
+  { id: 'oplab-explorer', label: 'OpLab API Explorer', icon: 'terminal' },
   { id: 'config',        label: 'Configurações',          icon: 'settings' }
 ];
 
@@ -143,6 +144,15 @@ window.LAYOUT_MAP = {
     {
       id: 'tela-bancodedados',
       component: 'bancodedados-view',
+      cols: 'col-span-12',
+      props: {}
+    }
+  ],
+
+  'oplab-explorer': [
+    {
+      id: 'painel-oplab-explorer',
+      component: 'oplab-explorer-view',
       cols: 'col-span-12',
       props: {}
     }

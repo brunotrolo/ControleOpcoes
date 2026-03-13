@@ -11,9 +11,9 @@
     <div v-if="isLoading"
       style="display:flex;flex-direction:row;overflow-x:scroll;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;background:var(--border-subtle);gap:1px;">
       <div v-for="n in 4" :key="'sk'+n"
-        style="flex:0 0 160px;width:160px;padding:1.25rem 1rem;background:var(--surface-base);animation:summary-pulse 1.5s ease infinite;">
-        <div style="height:10px;background:var(--surface-overlay);border-radius:4px;width:60%;margin-bottom:10px;"></div>
-        <div style="height:24px;background:var(--surface-overlay);border-radius:4px;width:80%;"></div>
+        style="flex:0 0 auto;min-width:160px;padding:1.25rem 1.25rem;background:var(--surface-base);animation:summary-pulse 1.5s ease infinite;">
+        <div style="height:11px;background:var(--surface-overlay);border-radius:4px;width:60%;margin-bottom:12px;"></div>
+        <div style="height:32px;background:var(--surface-overlay);border-radius:4px;width:80%;"></div>
       </div>
     </div>
 
@@ -23,11 +23,11 @@
       <div
         v-for="field in activeFields"
         :key="field.key"
-        style="flex:0 0 160px;width:160px;padding:1.25rem 1rem;background:var(--surface-base);">
-        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.625rem;white-space:nowrap;">{{ field.label }}</div>
+        style="flex:0 0 auto;min-width:160px;padding:1.25rem 1.25rem;background:var(--surface-base);">
+        <div style="font-size:1.08rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.75rem;white-space:nowrap;">{{ field.label }}</div>
         <div class="font-mono-data"
           :style="getValueColor(field)"
-          style="font-size:1.5rem;font-weight:700;line-height:1;white-space:nowrap;">{{ formatValue(field.value, field.type) }}</div>
+          style="font-size:2.25rem;font-weight:700;line-height:1;white-space:nowrap;">{{ formatValue(field.value, field.type) }}</div>
       </div>
     </div>
 
@@ -53,9 +53,7 @@ window.CardSummary = {
   data() {
     return {
       configCampos: [
-
         // --- 0. Core ---
-
         { key: 'nocional',        label: 'Nocional',      type: 'currency',   active: true,  order: 1 },
         { key: 'plTotalValor',    label: 'P/L Aberto',    type: 'currency',   active: true,  order: 2 },
         { key: 'ganhoMaximo',     label: 'Ganho Máx.',    type: 'currency',   active: true,  order: 3 },

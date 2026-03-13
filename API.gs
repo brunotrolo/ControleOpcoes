@@ -424,6 +424,7 @@ function apiSimularHorizontePreditivo(diasParam) {
   }
 }
 
+
 // ==========================================
 // 🧪 MÓDULO DE TESTE DA PARTE 3 (Homologação)
 // ==========================================

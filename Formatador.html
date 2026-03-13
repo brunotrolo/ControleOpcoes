@@ -1,0 +1,230 @@
+<script>
+// ============================================================
+// FORMATADOR.HTML — Presentation Utilities / Helpers Layer
+//
+// Responsabilidade: converter valores brutos em strings
+// legíveis para o usuário brasileiro.
+//
+// Regras:
+//   - Não conhece dados de negócio (trades, greeks, etc.)
+//   - Não conhece componentes Vue
+//   - Não calcula métricas — só formata o que recebe
+//   - Sempre retorna string — nunca null, nunca undefined
+//
+// Uso nos componentes:
+//   window.Formatador.moeda(valor)
+//   window.Formatador.auto(valor, 'currency')
+// ============================================================
+
+window.Formatador = (() => {
+
+  // ── Instâncias Intl reutilizáveis (performance) ──────────────────────────
+  const _brl     = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  const _num4    = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 4 });
+  const _num2    = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const _num0    = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 });
+
+  // ── Guard padrão ─────────────────────────────────────────────────────────
+  const _vazio   = (v) => v === null || v === undefined || v === '' || (typeof v === 'number' && isNaN(v));
+  const _VAZIO   = '—';
+
+  // ==========================================================================
+  // MOEDA
+  // Comportamento: compacta valores grandes (k / M), preserva sinal
+  //
+  // moeda(8300)      → "R$8,3k"
+  // moeda(-1000)     → "-R$1,0k"
+  // moeda(83400000)  → "R$83,4M"
+  // moeda(8.28)      → "R$8,28"
+  // ==========================================================================
+  function moeda(n) {
+    if (_vazio(n)) return _VAZIO;
+    n = parseFloat(n);
+    if (isNaN(n)) return _VAZIO;
+    const abs    = Math.abs(n);
+    const prefix = n < 0 ? '-R$' : 'R$';
+    if (abs >= 1_000_000) return prefix + (abs / 1_000_000).toFixed(1) + 'M';
+    if (abs >= 1_000)     return prefix + (abs / 1_000).toFixed(1) + 'k';
+    return prefix + _num2.format(abs);
+  }
+
+  // ==========================================================================
+  // MOEDA COMPLETA — sem compactação, para tabelas densas
+  // moedaCompleta(8300) → "R$ 8.300,00"
+  // ==========================================================================
+  function moedaCompleta(n) {
+    if (_vazio(n)) return _VAZIO;
+    n = parseFloat(n);
+    if (isNaN(n)) return _VAZIO;
+    return _brl.format(n);
+  }
+
+  // ==========================================================================
+  // PORCENTAGEM — valor já em % (ex: 5.3 → "5,3%")
+  // pct(5.3)    → "5,3%"
+  // pct(-68.0)  → "-68,0%"
+  // pct(0.078)  → "0,1%"   ← usa o valor como está (não multiplica por 100)
+  // ==========================================================================
+  function pct(n, casas = 1) {
+    if (_vazio(n)) return _VAZIO;
+    n = parseFloat(n);
+    if (isNaN(n)) return _VAZIO;
+    return n.toFixed(casas).replace('.', ',') + '%';
+  }
+
+  // ==========================================================================
+  // PORCENTAGEM COM SINAL — sempre mostra + ou -
+  // pctComSinal(5.3)   → "+5,3%"
+  // pctComSinal(-68.0) → "-68,0%"
+  // ==========================================================================
+  function pctComSinal(n, casas = 1) {
+    if (_vazio(n)) return _VAZIO;
+    n = parseFloat(n);
+    if (isNaN(n)) return _VAZIO;
+    const s = n.toFixed(casas).replace('.', ',');
+    return (n >= 0 ? '+' : '') + s + '%';
+  }
+
+  // ==========================================================================
+  // NÚMERO — formatação pt-BR com separador de milhar
+  // numero(1000)   → "1.000"
+  // numero(3.1415) → "3,1415"
+  // ==========================================================================
+  function numero(n, casas = null) {
+    if (_vazio(n)) return _VAZIO;
+    n = parseFloat(n);
+    if (isNaN(n)) return _VAZIO;
+    if (casas !== null) return n.toFixed(casas).replace('.', ',');
+    return _num4.format(n);
+  }
+
+  // ==========================================================================
+  // DATA — aceita Date, ISO string, ou string do GAS ("Fri Mar 20 2026...")
+  // data("2026-03-20")                    → "20/03/2026"
+  // data(new Date())                      → "20/03/2026"
+  // data("Fri Mar 20 2026 00:00:00 GMT")  → "20/03/2026"
+  // ==========================================================================
+  function data(v) {
+    if (_vazio(v)) return _VAZIO;
+    // ISO string  2026-03-20 ou 2026-03-20T00:00:00
+    if (typeof v === 'string') {
+      const dm = v.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (dm) return `${dm[3]}/${dm[2]}/${dm[1]}`;
+    }
+    // Date nativo ou string do GAS
+    const d = v instanceof Date ? v : new Date(v);
+    if (!isNaN(d.getTime())) return d.toLocaleDateString('pt-BR');
+    return String(v);
+  }
+
+  // ==========================================================================
+  // DTE — dias corridos com sufixo "d"
+  // dte(7)  → "7d"
+  // dte(35) → "35d"
+  // ==========================================================================
+  function dte(n) {
+    if (_vazio(n)) return _VAZIO;
+    n = parseFloat(n);
+    if (isNaN(n)) return _VAZIO;
+    return Math.round(n) + 'd';
+  }
+
+  // ==========================================================================
+  // DISTÂNCIA R$ — spot - strike com sinal explícito
+  // distanciaR(-2.18)  → "-R$2,18"
+  // distanciaR(2.18)   → "+R$2,18"
+  // ==========================================================================
+  function distanciaR(n) {
+    if (_vazio(n)) return _VAZIO;
+    n = parseFloat(n);
+    if (isNaN(n)) return _VAZIO;
+    return (n >= 0 ? '+R$' : '-R$') + Math.abs(n).toFixed(2).replace('.', ',');
+  }
+
+  // ==========================================================================
+  // DISTÂNCIA % — com sinal explícito
+  // distanciaPct(-26.5) → "-26,5%"
+  // distanciaPct(5.3)   → "+5,3%"
+  // ==========================================================================
+  function distanciaPct(n) {
+    if (_vazio(n)) return _VAZIO;
+    n = parseFloat(n);
+    if (isNaN(n)) return _VAZIO;
+    return (n >= 0 ? '+' : '') + n.toFixed(1).replace('.', ',') + '%';
+  }
+
+  // ==========================================================================
+  // GREGA — 4 casas decimais pt-BR (delta, gamma, vega, theta, rho)
+  // grega(0.3456) → "0,3456"
+  // ==========================================================================
+  function grega(n) {
+    if (_vazio(n)) return _VAZIO;
+    n = parseFloat(n);
+    if (isNaN(n)) return _VAZIO;
+    return _num4.format(n);
+  }
+
+  // ==========================================================================
+  // AUTO — dispatcher: recebe o tipo semântico e chama a função certa
+  // Compatível com os tipos usados em configDetalhes e configMeta
+  //
+  // Tipos aceitos:
+  //   'currency'      → moeda()
+  //   'percentage'    → pct()
+  //   'numero'        → dte() para dteCorridos/dteUteis, numero() para resto
+  //   'number'        → grega()
+  //   'texto'         → data() se parecer data, String() senão
+  //   'distancia_r'   → distanciaR()
+  //   'distancia_pct' → distanciaPct()
+  // ==========================================================================
+  function auto(v, tipo, key) {
+    if (_vazio(v)) return _VAZIO;
+
+    switch (tipo) {
+      case 'currency':      return moeda(v);
+      case 'percentage':    return pct(v);
+      case 'number':        return grega(v);
+      case 'distancia_r':   return distanciaR(v);
+      case 'distancia_pct': return distanciaPct(v);
+
+      case 'numero':
+        if (key === 'dteCorridos' || key === 'dteUteis') return dte(v);
+        return numero(v);
+
+      case 'texto': {
+        // Tenta formatar como data se parecer data
+        const s = String(v);
+        if (s.match(/^\d{4}-\d{2}-\d{2}/) || v instanceof Date || s.match(/^[A-Z][a-z]{2}\s/))
+          return data(v);
+        return s || _VAZIO;
+      }
+
+      default: return String(v);
+    }
+  }
+
+  // API pública
+  return {
+    moeda,
+    moedaCompleta,
+    pct,
+    pctComSinal,
+    numero,
+    data,
+    dte,
+    distanciaR,
+    distanciaPct,
+    grega,
+    auto,
+
+    // Alias para compatibilidade durante a migração gradual
+    // (permite que componentes antigos continuem funcionando
+    //  enquanto são migrados um a um)
+    fmtCurrency:  moeda,
+    fmtCurrencyK: moeda,
+    formatVal:    auto,
+    formatCell:   auto,
+  };
+
+})();
+</script>
