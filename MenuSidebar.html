@@ -27,7 +27,7 @@
         <transition name="sidebar-label">
           <div v-show="!isCollapsed" class="flex flex-col leading-none overflow-hidden">
             <span style="font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; color: var(--text-primary); letter-spacing: -0.03em; white-space: nowrap;">
-              StockOp
+              NexoApp
             </span>
             <span style="font-size: 10px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap;">
               Portfólio · Opções
@@ -151,20 +151,31 @@
       :key="item.id"
       @click="$emit('navigate', item.id)"
       :class="[
-        'flex-1 flex flex-col items-center justify-center gap-1 py-2 transition-all duration-[150ms] relative',
+        'flex-1 flex flex-col items-center justify-center gap-2 py-4 transition-all duration-[150ms] relative',
         currentView === item.id ? 'mobile-nav-active' : 'mobile-nav-idle'
       ]"
     >
       <!-- Pill indicador de ativo -->
       <span
         v-if="currentView === item.id"
-        class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] rounded-b-full"
+        class="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-[3px] rounded-b-full"
         style="background: var(--brand-indigo);"
       ></span>
 
-      <i :data-lucide="item.icon" class="w-5 h-5 shrink-0"></i>
-      <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.04em;">
+      <i :data-lucide="item.icon" class="w-9 h-9 shrink-0"></i>
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.04em;">
         {{ item.shortLabel || item.label }}
+      </span>
+    </button>
+
+    <!-- Toggle tema — visível diretamente na bottom bar -->
+    <button
+      @click="toggleTema"
+      class="flex-1 flex flex-col items-center justify-center gap-2 py-4 transition-all duration-[150ms] mobile-nav-idle"
+    >
+      <i :data-lucide="isDark ? 'sun' : 'moon'" class="w-9 h-9 shrink-0"></i>
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.04em;">
+        {{ isDark ? 'Claro' : 'Escuro' }}
       </span>
     </button>
 
@@ -172,12 +183,12 @@
     <button
       @click="toggleMobileDrawer"
       :class="[
-        'flex-1 flex flex-col items-center justify-center gap-1 py-2 transition-all duration-[150ms]',
+        'flex-1 flex flex-col items-center justify-center gap-2 py-4 transition-all duration-[150ms]',
         drawerAberto ? 'mobile-nav-active' : 'mobile-nav-idle'
       ]"
     >
-      <i data-lucide="grid-3x3" class="w-5 h-5 shrink-0"></i>
-      <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.04em;">Mais</span>
+      <i data-lucide="grid-3x3" class="w-9 h-9 shrink-0"></i>
+      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.04em;">Mais</span>
     </button>
   </nav>
 
@@ -196,8 +207,8 @@
 
       <!-- Painel do drawer -->
       <div
-        class="absolute bottom-0 left-0 right-0 rounded-t-[var(--radius-xl)] overflow-hidden pb-safe"
-        style="background: var(--surface-base); border-top: 1px solid var(--border-default);"
+        class="absolute bottom-0 left-0 right-0 rounded-t-[var(--radius-xl)] overflow-hidden"
+        style="background: var(--surface-base); border-top: 1px solid var(--border-default); padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));"
       >
         <!-- Handle -->
         <div class="flex justify-center pt-3 pb-1">
@@ -212,33 +223,19 @@
         </div>
 
         <!-- Grid de itens secundários -->
-        <div class="grid grid-cols-3 gap-2 p-4">
+        <div class="grid grid-cols-3 gap-3 p-5">
           <button
             v-for="item in drawerMenu"
             :key="item.id"
             @click="navegarDrawer(item.id)"
             :class="[
-              'flex flex-col items-center gap-2 p-4 rounded-[var(--radius-lg)] transition-all duration-[150ms]',
+              'flex flex-col items-center gap-2.5 p-4 rounded-[var(--radius-lg)] transition-all duration-[150ms]',
               currentView === item.id ? 'drawer-item-active' : 'drawer-item-idle'
             ]"
           >
-            <i :data-lucide="item.icon" class="w-6 h-6"></i>
-            <span style="font-size: 11px; font-weight: 600; text-align: center; line-height: 1.2;">
+            <i :data-lucide="item.icon" class="w-10 h-10"></i>
+            <span style="font-size: 13px; font-weight: 700; text-align: center; line-height: 1.3;">
               {{ item.label }}
-            </span>
-          </button>
-        </div>
-
-        <!-- Toggle dark mode no drawer -->
-        <div class="px-4 pb-4">
-          <button
-            @click="toggleTema"
-            class="w-full flex items-center gap-3 px-4 py-3 rounded-[var(--radius-lg)] transition-all duration-[150ms]"
-            style="background: var(--surface-overlay); color: var(--text-secondary);"
-          >
-            <i :data-lucide="isDark ? 'sun' : 'moon'" class="w-5 h-5"></i>
-            <span style="font-size: 13px; font-weight: 600;">
-              {{ isDark ? 'Ativar Modo Claro' : 'Ativar Modo Escuro' }}
             </span>
           </button>
         </div>
