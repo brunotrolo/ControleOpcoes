@@ -2,150 +2,206 @@
 <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
 
 <template id="page-bancodedados">
-  <div class="max-w-[95%] mx-auto flex flex-col h-full bg-app-bg overflow-hidden font-sans space-y-8 mt-6">
+  <div style="max-width:95%;margin:0 auto;display:flex;flex-direction:column;height:100%;overflow:hidden;gap:1.5rem;padding-top:1.5rem;">
 
-    <div class="premium-card px-8 py-6 flex flex-col lg:flex-row justify-between items-center gap-6 z-30 relative shrink-0">
-      
-      <div class="flex items-center gap-5">
-        <div class="p-3 bg-indigo-50 text-brand-indigo rounded-2xl shadow-sm border border-indigo-100/50">
-          <i data-lucide="database" class="w-6 h-6"></i>
+    <!-- HEADER -->
+    <div class="premium-card" style="padding:1.5rem 2rem;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:1.5rem;flex-shrink:0;z-index:30;position:relative;">
+
+      <div style="display:flex;align-items:center;gap:1.25rem;">
+        <div style="padding:0.75rem;background:var(--brand-indigo-light);color:var(--brand-indigo);border-radius:var(--radius-lg);border:1px solid var(--brand-indigo-muted);flex-shrink:0;">
+          <i data-lucide="database" style="width:24px;height:24px;display:block;"></i>
         </div>
         <div>
-          <h2 class="text-2xl font-black text-slate-900 tracking-tight">Universal Data Bridge</h2>
-          <div class="flex items-center gap-2 mt-1">
-            <span class="flex h-2 w-2 rounded-full bg-brand-emerald animate-pulse shadow-sm shadow-emerald-200"></span>
-            <p class="text-slate-400 text-[10px] uppercase tracking-[0.25em] font-bold">Base de Dados - Controle de Opções</p>
+          <h2 class="t-title" style="color:var(--text-primary);">Universal Data Bridge</h2>
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.25rem;">
+            <span style="display:flex;width:8px;height:8px;border-radius:50%;background:var(--brand-emerald);flex-shrink:0;"></span>
+            <p class="t-label-sm" style="color:var(--text-muted);text-transform:uppercase;letter-spacing:0.2em;">Base de Dados - Controle de Opções</p>
           </div>
         </div>
       </div>
 
-      <div class="flex items-center gap-3 bg-slate-50/80 p-1.5 rounded-2xl border border-slate-100 shadow-inner">
-        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-3">Dataset:</label>
-        
+      <!-- Toolbar -->
+      <div style="display:flex;align-items:center;gap:0.75rem;background:var(--surface-overlay);padding:0.375rem;border-radius:var(--radius-lg);border:1px solid var(--border-subtle);">
+        <label class="t-label-sm" style="color:var(--text-muted);text-transform:uppercase;letter-spacing:0.2em;margin-left:0.5rem;">Dataset:</label>
+
         <select v-model="abaAtiva" @change="switchAba"
-          class="bg-white text-slate-700 text-xs font-bold border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-brand-indigo/30 transition-all min-w-[220px] cursor-pointer shadow-sm">
+          style="background:var(--surface-base);color:var(--text-primary);font-size:0.78rem;font-weight:700;border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0.6rem 1rem;outline:none;min-width:14rem;cursor:pointer;">
           <option v-for="nome in listaAbas" :key="nome" :value="nome">📊 {{ nome }}</option>
         </select>
-        
-        <div class="w-px h-6 bg-slate-200 mx-1"></div>
 
-        <div class="flex items-center gap-2">
-          <button @click="sincronizarBanco" 
-            class="btn-action bg-white border border-slate-200 text-brand-indigo hover:bg-indigo-50 shadow-sm px-3 py-2.5 rounded-xl" title="Sincronizar">
-            <span :class="{'animate-spin': syncBusy}" class="flex items-center justify-center origin-center transition-transform duration-700">
-              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        <div style="width:1px;height:1.5rem;background:var(--border-default);margin:0 0.25rem;"></div>
+
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <!-- Sync -->
+          <button @click="sincronizarBanco"
+            style="background:var(--surface-base);border:1px solid var(--border-default);color:var(--brand-indigo);padding:0.6rem;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;cursor:pointer;"
+            title="Sincronizar">
+            <span :style="syncBusy ? 'animation:bdb-spin 0.7s linear infinite;' : ''"
+              style="display:flex;align-items:center;justify-content:center;transform-origin:center;">
+              <i data-lucide="refresh-cw" style="width:16px;height:16px;display:block;"></i>
             </span>
           </button>
 
-          <button @click="abrirModalAdd" 
-            class="btn-action btn-action-primary px-5 py-2.5 rounded-xl shadow-md">
-            <i data-lucide="plus" class="w-4 h-4"></i>
-            <span class="ml-1">Novo</span>
+          <!-- Novo -->
+          <button @click="abrirModalAdd" class="btn-action btn-action-primary" style="padding:0.6rem 1.25rem;display:inline-flex;align-items:center;gap:0.375rem;">
+            <i data-lucide="plus" style="width:16px;height:16px;display:block;"></i>
+            <span>Novo</span>
           </button>
 
+          <!-- Excluir selecionados -->
           <button @click="excluirSelecionados" v-if="temSelecao"
-            class="btn-action bg-rose-50 text-brand-rose border border-rose-200 hover:bg-brand-rose hover:text-white px-5 py-2.5 rounded-xl shadow-sm transition-colors animate-fade-in">
-            <i data-lucide="trash-2" class="w-4 h-4"></i>
-            <span class="ml-1">Excluir ({{ qtdSelecionada }})</span>
+            style="background:var(--brand-rose-light);color:var(--brand-rose);border:1px solid var(--brand-rose-muted);padding:0.6rem 1.25rem;border-radius:var(--radius-md);font-size:0.78rem;font-weight:700;display:inline-flex;align-items:center;gap:0.375rem;cursor:pointer;transition:background var(--duration-fast);">
+            <i data-lucide="trash-2" style="width:16px;height:16px;display:block;"></i>
+            <span>Excluir ({{ qtdSelecionada }})</span>
           </button>
         </div>
       </div>
     </div>
 
-    <div class="flex-1 relative p-6 overflow-hidden">
+    <!-- CORPO DA GRID -->
+    <div style="flex:1;position:relative;padding:1.5rem;overflow:hidden;">
 
-      <transition name="fade">
-        <div v-if="syncBusy" class="absolute inset-0 bg-white/70 backdrop-blur-md z-40 flex flex-col items-center justify-center m-6 rounded-[1.5rem]">
-          <div class="relative w-16 h-16">
-            <div class="absolute inset-0 border-4 border-indigo-50 rounded-full"></div>
-            <div class="absolute inset-0 border-4 border-brand-indigo border-t-transparent rounded-full animate-spin"></div>
+      <!-- Loading overlay -->
+      <transition name="bdb-fade">
+        <div v-if="syncBusy"
+          style="position:absolute;inset:0;background:rgba(var(--surface-base-rgb,255,255,255),0.7);backdrop-filter:blur(8px);z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:1.5rem;border-radius:var(--radius-xl);">
+          <div style="position:relative;width:4rem;height:4rem;">
+            <div style="position:absolute;inset:0;border:4px solid var(--brand-indigo-light);border-radius:50%;"></div>
+            <div style="position:absolute;inset:0;border:4px solid var(--brand-indigo);border-top-color:transparent;border-radius:50%;animation:bdb-spin 0.8s linear infinite;"></div>
           </div>
-          <p class="mt-4 text-[10px] font-black text-brand-indigo uppercase tracking-[0.3em]">Mapeando Matriz...</p>
+          <p class="t-label-sm" style="margin-top:1rem;color:var(--brand-indigo);text-transform:uppercase;letter-spacing:0.3em;">Mapeando Matriz...</p>
         </div>
       </transition>
-      
-      <transition name="fade">
-        <div v-if="statsSelecao.conta > 1" 
-             class="absolute bottom-10 right-10 z-50 bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center gap-6 animate-in slide-in-from-bottom-4">
-          <div class="flex flex-col">
-            <span class="text-[8px] font-black text-brand-indigo uppercase tracking-widest">Soma Seleção</span>
-            <span class="text-sm font-mono-data font-bold text-slate-800">{{ formatarNumero(statsSelecao.soma) }}</span>
+
+      <!-- Stats seleção flutuante -->
+      <transition name="bdb-fade">
+        <div v-if="statsSelecao.conta > 1"
+          style="position:absolute;bottom:2.5rem;right:2.5rem;z-index:50;background:var(--surface-base);backdrop-filter:blur(8px);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:1rem 1.25rem;box-shadow:0 8px 30px rgba(0,0,0,0.12);display:flex;align-items:center;gap:1.5rem;">
+          <div style="display:flex;flex-direction:column;">
+            <span class="t-label-sm" style="color:var(--brand-indigo);text-transform:uppercase;letter-spacing:0.18em;">Soma Seleção</span>
+            <span class="font-mono-data" style="font-size:0.85rem;font-weight:700;color:var(--text-primary);">{{ formatarNumero(statsSelecao.soma) }}</span>
           </div>
-          <div class="w-px h-8 bg-slate-200"></div>
-          <div class="flex flex-col">
-            <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Média</span>
-            <span class="text-sm font-mono-data font-bold text-slate-600">{{ formatarNumero(statsSelecao.media) }}</span>
+          <div style="width:1px;height:2rem;background:var(--border-default);"></div>
+          <div style="display:flex;flex-direction:column;">
+            <span class="t-label-sm" style="color:var(--text-muted);text-transform:uppercase;letter-spacing:0.18em;">Média</span>
+            <span class="font-mono-data" style="font-size:0.85rem;font-weight:700;color:var(--text-secondary);">{{ formatarNumero(statsSelecao.media) }}</span>
           </div>
-          <div class="flex items-center justify-center bg-indigo-50 border border-indigo-100 text-brand-indigo text-[10px] font-black px-3 py-1.5 rounded-lg tracking-widest">
+          <div style="background:var(--brand-indigo-light);border:1px solid var(--brand-indigo-muted);color:var(--brand-indigo);font-size:0.65rem;font-weight:700;padding:0.375rem 0.75rem;border-radius:var(--radius-md);letter-spacing:0.18em;">
             {{ statsSelecao.conta }} ITENS
           </div>
         </div>
       </transition>
 
-
-      <div id="hot-engine" class="w-full h-full bg-white rounded-[1.5rem] border border-slate-200 shadow-2xl overflow-hidden"></div>
+      <div id="hot-engine" style="width:100%;background:var(--surface-base);border-radius:var(--radius-xl);border:1px solid var(--border-default);box-shadow:0 4px 24px rgba(0,0,0,0.08);overflow:hidden;"></div>
     </div>
 
-
-
-    <transition name="fade">
-      <div v-if="modalExcluir.visivel" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-        <div class="bg-white rounded-[28px] shadow-2xl border border-slate-200 w-full max-w-sm overflow-hidden transform transition-all">
-          <div class="p-8 text-center">
-            <div class="w-16 h-16 bg-rose-50 text-brand-rose rounded-full flex items-center justify-center mx-auto mb-6 ring-4 ring-rose-50/50">
-              <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+    <!-- MODAL EXCLUIR -->
+    <transition name="bdb-fade">
+      <div v-if="modalExcluir.visivel"
+        style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);">
+        <div style="background:var(--surface-base);border-radius:var(--radius-xl);border:1px solid var(--border-default);width:100%;max-width:22rem;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.2);">
+          <div style="padding:2rem;text-align:center;">
+            <div style="width:4rem;height:4rem;background:var(--brand-rose-light);color:var(--brand-rose);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;border:4px solid var(--brand-rose-muted);">
+              <i data-lucide="alert-triangle" style="width:2rem;height:2rem;display:block;"></i>
             </div>
-            <h3 class="text-xl font-black text-slate-900 mb-2 tracking-tight">Confirmar Exclusão?</h3>
-            <p class="text-sm text-slate-500 font-medium leading-relaxed">
-              {{ modalExcluir.mensagem }}<br>
-              <span class="text-brand-rose font-bold uppercase text-[10px] tracking-[0.2em] mt-3 block bg-rose-50 py-1.5 rounded-lg">Ação irreversível</span>
+            <h3 class="t-subtitle" style="color:var(--text-primary);margin-bottom:0.5rem;">Confirmar Exclusão?</h3>
+            <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;">
+              {{ modalExcluir.mensagem }}
             </p>
+            <span style="display:inline-block;margin-top:0.75rem;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;color:var(--brand-rose);background:var(--brand-rose-light);padding:0.375rem 1rem;border-radius:var(--radius-md);">Ação irreversível</span>
           </div>
-          <div class="flex border-t border-slate-100 p-4 gap-3 bg-slate-50">
-            <button @click="fecharModalExcluir" class="btn-action flex-1 bg-white border border-slate-200 text-slate-500 hover:bg-slate-100">Cancelar</button>
-            <button @click="confirmarExclusao" class="btn-action flex-1 bg-brand-rose text-white hover:bg-rose-600 shadow-md">Sim, Excluir</button>
+          <div style="display:flex;gap:0.75rem;padding:1rem 1.25rem;background:var(--surface-overlay);border-top:1px solid var(--border-subtle);">
+            <button @click="fecharModalExcluir" class="btn-action" style="flex:1;background:var(--surface-base);border:1px solid var(--border-default);color:var(--text-tertiary);">Cancelar</button>
+            <button @click="confirmarExclusao" class="btn-action" style="flex:1;background:var(--brand-rose);color:#fff;border:none;">Sim, Excluir</button>
           </div>
         </div>
       </div>
     </transition>
 
-    <transition name="fade">
-      <div v-if="modalAdd.visivel" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-        <div class="bg-white rounded-[28px] shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden transform transition-all">
-          
-          <div class="bg-brand-indigo p-6 flex justify-between items-center text-white">
-            <div class="flex items-center gap-3">
-              <i data-lucide="plus-circle" class="w-6 h-6 opacity-80"></i>
-              <h3 class="text-lg font-black tracking-widest uppercase">Novo: {{ abaAtiva }}</h3>
-            </div>
-            <button @click="fecharModalAdd" class="hover:rotate-90 transition-transform opacity-70 hover:opacity-100"><i data-lucide="x" class="w-6 h-6"></i></button>
-          </div>
+    <!-- MODAL ADICIONAR -->
+    <transition name="bdb-fade">
+      <div v-if="modalAdd.visivel"
+        style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);">
+        <div style="background:var(--surface-base);border-radius:var(--radius-xl);border:1px solid var(--border-default);width:100%;max-width:36rem;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.2);">
 
-          <div class="p-8 max-h-[60vh] overflow-y-auto grid grid-cols-2 gap-5 bg-slate-50/50">
-            <div v-for="(valor, coluna) in modalAdd.form" :key="coluna" class="flex flex-col gap-1.5">
-              <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{{ coluna }}</label>
-              <input v-model="modalAdd.form[coluna]" type="text"
-                class="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-mono-data font-bold text-slate-800 outline-none focus:ring-2 focus:ring-brand-indigo/30 shadow-sm transition-all">
+          <!-- Header modal -->
+          <div style="background:var(--brand-indigo);padding:1.25rem 1.5rem;display:flex;justify-content:space-between;align-items:center;">
+            <div style="display:flex;align-items:center;gap:0.75rem;color:#fff;">
+              <i data-lucide="plus-circle" style="width:1.5rem;height:1.5rem;display:block;opacity:0.8;"></i>
+              <h3 style="font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:0.18em;">Novo: {{ abaAtiva }}</h3>
             </div>
-          </div>
-
-          <div class="p-5 bg-white border-t border-slate-100 flex gap-3">
-            <button @click="fecharModalAdd" class="btn-action flex-1 bg-white border border-slate-200 text-slate-500 hover:bg-slate-50">Cancelar</button>
-            <button @click="confirmarAdicao" class="btn-action btn-action-primary flex-[2]">
-              Salvar no Banco
+            <button @click="fecharModalAdd"
+              style="background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;padding:0.25rem;display:flex;align-items:center;transition:transform var(--duration-fast);"
+              onmouseover="this.style.transform='rotate(90deg)'" onmouseout="this.style.transform='rotate(0deg)'">
+              <i data-lucide="x" style="width:1.5rem;height:1.5rem;display:block;"></i>
             </button>
           </div>
+
+          <!-- Formulário -->
+          <div style="padding:2rem;max-height:60vh;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;background:var(--surface-overlay);">
+            <div v-for="(valor, coluna) in modalAdd.form" :key="coluna" style="display:flex;flex-direction:column;gap:0.375rem;">
+              <label class="t-label-sm" style="color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:0.18em;margin-left:0.25rem;">{{ coluna }}</label>
+              <input v-model="modalAdd.form[coluna]" type="text"
+                style="background:var(--surface-base);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0.6rem 1rem;font-size:0.8rem;font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--text-primary);outline:none;transition:border-color var(--duration-fast);"
+                onfocus="this.style.borderColor='var(--brand-indigo)'"
+                onblur="this.style.borderColor='var(--border-default)'">
+            </div>
+          </div>
+
+          <!-- Footer modal -->
+          <div style="padding:1.25rem;background:var(--surface-base);border-top:1px solid var(--border-subtle);display:flex;gap:0.75rem;">
+            <button @click="fecharModalAdd" class="btn-action" style="flex:1;background:var(--surface-base);border:1px solid var(--border-default);color:var(--text-tertiary);">Cancelar</button>
+            <button @click="confirmarAdicao" class="btn-action btn-action-primary" style="flex:2;">Salvar no Banco</button>
+          </div>
         </div>
       </div>
     </transition>
-    
+
   </div>
 </template>
+
+<style>
+  @keyframes bdb-spin { to { transform: rotate(360deg); } }
+  .bdb-fade-enter-active, .bdb-fade-leave-active { transition: opacity 0.3s ease; }
+  .bdb-fade-enter-from, .bdb-fade-leave-to { opacity: 0; }
+
+  #hot-engine {
+    width: 100%;
+    height: calc(100vh - 180px) !important;
+    min-height: 400px;
+    display: block;
+    overflow: hidden;
+  }
+
+  .handsontable { font-size: 11px !important; }
+
+  /* Modo claro */
+  .custom-grid-style { font-family: 'JetBrains Mono', monospace !important; font-size: 11px !important; color: #334155 !important; background: #ffffff !important; }
+  .custom-grid-style td { background-color: #ffffff !important; color: #334155 !important; border-color: #e2e8f0 !important; }
+  .custom-grid-style tbody tr:nth-child(even) td { background-color: #f8fafc !important; }
+  .custom-grid-style th { background: #f1f5f9 !important; color: #475569 !important; font-weight: 800 !important; border-bottom: 2px solid #cbd5e1 !important; border-color: #cbd5e1 !important; }
+  .custom-grid-style .htCore thead th { background: #f1f5f9 !important; color: #475569 !important; }
+  .custom-grid-style .htCore td.current { background-color: #eff6ff !important; }
+  .custom-grid-style .htCore td.area { background-color: #dbeafe !important; }
+
+  /* Modo escuro */
+  .dark .custom-grid-style { color: #cbd5e1 !important; background: #1e293b !important; }
+  .dark .custom-grid-style td { background-color: #1e293b !important; color: #cbd5e1 !important; border-color: #334155 !important; }
+  .dark .custom-grid-style tbody tr:nth-child(even) td { background-color: #263244 !important; }
+  .dark .custom-grid-style th { background: #0f172a !important; color: #94a3b8 !important; border-color: #334155 !important; }
+  .dark .custom-grid-style .htCore thead th { background: #0f172a !important; color: #94a3b8 !important; }
+  .dark .custom-grid-style .htCore td.current { background-color: #1e3a5f !important; }
+  .dark .custom-grid-style .htCore td.area { background-color: #1e3a5f !important; }
+  .dark .handsontable .wtBorder { background-color: #6366f1 !important; }
+  .dark .handsontable .changeType { background: #1e293b !important; }
+  .dark .handsontable .htDropdownMenu, .dark .handsontable .htContextMenu { background: #1e293b !important; color: #cbd5e1 !important; border-color: #334155 !important; }
+  .dark .handsontable .htDropdownMenu td, .dark .handsontable .htContextMenu td { background: #1e293b !important; color: #cbd5e1 !important; }
+</style>
 
 <script>
 window.BancoDeDadosView = {
   template: '#page-bancodedados',
-  props: ['dbRaw', 'isLoading'], // 🚀 RECEBE A "CAIXA FORTE" (19 abas) DO APPCORE
+  props: ['dbRaw', 'isLoading'],
   data() {
     return {
       abaAtiva: 'Cockpit',
@@ -161,18 +217,16 @@ window.BancoDeDadosView = {
   },
   
   watch: {
-    // 🚀 VIGIA: Quando o AppCore terminar de baixar os dados em background, atualiza o menu!
     dbRaw: {
       handler(novoDB) {
         if (novoDB && Object.keys(novoDB).length > 0) {
           this.listaAbas = Object.keys(novoDB).filter(k => k !== 'resumoGerencial');
-          if (!this.hot) this.switchAba(); // Renderiza a primeira aba
+          if (!this.hot) this.switchAba();
         }
       },
       immediate: true,
       deep: true
     },
-    // Liga o spinner superior se o AppCore avisar que está a carregar
     isLoading(newVal) {
       this.syncBusy = newVal;
     }
@@ -202,7 +256,6 @@ window.BancoDeDadosView = {
   },
 
   methods: {
-    // 🚀 O Botão sincronizar agora apenas força a grelha a redesenhar os dados que estão na memória
     sincronizarBanco() {
       this.syncBusy = true;
       this.switchAba();
@@ -213,23 +266,19 @@ window.BancoDeDadosView = {
       this.selecaoAtual = [];
       if (!this.dbRaw) return;
 
-      // 🔍 Busca a matriz bruta (ignorando maiúsculas/minúsculas)
       const nomeReal = Object.keys(this.dbRaw).find(k => k.toUpperCase() === this.abaAtiva.toUpperCase());
       let matriz = this.dbRaw[nomeReal];
 
-      // Proteção contra abas vazias
       if (!matriz || matriz.length < 2) {
          if (this.hot) { this.hot.destroy(); this.hot = null; }
          return;
       }
 
-      // 🎯 Ajuste de Offset: O Cockpit tem 9 linhas de cabeçalho "inútil" visualmente
       let cabecalhoIndex = 0;
       if (this.abaAtiva.toUpperCase() === 'COCKPIT') {
         cabecalhoIndex = 9;
       }
 
-      // 🚀 CONVERSOR UNIVERSAL: Transforma a matriz bruta (Arrays) num formato JSON para o Handsontable
       const headers = matriz[cabecalhoIndex];
       const dadosSaneados = [];
 
@@ -237,11 +286,9 @@ window.BancoDeDadosView = {
          const row = matriz[i];
          const celulaA = String(row[0] || '').trim();
          
-         // Ignora linhas totalmente vazias ou linhas de subtotais
          if (celulaA === "" || celulaA.includes("SUBTOTAL")) continue;
 
          let obj = {};
-         // 🖃 CARIMBO MÁGICO: Guarda a linha exata do Excel para podermos apagar sem errar o alvo
          obj.linhaRealExcel = i + 1; 
 
          headers.forEach((h, index) => {
@@ -262,7 +309,6 @@ window.BancoDeDadosView = {
         if (this.hot) { this.hot.destroy(); this.hot = null; }
 
         try {
-          // 🚀 FIX 1: Impede que o "Carimbo Mágico" vire uma coluna visível na grelha
           const nomesColunas = Object.keys(dados[0]).filter(key => key.trim() !== "" && key !== "linhaRealExcel");
           const configColunas = this.definirConfiguracaoColunas(nomesColunas);
 
@@ -271,16 +317,12 @@ window.BancoDeDadosView = {
             colHeaders: nomesColunas,
             columns: configColunas,
             rowHeaders: true,
-            
-            // --- TRAVAS DE PERFORMANCE ---
             width: '100%',
             height: '100%', 
             stretchH: 'all',
             renderAllRows: false, 
             viewportRowRenderingOffset: 10, 
             viewportColumnRenderingOffset: 5,
-            
-            // --- SEGURANÇA ---
             minSpareRows: 0,
             fillHandle: false, 
             manualColumnResize: true,
@@ -290,13 +332,10 @@ window.BancoDeDadosView = {
             outsideClickDeselects: false,
             licenseKey: 'non-commercial-and-evaluation',
             className: 'htCenter htMiddle custom-grid-style',
-            
-            // 🚀 FIX 2: Removidas as chamadas ao atualizarSumario() antigo.
-            // Agora a grelha foca-se apenas no que interessa: A sua seleção!
             afterSelectionEnd: (r, c, r2, c2) => { 
               if (this.hot) {
                 this.selecaoAtual = this.hot.getSelected();
-                this.calcularSomaSelecao(); // A calculadora mágica do rodapé continua ativa!
+                this.calcularSomaSelecao();
               }
             },
             afterDeselect: () => { 
@@ -311,21 +350,14 @@ window.BancoDeDadosView = {
       });
     },
 
-    atualizarSumario() {
-      // 🚀 NEUTRALIZADO: O Agregador V5 roda no Maestro (AppCore).
-      // A página de Banco de Dados já não precisa de tentar calcular o resumo global.
-    },
+    atualizarSumario() {},
 
     processarEdicao(changes) {
       changes.forEach(([row, prop, oldValue, newValue]) => {
         if (oldValue === newValue || !this.hot) return;
-        
-        // 🚀 LÊ A LINHA REAL DO COFRE: Imune a filtros e ordenações!
         const rowData = this.hot.getSourceDataAtRow(row);
         const linhaReal = rowData.linhaRealExcel;
-        
         const colIndex = this.hot.propToCol(prop) + 1; 
-        
         if (typeof google !== 'undefined') {
           google.script.run.apiSetCellValue(this.abaAtiva, linhaReal, colIndex, newValue);
         }
@@ -341,22 +373,18 @@ window.BancoDeDadosView = {
         const mapping = (dicionarioAba && dicionarioAba.map) ? dicionarioAba.map[col] : null;
         const type = mapping ? mapping.type : '';
 
-        // Se o dicionário diz que é moeda ou o nome sugere financeiro
         if (type === 'moeda' || col.includes('R$') || col.includes('P/L')) {
           config.type = 'numeric';
           config.numericFormat = { pattern: 'R$ 0,00', culture: 'pt-BR' };
         } 
-        // Se o dicionário diz que é percentual
         else if (type === 'percentual' || col.includes('%')) {
           config.type = 'numeric';
           config.numericFormat = { pattern: '0,00%', culture: 'pt-BR' };
         }
-        // Se for apenas número
         else if (type === 'numero') {
           config.type = 'numeric';
         }
 
-        // Colorização especial para P/L
         if (col.toUpperCase().includes('P/L')) {
           config.renderer = (instance, td, row, colIndex, prop, value, cellProperties) => {
             Handsontable.renderers.NumericRenderer.apply(this, [instance, td, row, colIndex, prop, value, cellProperties]);
@@ -370,7 +398,6 @@ window.BancoDeDadosView = {
         return config;
       });
 
-      // Coluna de Excluir...
       configs.push({
         data: 'acao_excluir', header: 'AÇÕES', readOnly: true, width: 50,
         renderer: (instance, td, row, col, prop, value, cellProperties) => {
@@ -405,7 +432,6 @@ window.BancoDeDadosView = {
         }
       });
 
-      // 🚀 CONVERTE OS ÍNDICES VISUAIS NAS LINHAS REAIS DO EXCEL
       const linhasReais = linhasGrelha.map(idx => this.hot.getSourceDataAtRow(idx).linhaRealExcel);
 
       this.modalExcluir.mensagem = `Excluir ${linhasReais.length} registos selecionados?`;
@@ -426,13 +452,12 @@ window.BancoDeDadosView = {
             if(res.success) { 
                this.hot.alter('remove_row', rowIndex); 
                this.atualizarSumario(); 
-               // 🚀 AVISA O APPCORE PARA ATUALIZAR O DASHBOARD NO FUNDO
                this.$emit('refresh');
             }
             else alert("Erro: " + res.error);
           })
           .withFailureHandler((err) => { this.syncBusy = false; alert("Erro no servidor."); })
-          .apiExcluirLinhaSegura(this.abaAtiva, linhaReal, valorA); // Passa a linha exata!
+          .apiExcluirLinhaSegura(this.abaAtiva, linhaReal, valorA);
       } else { this.syncBusy = false; }
     },
 
@@ -443,15 +468,14 @@ window.BancoDeDadosView = {
           .withSuccessHandler((res) => { 
             this.syncBusy = false; 
             if(res.success) {
-              // Apaga de baixo para cima para não perder a referência dos índices na grelha
               linhasGrelha.sort((a,b) => b-a).forEach(idx => this.hot.alter('remove_row', idx));
               this.selecaoAtual = [];
               this.$nextTick(() => this.atualizarSumario());
-              this.$emit('refresh'); // 🚀 Sincroniza o AppCore
+              this.$emit('refresh');
             } else alert("Erro: " + res.error);
           })
           .withFailureHandler((err) => { this.syncBusy = false; alert("Erro no servidor."); })
-          .apiExcluirLinhasEmLote(this.abaAtiva, linhasReais); // Array exato de linhas
+          .apiExcluirLinhasEmLote(this.abaAtiva, linhasReais);
       } else { this.syncBusy = false; }
     },
 
@@ -479,7 +503,6 @@ window.BancoDeDadosView = {
         google.script.run
           .withSuccessHandler((res) => {
             if (res.success) {
-               // 🚀 O Banco só apita para o Maestro. O AppCore baixa tudo e devolve o dbRaw atualizado!
                this.$emit('refresh');
             }
             else { alert("Erro ao salvar: " + res.error); this.syncBusy = false; }
@@ -495,27 +518,21 @@ window.BancoDeDadosView = {
       }
     },
 
-  calcularSomaSelecao() {
+    calcularSomaSelecao() {
       if (!this.hot) return;
       const selection = this.hot.getSelected();
       let soma = 0;
       let conta = 0;
 
-      // 📖 BUSCA O MAPA DA ABA: Tenta localizar as regras no dicionário do Tradutor
       const namespace = this.abaAtiva.toUpperCase();
       const dicionarioAba = (window.Tradutor && window.Tradutor.DICIONARIO) ? window.Tradutor.DICIONARIO[namespace] : null;
 
       const isColunaNumerica = (nome) => {
          const n = String(nome).toUpperCase();
-         
-         // 🎯 REGRA 1: Se a coluna está no dicionário, respeitamos o tipo definido lá
          if (dicionarioAba && dicionarioAba.map && dicionarioAba.map[nome]) {
             const type = dicionarioAba.map[nome].type;
-            // Permitimos soma para qualquer tipo quantitativo
             return ['moeda', 'numero', 'percentual'].includes(type);
          }
-
-         // 🛡️ REGRA 2 (Fallback): Se for uma aba nova ou não mapeada, usamos o radar de nomes
          return n.includes('QTD') || n.includes('R$') || n.includes('PREÇO') || 
                 n.includes('SPOT') || n.includes('VALOR') || n.includes('CUSTO') || 
                 n.includes('PRÊMIO') || n.includes('P/L') || n.includes('NOCIONAL') ||
@@ -526,7 +543,6 @@ window.BancoDeDadosView = {
       const limparNum = (val) => {
         if (typeof val === 'number') return val;
         if (!val || val === "-" || val === "---") return 0;
-        // Agora remove também o sinal de '%' para processar percentuais
         const limpo = String(val).replace(/[R$\s.%]/g, '').replace(',', '.');
         return parseFloat(limpo) || 0;
       };
@@ -542,7 +558,6 @@ window.BancoDeDadosView = {
             for (let c = startCol; c <= endCol; c++) {
               const val = this.hot.getDataAtCell(r, c);
               const header = this.hot.getColHeader(c);
-
               if (isColunaNumerica(header)) {
                  const num = limparNum(val);
                  if (typeof num === 'number' && !isNaN(num) && val !== "" && val !== null) {
@@ -566,24 +581,3 @@ window.BancoDeDadosView = {
   }
 };
 </script>
-
-<style>
-/* Estilos permanecem os mesmos do seu código original */
-
-  #hot-engine { 
-    width: 100%; 
-    /* Mudamos de 350px para 180px, dando muito mais espaço útil para as linhas */
-    height: calc(100vh - 180px) !important; 
-    min-height: 400px;
-    display: block; 
-    overflow: hidden; 
-    background: white;
-  }
-
-.handsontable { font-size: 11px !important; }  
-.custom-grid-style { font-family: 'JetBrains Mono', monospace !important; font-size: 11px !important; color: #334155 !important; }
-.custom-grid-style tbody tr:nth-child(even) td { background-color: #f8fafc !important; }
-.custom-grid-style .htHeader { background: #f1f5f9 !important; color: #475569 !important; font-weight: 800 !important; border-bottom: 2px solid #cbd5e1 !important; }
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
-</style>
