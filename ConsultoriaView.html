@@ -1,556 +1,692 @@
-<template id="consultoria-view-template">
-  <div class="max-w-[95%] mx-auto pb-16 font-sans space-y-8 mt-6 animate-fade-in">
+<template id="comparativo-view-template">
+  <div style="max-width: 95%; margin: 1.5rem auto 4rem; display: flex; flex-direction: column; gap: 1.25rem;"
+       :style="isMobile ? 'max-width: 100%; margin: 0.75rem auto 4rem; gap: 1rem; padding: 0 0.5rem;' : ''">
 
-    <div class="premium-card px-8 py-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 z-10 relative bg-white">
-      
-      <div class="flex items-center gap-5">
-        <div class="p-3 bg-indigo-50 text-brand-indigo rounded-2xl shadow-sm border border-indigo-100/50">
-          <i data-lucide="brain-circuit" class="w-6 h-6"></i>
+    <!-- ══ HEADER ══ -->
+    <div class="premium-card"
+         style="display: flex; flex-wrap: wrap; justify-content: space-between;
+                align-items: center; position: relative; z-index: 30;"
+         :style="isMobile ? 'padding: 1rem; gap: 1rem;' : 'padding: 1.5rem 2rem; gap: 1.5rem;'">
+      <div style="display: flex; align-items: center; gap: 1.25rem;">
+        <div style="padding: 0.75rem; background: var(--brand-indigo-light); color: var(--brand-indigo);
+                    border-radius: var(--radius-lg); border: 1px solid var(--brand-indigo-muted);">
+          <i data-lucide="swords" style="width: 1.5rem; height: 1.5rem;"></i>
         </div>
-          <div>
-            <h2 class="text-2xl font-black text-slate-900 tracking-tight leading-none">
-              Consultoria Gemini
-            </h2>
-            <div class="flex items-center gap-2 mt-1.5">
-              <span class="flex h-2 w-2 rounded-full bg-brand-emerald animate-pulse shadow-sm shadow-emerald-200"></span>
-              <p class="text-slate-400 text-[10px] uppercase tracking-[0.25em] font-bold">
-                Auditoria Analítica • {{ operacoesOrdenadas.length }} Itens
-              </p>
-            </div>
+        <div>
+          <h2 class="t-title" style="color: var(--text-primary); letter-spacing: -0.02em;">Comparador de PUT</h2>
+          <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.375rem;">
+            <span style="width: 0.5rem; height: 0.5rem; border-radius: 50%;
+                         background: var(--brand-emerald); display: inline-block;
+                         animation: comp-pulse 2s ease-in-out infinite;"></span>
+            <p class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.25em;">
+              Simulação de Payoff
+            </p>
           </div>
+        </div>
       </div>
 
-      <div class="flex flex-col md:flex-row items-center gap-4 w-full xl:w-auto">
-        
-        <div v-if="Object.keys(resumoTatico).length > 0" class="flex flex-wrap items-center gap-3 animate-fade-in">
-          
-          <div v-if="resumoTatico.RECOMPRAR" class="flex items-center gap-3 bg-rose-50 border border-rose-100 px-4 py-2 rounded-2xl shadow-sm">
-            <span class="relative flex h-3 w-3">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
-            </span>
-            <div class="flex flex-col">
-              <span class="text-rose-600 text-[8px] font-black uppercase tracking-widest leading-none mb-0.5">Recomprar</span>
-              <span class="text-slate-800 text-xl font-black font-mono-data leading-none">{{ resumoTatico.RECOMPRAR }}</span>
-            </div>
-          </div>
+      <!-- Controles -->
+      <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+                  background: var(--surface-overlay); border-radius: var(--radius-xl);
+                  border: 1px solid var(--border-subtle);"
+           :style="isMobile ? 'padding: 0.375rem 0.5rem; width: 100%; justify-content: space-between;' : 'padding: 0.375rem 0.75rem;'">
 
-          <div v-if="resumoTatico.MANTER" class="flex items-center gap-3 bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-2xl shadow-sm">
-            <div class="w-3 h-3 rounded-full bg-emerald-500 flex items-center justify-center">
-              <i data-lucide="check" class="w-2 h-2 text-white stroke-[4]"></i>
-            </div>
-            <div class="flex flex-col">
-              <span class="text-emerald-600 text-[8px] font-black uppercase tracking-widest leading-none mb-0.5">Manter</span>
-              <span class="text-slate-800 text-xl font-black font-mono-data leading-none">{{ resumoTatico.MANTER }}</span>
-            </div>
-          </div>
-
-          <div v-if="resumoTatico.OUTROS" class="flex items-center gap-3 bg-amber-50 border border-amber-100 px-4 py-2 rounded-2xl shadow-sm">
-            <div class="w-3 h-3 rounded-full bg-amber-500 flex items-center justify-center">
-              <i data-lucide="rotate-cw" class="w-2 h-2 text-white stroke-[4]"></i>
-            </div>
-            <div class="flex flex-col">
-              <span class="text-amber-600 text-[8px] font-black uppercase tracking-widest mb-0.5">Ajustar</span>
-              <span class="text-slate-800 text-xl font-black font-mono-data leading-none">{{ resumoTatico.OUTROS }}</span>
-            </div>
-          </div>
-
-          <div class="hidden md:block w-px h-8 bg-slate-200 mx-2"></div>
+        <div style="display: flex; align-items: center; background: var(--surface-base);
+                    border: 1px solid var(--border-default); border-radius: var(--radius-md);
+                    padding: 0.5rem 0.75rem; gap: 0.5rem;">
+          <i data-lucide="arrow-down-up" style="width: 0.875rem; height: 0.875rem; color: var(--text-muted);"></i>
+          <select v-model="ordenarPor" @change="ordenarArena"
+                  style="font-weight: 700; color: var(--text-secondary); text-transform: uppercase;
+                         letter-spacing: 0.1em; outline: none; background: transparent; cursor: pointer;
+                         appearance: none; min-width: 140px; font-family: 'DM Sans', sans-serif;"
+                  :style="isMobile ? 'font-size: 14px;' : 'font-size: 10px;'">
+            <option value="padrao">Ordem Padrão</option>
+            <option value="lucro">💰 Maior Lucro %</option>
+            <option value="seguranca">🛡️ Maior Segurança</option>
+            <option value="premio">💵 Maior Prêmio</option>
+          </select>
         </div>
 
-        <button @click="solicitarAuditoriaIA" :disabled="loadingIA"
-                class="bg-white text-indigo-900 border border-indigo-100 px-6 py-3 rounded-xl font-black text-xs tracking-widest transition-all hover:bg-indigo-50 hover:border-indigo-200 hover:shadow-md shadow-sm active:scale-95 disabled:opacity-50 flex items-center gap-3 whitespace-nowrap">
-          <i v-if="!loadingIA" data-lucide="sparkles" class="w-4 h-4 text-brand-indigo"></i>
-          <div v-else class="w-4 h-4 animate-spin border-2 border-indigo-200 border-t-brand-indigo rounded-full"></div>
-          {{ loadingIA ? 'PROCESSANDO...' : 'SOLICITAR AUDITORIA' }}
+        <div style="width: 1px; height: 1.5rem; background: var(--border-subtle);"></div>
+
+        <button @click="limparArena"
+                style="padding: 0.5rem 0.75rem; background: var(--surface-base); border: 1px solid var(--border-default);
+                       color: var(--text-muted); border-radius: var(--radius-md); cursor: pointer;"
+                title="Limpar Arena"
+                onmouseover="this.style.color='var(--brand-rose)'; this.style.borderColor='var(--brand-rose-muted)'"
+                onmouseout="this.style.color='var(--text-muted)'; this.style.borderColor='var(--border-default)'">
+          <i data-lucide="eraser" style="width: 1rem; height: 1rem;"></i>
+        </button>
+
+        <button @click="adicionarCard" class="btn-action btn-action-primary"
+                style="padding: 0.5rem 1.25rem; border-radius: var(--radius-md);">
+          <i data-lucide="plus" style="width: 1rem; height: 1rem;"></i>
+          <span style="margin-left: 0.25rem; font-weight: 700;
+                       text-transform: uppercase; letter-spacing: 0.12em;"
+                :style="isMobile ? 'font-size: 14px;' : 'font-size: 10px;'">Adicionar</span>
         </button>
       </div>
     </div>
 
-    <div v-if="isLoading || operacoesOrdenadas.length > 0" class="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-2 gap-8">
+    <!-- ══ ARENA ══ -->
+    <div style="display: flex; flex-direction: column;">
+      <div style="display: flex; align-items: flex-start; position: relative; z-index: 10;"
+           :style="isMobile
+             ? 'flex-direction: column; gap: 1rem; padding: 0.25rem 0 1rem;'
+             : 'flex-wrap: nowrap; overflow-x: auto; gap: 1.5rem; padding: 0.5rem 0.5rem 1.5rem; margin: 0 -0.5rem;'"
+           class="log-scrollbar">
 
-      <template v-if="isLoading">
-        <div v-for="n in 4" :key="'skel-'+n" 
-            class="bg-white border border-slate-100 rounded-[28px] p-8 flex flex-col space-y-6 animate-pulse min-h-[500px]">
-          <div class="flex justify-between">
-            <div class="space-y-3 w-1/2">
-              <div class="h-2 bg-slate-100 rounded w-1/3"></div>
-              <div class="h-10 bg-slate-200 rounded w-full"></div>
+        <!-- Skeleton -->
+        <template v-if="isLoading && cards.length === 0">
+          <div v-for="n in 3" :key="'skel-comp-'+n"
+               style="height: 500px; border-radius: var(--radius-xl);
+                      background: var(--surface-base); border: 1px solid var(--border-subtle);
+                      animation: comp-pulse 1.5s ease-in-out infinite;"
+               :style="isMobile ? 'width: 100%;' : 'width: 320px; flex-shrink: 0;'"></div>
+        </template>
+
+        <!-- Cards de opção -->
+        <div v-for="(card, index) in cards" :key="card.id"
+             style="border-radius: var(--radius-xl); box-shadow: var(--shadow-sm);
+                    display: flex; flex-direction: column; overflow: hidden; position: relative;
+                    transition: box-shadow 0.3s, border-color 0.3s;"
+             :style="(isMobile ? 'width: 100%; ' : 'width: 320px; flex-shrink: 0; ') + getCardBorderStyle(card)"
+             onmouseover="this.style.boxShadow='var(--shadow-md)'"
+             onmouseout="this.style.boxShadow='var(--shadow-sm)'">
+
+          <!-- Badge de destaque -->
+          <div v-if="mostrarResultados && rankingRentabilidade.id === card.id && rankingSeguranca.id === card.id"
+               style="background: linear-gradient(to right, var(--brand-emerald), var(--brand-indigo));
+                      color: #fff; font-weight: 700; text-transform: uppercase;
+                      padding: 0.375rem; text-align: center; letter-spacing: 0.12em;"
+               :style="isMobile ? 'font-size: 13px;' : 'font-size: 9px;'">
+            🏆 MAIOR LUCRO E 🛡️ MAIS SEGURA
+          </div>
+          <div v-else-if="mostrarResultados && rankingRentabilidade.id === card.id"
+               style="background: var(--brand-emerald); color: #fff; font-weight: 700;
+                      text-transform: uppercase; padding: 0.375rem; text-align: center; letter-spacing: 0.12em;"
+               :style="isMobile ? 'font-size: 13px;' : 'font-size: 9px;'">
+            🏆 OPÇÃO MAIS RENTÁVEL
+          </div>
+          <div v-else-if="mostrarResultados && rankingSeguranca.id === card.id"
+               style="background: var(--brand-indigo); color: #fff; font-weight: 700;
+                      text-transform: uppercase; padding: 0.375rem; text-align: center; letter-spacing: 0.12em;"
+               :style="isMobile ? 'font-size: 13px;' : 'font-size: 9px;'">
+            🛡️ OPÇÃO MAIS SEGURA
+          </div>
+
+          <!-- Botão remover -->
+          <button @click.stop="removerCard(card.id)" v-if="cards.length > 2"
+                  class="comp-delete-btn"
+                  style="position: absolute; top: 0.5rem; right: 0.5rem; z-index: 40;
+                         padding: 0.25rem; background: var(--surface-base); color: var(--text-muted);
+                         border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);
+                         cursor: pointer; opacity: 0; transition: opacity 0.2s;"
+                  onmouseover="this.style.background='var(--brand-rose-light)'; this.style.color='var(--brand-rose)'"
+                  onmouseout="this.style.background='var(--surface-base)'; this.style.color='var(--text-muted)'">
+            <i data-lucide="x" style="width: 0.875rem; height: 0.875rem;"></i>
+          </button>
+
+          <!-- Input do ticker -->
+          <div style="padding: 1rem; background: var(--surface-overlay);
+                      border-bottom: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+              <label class="t-label-sm" style="color: var(--brand-indigo); text-transform: uppercase;
+                                               letter-spacing: 0.16em; margin-left: 0.25rem;">Código do Ativo</label>
+              <div style="position: relative;">
+                <input v-model="card.ticker" @change="buscarDadosAPI(card)" @keyup.enter="buscarDadosAPI(card)" type="text"
+                       placeholder="EX: PETRP280" inputmode="text" autocapitalize="characters"
+                       style="width: 100%; background: var(--surface-base); border: 1px solid var(--border-default);
+                              font-family: 'JetBrains Mono', monospace; font-weight: 700;
+                              border-radius: var(--radius-md); padding: 0.5rem 0.75rem; text-transform: uppercase;
+                              color: var(--text-primary); outline: none; transition: border-color 0.2s;"
+                       :style="isMobile ? 'font-size: 2rem;' : 'font-size: 1.5rem;'"
+                       onfocus="this.style.borderColor='var(--brand-indigo)'"
+                       onblur="this.style.borderColor='var(--border-default)'">
+                <div v-if="card.loading"
+                     style="position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%);
+                            width: 1rem; height: 1rem; border-radius: 50%;
+                            border: 2px solid var(--brand-indigo-muted); border-top-color: var(--brand-indigo);
+                            animation: comp-spin 0.7s linear infinite;"></div>
+              </div>
             </div>
-            <div class="space-y-2 w-1/4 flex flex-col items-end">
-              <div class="h-6 bg-slate-100 rounded-full w-full"></div>
-              <div class="h-6 bg-slate-100 rounded-full w-3/4"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center;
+                        padding: 0.375rem 0.625rem; background: var(--surface-base);
+                        border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);">
+              <span class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase;">Vencimento</span>
+              <span class="font-mono-data" style="font-weight: 700; color: var(--brand-indigo);"
+                    :style="isMobile ? 'font-size: 1.5rem;' : 'font-size: 1rem;'">
+                {{ card.api.isValid ? card.api.dte + ' d' : '---' }}
+              </span>
             </div>
           </div>
-          <div class="h-20 bg-slate-50 rounded-2xl w-full"></div>
-          <div class="grid grid-cols-2 gap-4">
-            <div v-for="i in 4" :key="i" class="h-12 bg-slate-50 rounded-xl"></div>
+
+          <!-- Corpo do card -->
+          <div style="padding: 1rem; flex: 1; display: flex; flex-direction: column; gap: 1rem;
+                      background: var(--surface-base);">
+
+            <!-- Empty state / erro -->
+            <div v-if="!card.api.isValid && !card.loading"
+                 style="padding: 2.5rem 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+              <template v-if="card.error">
+                <i data-lucide="alert-circle" style="width: 1.75rem; height: 1.75rem; color: var(--brand-rose); margin-bottom: 0.25rem;"></i>
+                <p class="t-label-sm" style="color: var(--brand-rose); text-transform: uppercase;
+                                             text-align: center; line-height: 1.5;"
+                   :style="isMobile ? 'font-size: 14px;' : 'font-size: 9px;'">{{ card.error }}</p>
+              </template>
+              <template v-else>
+                <i data-lucide="search" style="width: 2rem; height: 2rem; color: var(--text-muted); opacity: 0.4; margin-bottom: 0.25rem;"></i>
+                <p class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase;
+                                             text-align: center; line-height: 1.4; opacity: 0.4;">Aguardando<br>Dados</p>
+              </template>
+            </div>
+
+            <!-- Dados da opção -->
+            <div v-else-if="card.api.isValid" style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <div style="padding: 0.5rem; background: var(--surface-overlay); border-radius: var(--radius-md);
+                             border: 1px solid var(--border-subtle); text-align: center;">
+                  <span class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase;
+                                                   display: block; margin-bottom: 0.25rem;">Spot</span>
+                  <span class="font-mono-data" style="font-weight: 700; line-height: 1; color: var(--text-primary);"
+                        :style="isMobile ? 'font-size: 22px;' : 'font-size: 15px;'">
+                    {{ formatMoney(card.api.spotPrice) }}
+                  </span>
+                </div>
+                <div style="padding: 0.5rem; background: var(--surface-overlay); border-radius: var(--radius-md);
+                             border: 1px solid var(--border-subtle); text-align: center;">
+                  <span class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase;
+                                                   display: block; margin-bottom: 0.25rem;">Strike</span>
+                  <span class="font-mono-data" style="font-weight: 700; color: var(--text-primary); line-height: 1;"
+                        :style="isMobile ? 'font-size: 22px;' : 'font-size: 15px;'">
+                    {{ formatMoney(card.api.strike) }}
+                  </span>
+                </div>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center;
+                           padding: 0.5rem 0.75rem; background: var(--surface-overlay);
+                           border: 1px solid var(--border-subtle); border-radius: var(--radius-md);">
+                <span class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">
+                  Margem de Segurança
+                </span>
+                <span class="font-mono-data" style="font-weight: 700; color: var(--brand-indigo);"
+                      :style="isMobile ? 'font-size: 20px;' : 'font-size: 13px;'">
+                  {{ getDistanciaBreakEven(card) }}
+                </span>
+              </div>
+
+              <!-- Prêmio com ajuste -->
+              <div style="display: flex; flex-direction: column; gap: 0.25rem; padding: 0.625rem 0.75rem;
+                           background: var(--brand-indigo-light); border: 1px solid var(--brand-indigo-muted);
+                           border-radius: var(--radius-md);">
+                <span class="t-label-sm" style="color: var(--brand-indigo); text-transform: uppercase;
+                                                 letter-spacing: 0.1em; text-align: center;">Prêmio</span>
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <button @click="ajustarPremio(card, -0.01)"
+                          style="display: flex; align-items: center;
+                                 justify-content: center; border-radius: var(--radius-sm);
+                                 background: var(--surface-base); border: 1px solid var(--brand-indigo-muted);
+                                 color: var(--brand-indigo); cursor: pointer; font-size: 1rem; font-weight: 700;"
+                          :style="isMobile ? 'width: 2.5rem; height: 2.5rem;' : 'width: 1.75rem; height: 1.75rem;'">−</button>
+                  <span class="font-mono-data" style="font-weight: 700; color: var(--brand-indigo);"
+                        :style="isMobile ? 'font-size: 2.25rem;' : 'font-size: 1.5rem;'">
+                    {{ formatMoney(card.api.premioAtual).replace('R$', '') }}
+                  </span>
+                  <button @click="ajustarPremio(card, 0.01)"
+                          style="display: flex; align-items: center;
+                                 justify-content: center; border-radius: var(--radius-sm);
+                                 background: var(--surface-base); border: 1px solid var(--brand-indigo-muted);
+                                 color: var(--brand-indigo); cursor: pointer; font-size: 1rem; font-weight: 700;"
+                          :style="isMobile ? 'width: 2.5rem; height: 2.5rem;' : 'width: 1.75rem; height: 1.75rem;'">+</button>
+                </div>
+              </div>
+
+              <!-- Lucro % -->
+              <div style="display: flex; justify-content: space-between; align-items: center;
+                           padding: 0.625rem 0.75rem; background: var(--brand-emerald-light);
+                           border: 1px solid var(--brand-emerald-muted); border-radius: var(--radius-md);">
+                <span class="t-label-sm" style="color: var(--brand-emerald); text-transform: uppercase; font-weight: 700;">Lucro %</span>
+                <span class="font-mono-data" style="font-weight: 700; color: var(--brand-emerald); line-height: 1;"
+                      :style="isMobile ? 'font-size: 1.75rem;' : 'font-size: 1.125rem;'">
+                  {{ formatPct(calcLucroPct(card)) }}
+                </span>
+              </div>
+            </div>
           </div>
-          <div class="h-24 bg-indigo-50/30 rounded-2xl w-full mt-auto"></div>
+
+          <!-- Footer do card -->
+          <div style="padding: 1rem; background: var(--surface-overlay);
+                      border-top: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Lotes (100+)</span>
+              <div style="display: flex; align-items: center; background: var(--surface-base);
+                           border-radius: var(--radius-md); border: 1px solid var(--border-default);
+                           padding: 0.25rem; box-shadow: var(--shadow-sm);">
+                <button @click="ajustarQtd(card, -100)"
+                        style="display: flex; align-items: center; justify-content: center;
+                               color: var(--text-muted); cursor: pointer; border: none; background: transparent;
+                               font-size: 1.25rem; font-weight: 700; border-radius: var(--radius-sm);"
+                        :style="isMobile ? 'width: 2.5rem; height: 2.5rem;' : 'width: 1.75rem; height: 1.75rem;'"
+                        onmouseover="this.style.color='var(--brand-indigo)'"
+                        onmouseout="this.style.color='var(--text-muted)'">−</button>
+                <input v-model.number="card.qtd" type="number" inputmode="numeric"
+                       style="width: 4rem; text-align: center; font-family: 'JetBrains Mono', monospace;
+                              font-weight: 700; color: var(--text-primary); outline: none;
+                              background: transparent; border: none; line-height: 1;"
+                       :style="isMobile ? 'font-size: 22px;' : 'font-size: 16px;'">
+                <button @click="ajustarQtd(card, 100)"
+                        style="display: flex; align-items: center; justify-content: center;
+                               color: var(--text-muted); cursor: pointer; border: none; background: transparent;
+                               font-size: 1.25rem; font-weight: 700; border-radius: var(--radius-sm);"
+                        :style="isMobile ? 'width: 2.5rem; height: 2.5rem;' : 'width: 1.75rem; height: 1.75rem;'"
+                        onmouseover="this.style.color='var(--brand-indigo)'"
+                        onmouseout="this.style.color='var(--text-muted)'">+</button>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;
+                         border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Notional</span>
+                <span class="font-mono-data" style="font-weight: 700; color: var(--text-secondary);"
+                      :style="isMobile ? 'font-size: 20px;' : 'font-size: 14px;'">
+                  {{ card.api.isValid ? formatMoney(calcNotional(card)) : 'R$ 0,00' }}
+                </span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="t-label-sm" style="color: var(--brand-emerald); text-transform: uppercase;
+                                                 letter-spacing: 0.1em; font-weight: 700;">Crédito</span>
+                <span class="font-mono-data" style="font-weight: 700; color: var(--brand-emerald); line-height: 1;"
+                      :style="isMobile ? 'font-size: 2.25rem;' : 'font-size: 1.5rem;'">
+                  {{ card.api.isValid ? formatMoney(calcPremioTotal(card)) : 'R$ 0,00' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
         </div>
-      </template>
+      </div>
 
-      <div v-for="(op, idx) in operacoesOrdenadas" :key="idx"
-           :class="['premium-card p-0 flex flex-col transition-all duration-500 hover:shadow-2xl overflow-hidden group', getStyleContext(op).border]">
+      <!-- ══ BASKET AGREGADO ══ -->
+      <div v-if="agregadoBasket"
+           class="premium-card"
+           style="display: flex; flex-wrap: wrap; align-items: center;
+                  justify-content: space-between; margin-top: -0.5rem;
+                  position: relative; overflow: hidden; z-index: 20;"
+           :style="isMobile ? 'padding: 0.75rem; gap: 0.75rem;' : 'padding: 1rem 1.5rem; gap: 1.5rem;'">
+        <div style="position: absolute; left: -2.5rem; top: -2.5rem; width: 8rem; height: 8rem;
+                    background: var(--brand-indigo-light); border-radius: 50%; filter: blur(30px);
+                    opacity: 0.6; pointer-events: none;"></div>
 
-        <div class="flex h-full">
-          <div class="w-2 shrink-0" :class="getStyleContext(op).badge.replace('text-', 'bg-').split(' ')[0]"></div>
-          
-          <div class="p-7 flex-1 flex flex-col space-y-6">
-            
-            <div class="flex justify-between items-start">
-              <div class="space-y-3">
-                <div class="flex items-center gap-2">
-                  <span class="text-[9px] font-black uppercase tracking-widest text-slate-400">Vencimento</span>
-                  <div class="text-[11px] font-mono-data font-bold text-slate-700 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
-                    {{ formatData(op.dataVencimento) }} <span class="text-brand-rose ml-1">({{ op.dteCorridos }}d)</span>
-                  </div>
-                </div>
-                <div>
-                  <h4 class="text-4xl font-black font-mono-data tracking-tighter text-slate-900 leading-none">
-                    {{ op.tickerAtivo }}
-                  </h4>
-                  <span class="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em]">{{ op.simboloOpcao }}</span>
-                </div>
-              </div>
-
-              <div class="flex flex-col items-end gap-2">
-                <span :class="getTipoStyle(op)" class="px-3 py-1 rounded-full text-[9px] font-black border uppercase tracking-tighter shadow-sm whitespace-nowrap">
-                  {{ isVenda(op) ? 'Venda' : 'Compra' }} {{ op.tipoOpcao }}
-                </span>
-                <div :class="getStyleContext(op).badge" class="px-3 py-1 rounded-full text-[9px] font-black tracking-widest border uppercase shadow-inner">
-                  {{ op.moneynessCode }}
-                </div>
-                <div class="flex flex-col items-end mt-1">
-                  <span class="text-[8px] font-black uppercase text-slate-400 leading-none mb-1 tracking-widest">Quantidade</span>
-                  <span class="text-base font-black font-mono-data text-slate-800 leading-none">{{ op.quantidade }}</span>
-                </div>
-              </div>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; position: relative; z-index: 1;"
+             :style="isMobile ? 'gap: 0.75rem;' : 'gap: 1.5rem;'">
+          <div style="display: flex; align-items: center; gap: 0.5rem; padding-right: 0.5rem;">
+            <div style="width: 2rem; height: 2rem; background: var(--brand-indigo-light); border-radius: var(--radius-md);
+                         display: flex; align-items: center; justify-content: center; border: 1px solid var(--brand-indigo-muted);">
+              <i data-lucide="calculator" style="width: 1rem; height: 1rem; color: var(--brand-indigo);"></i>
             </div>
-
-            <div class="space-y-3 pt-4 border-t border-slate-50">
-              <span class="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-                <i data-lucide="target" class="w-3 h-3"></i> Resumo Tático
+            <div>
+              <span class="t-label-sm" style="color: var(--text-primary); text-transform: uppercase;
+                                               letter-spacing: 0.12em; display: block;">Cesta</span>
+              <span style="font-weight: 700; color: var(--text-muted); text-transform: uppercase;"
+                    :style="isMobile ? 'font-size: 13px;' : 'font-size: 8px;'">
+                {{ agregadoBasket.qtdCards }} opções
               </span>
-              <div class="flex flex-wrap gap-2">
-                <span :class="getTendenciaStyle(op)" class="px-2 py-1.5 border rounded-lg text-[9px] font-black tracking-widest uppercase shadow-sm cursor-help" 
-                      title="A maré está subindo ou descendo? Direção principal do ativo.">
-                  Tendência: {{ op.vereditoTendencia || 'N/D' }}
-                </span>
-                <span :class="getIfrStyle(op)" class="px-2 py-1.5 border rounded-lg text-[9px] font-black tracking-widest uppercase shadow-sm cursor-help" 
-                      title="Aviso se o mercado está eufórico (sobrecomprado) ou em pânico (sobrevendido).">
-                  IFR: {{ op.statusIfr || 'N/D' }}
-                </span>
-                <span :class="getBollingerStyle(op)" class="px-2 py-1.5 border rounded-lg text-[9px] font-black tracking-widest uppercase shadow-sm cursor-help" 
-                      title="O preço está dentro da rodovia (normal) ou rompeu os limites (turbulência/alerta)?">
-                  Bandas: {{ op.statusBollinger || 'N/D' }}
-                </span>
-              </div>
             </div>
-
-            <div class="space-y-3">
-              <span class="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-                <i data-lucide="activity" class="w-3 h-3"></i> Exagero e Volatilidade
-              </span>
-              <div class="grid grid-cols-2 md:flex md:flex-wrap gap-2">
-                <div class="bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-xl flex flex-col min-w-[75px] cursor-help" 
-                    title="Velocímetro de 0 a 100. Acima de 70 = sobrecomprado, abaixo de 30 = sobrevendido.">
-                  <span class="text-[7px] font-black uppercase text-slate-400">IFR14</span>
-                  <span :class="getIfrNumStyle(op)" class="text-[10px] font-mono-data font-bold">{{ formatIndicador(op.ifr14) }}</span>
-                </div>
-                <div class="bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-xl flex flex-col min-w-[75px] cursor-help" title="Acostamento da Esquerda.">
-                  <span class="text-[7px] font-black uppercase text-slate-400">B. Sup</span>
-                  <span class="text-[10px] font-mono-data font-bold text-slate-700">{{ formatIndicadorMoeda(op.bandaSup) }}</span>
-                </div>
-                <div class="bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-xl flex flex-col min-w-[75px] cursor-help" title="Acostamento da Direita.">
-                  <span class="text-[7px] font-black uppercase text-slate-400">B. Inf</span>
-                  <span class="text-[10px] font-mono-data font-bold text-slate-700">{{ formatIndicadorMoeda(op.bandaInf) }}</span>
-                </div>
-                <div class="bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-xl flex flex-col min-w-[75px] cursor-help" title="Largura da pista (volatilidade).">
-                  <span class="text-[7px] font-black uppercase text-slate-400">Largura</span>
-                  <span class="text-[10px] font-mono-data font-bold text-slate-700">{{ formatIndicador(op.larguraBanda) }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="space-y-3">
-              <span class="text-[8px] font-black uppercase tracking-[0.2em] text-slate-400 flex items-center gap-2">
-                <i data-lucide="navigation" class="w-3 h-3"></i> Rastreadores de Média
-              </span>
-              <div class="grid grid-cols-2 md:flex md:flex-wrap gap-2">
-                <div class="bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-xl flex flex-col min-w-[75px] cursor-help" title="Média de 5 dias.">
-                  <span class="text-[7px] font-black uppercase text-slate-400">MMA5</span>
-                  <span class="text-[10px] font-mono-data font-bold text-slate-700">{{ formatIndicadorMoeda(op.mma5) }}</span>
-                </div>
-                <div class="bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-xl flex flex-col min-w-[75px] cursor-help" title="Média de 20 dias.">
-                  <span class="text-[7px] font-black uppercase text-slate-400">MMA20</span>
-                  <span :class="getMeanComparisonStyle(op, 'mma20')" class="text-[10px] font-mono-data font-bold">{{ formatIndicadorMoeda(op.mma20) }}</span>
-                </div>
-                <div class="bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-xl flex flex-col min-w-[75px] cursor-help" title="Média de 200 dias.">
-                  <span class="text-[7px] font-black uppercase text-slate-400">MMA200</span>
-                  <span :class="getMeanComparisonStyle(op, 'mma200')" class="text-[10px] font-mono-data font-bold">{{ formatIndicadorMoeda(op.mma200) }}</span>
-                </div>
-                <div class="bg-white border border-slate-200 px-3 py-1.5 rounded-xl flex flex-col min-w-[85px] shadow-sm cursor-help" 
-                    :class="getM200Style(op)" 
-                    title="Distância % do preço atual em relação à MMA200.">
-                  <span class="text-[7px] font-black uppercase text-slate-400">Dist. M200</span>
-                  <span class="text-[10px] font-mono-data font-bold">{{ getDistM200(op) }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="bg-slate-50/50 rounded-2xl border border-slate-100 py-2.5 px-4 flex justify-between items-center shadow-sm relative overflow-hidden">
-              <div class="text-center flex-1">
-                <p class="text-[8px] font-black uppercase text-slate-400 tracking-[0.2em] mb-0.5">Strike</p>
-                <p class="text-sm font-mono-data font-black text-slate-800 leading-none">{{ formatMoeda(op.strike) }}</p>
-              </div>
-              <div class="h-6 w-px bg-slate-200 mx-4 opacity-60"></div>
-              <div class="text-center flex-1">
-                <p class="text-[8px] font-black uppercase text-slate-400 tracking-[0.2em] mb-0.5">Dist. Spot</p>
-                <p :class="getPlClass(op)" class="text-sm font-mono-data font-black leading-none">{{ getDistSpot(op) }}</p>
-              </div>
-              <div class="h-6 w-px bg-slate-200 mx-4 opacity-60"></div>
-              <div class="text-center flex-1">
-                <p class="text-[8px] font-black uppercase text-slate-400 tracking-[0.2em] mb-0.5">Spot Atual</p>
-                <p class="text-sm font-mono-data font-black text-slate-800 leading-none">{{ formatMoeda(op.spotPrice) }}</p>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-4 lg:grid-cols-7 gap-y-5 gap-x-2 pt-4 border-t border-slate-100">
-              <div v-for="field in configFields.filter(f => f.key !== 'quantidade')" :key="field.key" class="flex flex-col">
-                <span class="text-slate-400 text-[8px] font-black uppercase tracking-widest mb-1">{{ field.label }}</span>
-                <span class="text-slate-800 font-mono-data font-bold text-[10px]">
-                  {{ formatField(field, op[field.key]) }}
-                </span>
-              </div>
-            </div>
-
-            <div :class="['py-2.5 px-5 rounded-2xl border flex justify-between items-center transition-all', getStyleContext(op).footer]">
-              <div class="flex flex-col">
-                <span class="text-[8px] font-black uppercase opacity-60 tracking-[0.2em] mb-0.5 leading-none">P/L Total (R$ | %)</span>
-                <div class="flex items-baseline gap-2">
-                  <span class="text-xl font-black font-mono-data tracking-tighter leading-none">
-                    {{ formatMoeda(op.plTotalValor) }}
-                  </span>
-                  <span class="text-[10px] font-black font-mono-data opacity-70 leading-none">
-                    / {{ formatPct(op.plTotalPct) }}
-                  </span>
-                </div>
-              </div>
-              <div class="text-xl filter grayscale-[0.3] group-hover:grayscale-0 transition-all leading-none">
-                {{ getStyleContext(op).icon }}
-              </div>
-            </div>
-
-            <div class="bg-indigo-50/40 rounded-[24px] p-6 border border-indigo-100 relative overflow-hidden mt-auto">
-              <i data-lucide="quote" class="w-12 h-12 absolute -top-2 -right-2 text-indigo-200 opacity-20 rotate-12"></i>
-              
-              <div class="flex items-center gap-2 mb-4">
-                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-brand-indigo"></i>
-                <h5 class="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-900">Auditoria Gemini</h5>
-              </div>
-              
-              <div v-if="loadingIA" class="animate-pulse space-y-2.5 relative z-10">
-                <div class="h-2 bg-indigo-200/50 rounded w-full"></div>
-                <div class="h-2 bg-indigo-200/50 rounded w-5/6"></div>
-                <div class="h-2 bg-indigo-200/50 rounded w-3/4"></div>
-              </div>
-
-              <div v-else-if="op.respostaIA" class="text-[13px] text-indigo-950 font-medium leading-relaxed italic font-serif relative z-10 whitespace-pre-wrap">
-                {{ op.respostaIA }}
-              </div>
-
-              <div v-else class="text-[10px] text-indigo-300 font-black uppercase tracking-widest italic text-center py-4 opacity-60">
-                Aguardando auditoria estratégica...
-              </div>
-            </div>
-
           </div>
+
+          <div style="width: 1px; height: 2rem; background: var(--border-subtle);"></div>
+
+          <div v-for="(item, i) in basketItems" :key="i" style="display: flex; align-items: center; gap: 1.5rem;">
+            <div>
+              <span style="display: block; font-weight: 700; color: var(--text-muted);
+                            text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.125rem;"
+                    :style="isMobile ? 'font-size: 13px;' : 'font-size: 8px;'">
+                {{ item.label }}
+              </span>
+              <div style="display: flex; align-items: baseline; gap: 0.375rem;">
+                <span class="font-mono-data" style="font-weight: 700; color: var(--text-primary);"
+                      :style="(isMobile ? 'font-size: 20px; ' : 'font-size: 14px; ') + (item.color ? `color: ${item.color}` : '')">
+                  {{ item.value }}
+                </span>
+                <span v-if="item.sub" class="font-mono-data"
+                      style="font-weight: 600; color: var(--text-muted);"
+                      :style="isMobile ? 'font-size: 16px;' : 'font-size: 12px;'">{{ item.sub }}</span>
+              </div>
+            </div>
+            <div style="width: 1px; height: 2rem; background: var(--border-subtle);"></div>
+          </div>
+        </div>
+
+        <div style="position: relative; z-index: 1;"
+             :style="isMobile ? 'width: 100%;' : 'flex-shrink: 0;'">
+          <button @click="processarComparacao"
+                  style="background: var(--surface-base); color: var(--text-secondary);
+                         border: 1px solid var(--border-default); border-radius: var(--radius-lg);
+                         font-weight: 700; text-transform: uppercase; letter-spacing: 0.25em;
+                         cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+                         transition: all 0.3s; box-shadow: var(--shadow-sm);"
+                  :style="isMobile ? 'padding: 0.75rem 1.5rem; width: 100%; font-size: 14px;' : 'padding: 0.875rem 2rem; font-size: 10px;'"
+                  onmouseover="this.style.color='var(--brand-indigo)'; this.style.borderColor='var(--brand-indigo-muted)'; this.style.background='var(--brand-indigo-light)'; this.style.boxShadow='var(--shadow-md)'"
+                  onmouseout="this.style.color='var(--text-secondary)'; this.style.borderColor='var(--border-default)'; this.style.background='var(--surface-base)'; this.style.boxShadow='var(--shadow-sm)'">
+            Iniciar Batalha
+          </button>
         </div>
       </div>
     </div>
 
-    <div v-else-if="!isLoading" class="py-32 text-center bg-white border border-dashed border-slate-200 rounded-[40px] opacity-60">
-      <i data-lucide="inbox" class="w-12 h-12 mx-auto text-slate-300 mb-4"></i>
-      <p class="text-xs font-black uppercase tracking-[0.4em] text-slate-400 font-sans">Nenhuma operação ativa encontrada</p>
-    </div>
+    <!-- ══ RESULTADOS ══ -->
+    <div v-if="mostrarResultados"
+         style="display: grid; gap: 1.5rem; margin-top: 1rem;"
+         :style="isMobile ? 'grid-template-columns: 1fr; padding-bottom: 6rem;' : 'grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); padding-bottom: 8rem;'">
 
+      <!-- Rentabilidade -->
+      <div class="premium-card comp-resultado-card"
+           style="border-color: var(--brand-emerald-muted);
+                  background: var(--surface-base); position: relative; overflow: hidden;"
+           :style="isMobile ? 'padding: 1.25rem;' : 'padding: 2.5rem;'">
+        <div style="position: absolute; right: -1.5rem; top: -1.5rem; font-size: 6rem; font-weight: 800;
+                    font-style: italic; color: var(--brand-emerald); opacity: 0.06;
+                    pointer-events: none; font-family: 'Syne', sans-serif; line-height: 1;">ROC</div>
+        <span style="padding: 0.375rem 1rem; background: var(--brand-emerald-light); color: var(--brand-emerald);
+                      border-radius: var(--radius-md); font-weight: 700; text-transform: uppercase;
+                      letter-spacing: 0.12em; margin-bottom: 1.5rem; display: inline-block;
+                      border: 1px solid var(--brand-emerald-muted);"
+              :style="isMobile ? 'font-size: 13px;' : 'font-size: 9px;'">
+          Eficiência Financeira
+        </span>
+        <div style="display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+          <h3 class="font-mono-data comp-resultado-ticker"
+              style="font-weight: 700; color: var(--text-primary); letter-spacing: -0.04em;"
+              :style="isMobile ? 'font-size: 2.75rem;' : 'font-size: 3rem;'">
+            {{ rankingRentabilidade.ticker }}
+          </h3>
+          <span class="font-mono-data" style="font-weight: 700; color: var(--brand-emerald);"
+                :style="isMobile ? 'font-size: 1.5rem;' : 'font-size: 1.25rem;'">
+            {{ formatPct(rankingRentabilidade.anualizado) }} a.a.
+          </span>
+        </div>
+        <p class="t-label-sm" style="color: var(--brand-emerald); opacity: 0.7; text-transform: uppercase;
+                                     letter-spacing: 0.25em; margin-bottom: 2rem;">
+          Onde seu dinheiro rende mais por dia
+        </p>
+        <div class="comp-resultado-veredito"
+             style="background: var(--surface-overlay); border-radius: var(--radius-lg);
+                     border: 1px solid var(--brand-emerald-muted);"
+             :style="isMobile ? 'padding: 1.25rem;' : 'padding: 2rem;'">
+          <h4 class="t-label" style="color: var(--text-primary); text-transform: uppercase; margin-bottom: 1rem;
+                                     text-decoration: underline; text-underline-offset: 4px;">Veredito de Alocação</h4>
+          <p class="t-body" style="color: var(--text-secondary); line-height: 1.7;">
+            Esta é a opção vencedora para quem busca <strong style="color: var(--text-primary);">renda mensal pura</strong>.
+            O sistema calculou que ela devolve <strong style="color: var(--text-primary);">{{ formatMoney(rankingRentabilidade.premioPorMil) }}</strong>
+            de prêmio para cada R$ 1.000,00 em garantia. É o cavalo mais rápido para gerar caixa.
+          </p>
+        </div>
+      </div>
+
+      <!-- Segurança -->
+      <div class="premium-card comp-resultado-card"
+           style="border-color: var(--brand-indigo-muted);
+                  background: var(--surface-base); position: relative; overflow: hidden;"
+           :style="isMobile ? 'padding: 1.25rem;' : 'padding: 2.5rem;'">
+        <div style="position: absolute; right: -1.5rem; top: -1.5rem; font-size: 6rem; font-weight: 800;
+                    font-style: italic; color: var(--brand-indigo); opacity: 0.06;
+                    pointer-events: none; font-family: 'Syne', sans-serif; line-height: 1;">SAFE</div>
+        <span style="padding: 0.375rem 1rem; background: var(--brand-indigo-light); color: var(--brand-indigo);
+                      border-radius: var(--radius-md); font-weight: 700; text-transform: uppercase;
+                      letter-spacing: 0.12em; margin-bottom: 1.5rem; display: inline-block;
+                      border: 1px solid var(--brand-indigo-muted);"
+              :style="isMobile ? 'font-size: 13px;' : 'font-size: 9px;'">
+          Proteção Patrimonial
+        </span>
+        <div style="display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+          <h3 class="font-mono-data comp-resultado-ticker"
+              style="font-weight: 700; color: var(--text-primary); letter-spacing: -0.04em;"
+              :style="isMobile ? 'font-size: 2.75rem;' : 'font-size: 3rem;'">
+            {{ rankingSeguranca.ticker }}
+          </h3>
+          <span class="font-mono-data" style="font-weight: 700; color: var(--brand-indigo);"
+                :style="isMobile ? 'font-size: 1.5rem;' : 'font-size: 1.25rem;'">
+            {{ formatPct(rankingSeguranca.margemQueda) }} de folga
+          </span>
+        </div>
+        <p class="t-label-sm" style="color: var(--brand-indigo); opacity: 0.7; text-transform: uppercase;
+                                     letter-spacing: 0.25em; margin-bottom: 2rem;">
+          Menor risco de ser exercido
+        </p>
+        <div class="comp-resultado-veredito"
+             style="background: var(--surface-overlay); border-radius: var(--radius-lg);
+                     border: 1px solid var(--brand-indigo-muted);"
+             :style="isMobile ? 'padding: 1.25rem;' : 'padding: 2rem;'">
+          <h4 class="t-label" style="color: var(--text-primary); text-transform: uppercase; margin-bottom: 1rem;
+                                     text-decoration: underline; text-underline-offset: 4px;">Veredito de Risco</h4>
+          <p class="t-body" style="color: var(--text-secondary); line-height: 1.7;">
+            Esta PUT provou ser a mais resiliente. O ativo precisaria cair mais do que
+            <strong style="color: var(--text-primary);">{{ formatPct(rankingSeguranca.margemQueda) }}</strong>
+            para o exercício ocorrer. Break-even em
+            <strong style="color: var(--text-primary);">{{ formatMoney(rankingSeguranca.breakeven) }}</strong>.
+          </p>
+        </div>
+      </div>
+
+    </div>
   </div>
 </template>
 
+<style>
+  .comp-card:hover .comp-delete-btn { opacity: 1 !important; }
+  div:hover > .comp-delete-btn { opacity: 1 !important; }
+
+  @keyframes comp-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  @keyframes comp-spin  { to { transform: rotate(360deg); } }
+
+  /* ── Mobile: S22 Ultra (~412px CSS) ── */
+  @media (max-width: 480px) {
+    .comp-delete-btn { opacity: 1 !important; }
+
+    /* Escalar fontes globais ~2x dentro do comparativo */
+    #comparativo-view-template ~ div .t-label-sm,
+    [data-view="comparativo"] .t-label-sm { font-size: 13px !important; }
+
+    [data-view="comparativo"] .t-label { font-size: 16px !important; }
+
+    [data-view="comparativo"] .t-body { font-size: 16px !important; line-height: 1.6 !important; }
+
+    [data-view="comparativo"] .t-title { font-size: 1.5rem !important; }
+  }
+</style>
+
 <script>
-
-const consultoriaCurrencyFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-
-window.ConsultoriaView = {
-  props: {
-    db: { type: Object, default: () => ({}) },
-    statsPreCalculados: { type: Object, default: () => ({}) },
-    isMobile: Boolean,
-    isLoading: Boolean,
-    historico: { type: Array, default: () => [] }
-  },
-  template: '#consultoria-view-template',
+window.ComparativoView = {
+  template: '#comparativo-view-template',
+  props: ['isMobile', 'isLoading'],
   data() {
     return {
-      loadingIA: false,
-      analisesIA: {},
-      // ✅ CORRIGIDO: chaves semânticas reais do Tradutor
-      configFields: [
-        { key: 'quantidade',        label: 'Qtd',        type: 'num' },
-        { key: 'premioMedio',       label: 'PM',         type: 'moeda' },
-        { key: 'premioAtual',       label: 'Atual',      type: 'moeda' },
-        { key: 'potencialLucroPct', label: 'Lucro Máx',  type: 'pct' },
-        { key: 'ganhoMaximo',       label: 'Ganho Máx',  type: 'moeda' },
-        { key: 'plTotalPct',        label: 'P/L %',      type: 'pct' },
-        { key: 'delta',             label: 'Delta Δ',    type: 'delta' },
-        { key: 'nocional',          label: 'Nocional',   type: 'moeda' }
-      ]
+      cardCounter: 2,
+      cards: [],
+      ordenarPor: 'padrao',
+      mostrarResultados: false,
+      rankingRentabilidade: {},
+      rankingSeguranca: {}
     };
   },
 
   computed: {
-    // ✅ CORRIGIDO: consome listaAtivas diretamente — já filtrado (só ATIVO) e traduzido
-    operacoesOrdenadas() {
-      const lista = this.statsPreCalculados?.listaAtivas || [];
-
-      // Injeta respostaIA do cache local e ordena por DTE
-      return [...lista]
-        .map(op => {
-          const idUnico = `${op.tickerAtivo}_${op.simboloOpcao}`;
-          return { ...op, respostaIA: this.analisesIA[idUnico] || null, idUnico };
-        })
-        .sort((a, b) => {
-          // 1. DTE crescente (vence mais cedo primeiro)
-          const dteA = a.dteCorridos || 999;
-          const dteB = b.dteCorridos || 999;
-          if (dteA !== dteB) return dteA - dteB;
-          // 2. Ticker alfabético
-          const tA = String(a.tickerAtivo || '').toUpperCase();
-          const tB = String(b.tickerAtivo || '').toUpperCase();
-          if (tA !== tB) return tA.localeCompare(tB);
-          // 3. Símbolo da opção
-          return String(a.simboloOpcao || '').localeCompare(String(b.simboloOpcao || ''));
-        });
+    agregadoBasket() {
+      const validos = this.cards.filter(c => c.api.isValid);
+      if (validos.length < 2) return null;
+      let somaPremio = 0, somaLucro = 0, somaLotes = 0, somaNotional = 0, somaCredito = 0;
+      validos.forEach(c => {
+        somaPremio   += parseFloat(c.api.premioAtual || 0);
+        somaLucro    += this.calcLucroPct(c);
+        somaLotes    += parseInt(c.qtd || 0);
+        somaNotional += this.calcNotional(c);
+        somaCredito  += this.calcPremioTotal(c);
+      });
+      const n = validos.length;
+      return { qtdCards: n, somaPremioUnitario: somaPremio, mediaPremioUnitario: somaPremio / n,
+               mediaLucroPct: somaLucro / n, somaLotes, somaNotional, somaCredito, mediaCredito: somaCredito / n };
     },
 
-    resumoTatico() {
-      const resumo = { RECOMPRAR: 0, MANTER: 0, OUTROS: 0 };
-      let encontrouAnalise = false;
-      this.operacoesOrdenadas.forEach(op => {
-        if (op.respostaIA) {
-          encontrouAnalise = true;
-          const texto = op.respostaIA.toUpperCase();
-          if (texto.includes('RECOMPRAR')) resumo.RECOMPRAR++;
-          else if (texto.includes('MANTER')) resumo.MANTER++;
-          else if (texto.includes('ROLAR') || texto.includes('ASSUMIR')) resumo.OUTROS++;
-        }
-      });
-      return encontrouAnalise ? resumo : {};
+    basketItems() {
+      if (!this.agregadoBasket) return [];
+      const b = this.agregadoBasket;
+      return [
+        { label: 'Lotes (Soma)',    value: b.somaLotes },
+        { label: 'Prêmio Unit.',    value: this.formatMoney(b.somaPremioUnitario),
+          sub: 'méd: ' + this.formatMoney(b.mediaPremioUnitario) },
+        { label: 'Lucro (Média)',   value: this.formatPct(b.mediaLucroPct), color: 'var(--brand-emerald)' },
+        { label: 'Notional (Soma)', value: this.formatMoney(b.somaNotional) },
+        { label: 'Crédito Recebido', value: this.formatMoney(b.somaCredito), color: 'var(--brand-emerald)',
+          sub: 'méd: ' + this.formatMoney(b.mediaCredito) }
+      ];
     }
   },
 
+  created() { this.carregarCache(); },
+
   watch: {
-    'statsPreCalculados.listaAtivas': {
-      immediate: true,
+    cards: {
       handler() {
-        this.$nextTick(() => this.recuperarCacheIA());
-      }
+        this.salvarCache();
+        this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+      },
+      deep: true
     }
   },
 
   methods: {
+    getCardBorderStyle(card) {
+      if (!this.mostrarResultados)
+        return 'background: var(--surface-base); border: 1px solid var(--border-default);';
+      const isRent = this.rankingRentabilidade.id === card.id;
+      const isSafe = this.rankingSeguranca.id === card.id;
+      if (isRent && isSafe) return 'background: var(--surface-base); border: 2px solid var(--brand-emerald); box-shadow: 0 0 0 4px var(--brand-emerald-muted);';
+      if (isRent)           return 'background: var(--surface-base); border: 2px solid var(--brand-emerald);';
+      if (isSafe)           return 'background: var(--surface-base); border: 2px solid var(--brand-indigo);';
+      return 'background: var(--surface-base); border: 1px solid var(--border-default);';
+    },
 
-    recuperarCacheIA() {
-      const cache = JSON.parse(localStorage.getItem('cache_auditoria_gemini') || '{}');
-      const novasAnalises = { ...this.analisesIA };
-      Object.keys(cache).forEach(idUnico => {
-        if (Date.now() - cache[idUnico].timestamp < 24 * 60 * 60 * 1000) {
-          novasAnalises[idUnico] = cache[idUnico].texto;
+    limparArena() {
+      localStorage.removeItem('arena_put_cache');
+      this.cards = [this.criarCardVazio(1), this.criarCardVazio(2)];
+      this.cardCounter = 2; this.mostrarResultados = false;
+      this.ordenarPor = 'padrao';
+      this.$nextTick(() => lucide.createIcons());
+    },
+    salvarCache() {
+      localStorage.setItem('arena_put_cache', JSON.stringify(
+        { cards: this.cards, cardCounter: this.cardCounter }
+      ));
+    },
+    carregarCache() {
+      const cache = localStorage.getItem('arena_put_cache');
+      if (cache) {
+        const p = JSON.parse(cache);
+        this.cards = p.cards; this.cardCounter = p.cardCounter;
+        if (this.cards.some(c => c.api.isValid)) this.processarComparacao();
+      } else {
+        this.cards = [this.criarCardVazio(1), this.criarCardVazio(2)];
+      }
+      this.$nextTick(() => lucide.createIcons());
+    },
+    criarCardVazio(id) {
+      return { id, ticker: '', qtd: 100, loading: false, error: '',
+               api: { spotPrice: 0, strike: 0, premioAtual: 0, dte: 0, trades: 0, isValid: false } };
+    },
+    adicionarCard() {
+      this.cardCounter++;
+      this.cards.push(this.criarCardVazio(this.cardCounter));
+      this.mostrarResultados = false; this.ordenarPor = 'padrao';
+      this.$nextTick(() => {
+        lucide.createIcons();
+        if (this.isMobile) {
+          const lastCard = this.$el.querySelector('[style*="border-radius: var(--radius-xl)"]:last-child');
+          if (lastCard) lastCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          const c = this.$el.querySelector('[style*="overflow-x: auto"]');
+          if (c) c.scrollTo({ left: c.scrollWidth, behavior: 'smooth' });
         }
       });
-      this.analisesIA = novasAnalises;
     },
-
-    // --- ESTILOS ---
-    isVenda(op) {
-      return String(op.direcaoTrade || '').toUpperCase().includes('VENDA');
-    },
-
-    getTipoStyle(op) {
-      const tipo = String(op.tipoOpcao || '').toUpperCase();
-      const venda = this.isVenda(op);
-      if (venda && tipo.includes('PUT'))   return 'bg-amber-100 text-amber-800 border-amber-200';
-      if (venda && tipo.includes('CALL'))  return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-      if (!venda && tipo.includes('PUT'))  return 'bg-rose-100 text-rose-800 border-rose-200';
-      if (!venda && tipo.includes('CALL')) return 'bg-emerald-100 text-emerald-800 border-emerald-200';
-      return 'bg-slate-100 text-slate-800 border-slate-200';
-    },
-
-    getStyleContext(op) {
-      const m = String(op.moneynessCode || '').toUpperCase();
-      if (m.includes('ITM')) return {
-        border: 'border-red-100', badge: 'bg-red-100 text-red-800 border-red-200',
-        footer: 'bg-red-50 border-red-100 text-red-900', icon: '⚠️'
-      };
-      if (m.includes('OTM')) return {
-        border: 'border-emerald-100', badge: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-        footer: 'bg-emerald-50 border-emerald-100 text-emerald-900', icon: '✅'
-      };
-      return {
-        border: 'border-blue-100', badge: 'bg-blue-100 text-blue-800 border-blue-200',
-        footer: 'bg-blue-50 border-blue-100 text-blue-900', icon: '🔵'
-      };
-    },
-
-    getPlClass(op) {
-      return (Number(op.plTotalValor) || 0) >= 0 ? 'text-emerald-600' : 'text-red-600';
-    },
-
-    getDistSpot(op) {
-      const strike = Number(op.strike) || 0;
-      const spot   = Number(op.spotPrice) || 0;
-      if (strike > 0 && spot > 0) {
-        const d = ((spot / strike) - 1) * 100;
-        return (d > 0 ? '+' : '') + d.toFixed(1) + '%';
+    removerCard(id) {
+      if (this.cards.length > 2) {
+        this.cards = this.cards.filter(c => c.id !== id);
+        this.mostrarResultados = false;
+        this.$nextTick(() => lucide.createIcons());
       }
-      return '0.0%';
     },
-
-    // --- INDICADORES TÉCNICOS (dados chegam via join no AppCore, podem ser N/D) ---
-    getTendenciaStyle(op) {
-      const t = String(op.vereditoTendencia || '').toUpperCase();
-      if (t.includes('ALTA'))  return 'bg-emerald-50 text-emerald-700 border-emerald-100';
-      if (t.includes('BAIXA')) return 'bg-rose-50 text-rose-700 border-rose-100';
-      return 'bg-slate-50 text-slate-600 border-slate-200';
+    ordenarArena() {
+      if (this.ordenarPor === 'padrao') { this.cards.sort((a, b) => a.id - b.id); return; }
+      this.cards.sort((a, b) => {
+        if (a.api.isValid && !b.api.isValid) return -1;
+        if (!a.api.isValid && b.api.isValid) return 1;
+        if (this.ordenarPor === 'lucro')     return this.calcLucroPct(b) - this.calcLucroPct(a);
+        if (this.ordenarPor === 'seguranca') return this.getDistanciaNumerica(b) - this.getDistanciaNumerica(a);
+        if (this.ordenarPor === 'premio')    return (b.api.premioAtual || 0) - (a.api.premioAtual || 0);
+        return 0;
+      });
     },
-
-    getIfrStyle(op) {
-      const ifr = String(op.statusIfr || '').toUpperCase();
-      if (ifr.includes('SOBRECOMPRADO')) return 'bg-rose-50 text-rose-700 border-rose-100';
-      if (ifr.includes('SOBREVENDIDO'))  return 'bg-emerald-50 text-emerald-700 border-emerald-100';
-      return 'bg-slate-50 text-slate-600 border-slate-200';
+    ajustarPremio(card, delta) {
+      card.api.premioAtual = Math.max(0.01, parseFloat((parseFloat(card.api.premioAtual || 0) + delta).toFixed(2)));
+      this.mostrarResultados = false;
     },
-
-    getBollingerStyle(op) {
-      const b = String(op.statusBollinger || '').toUpperCase();
-      if (b.includes('DENTRO')) return 'bg-slate-50 text-slate-600 border-slate-200';
-      return 'bg-amber-50 text-amber-700 border-amber-100';
-    },
-
-    getM200Style(op) {
-      const dist = Number(op.distMma200);
-      if (!dist && dist !== 0) return 'bg-slate-50 text-slate-600 border-slate-200';
-      if (dist > 15 || dist < -15) return 'bg-amber-50 text-amber-700 border-amber-100';
-      return 'bg-sky-50 text-sky-700 border-sky-100';
-    },
-
-    getDistM200(op) {
-      const num = Number(op.distMma200);
-      if (isNaN(num) || (!num && num !== 0)) return 'N/D';
-      return (num > 0 ? '+' : '') + num.toFixed(2).replace('.', ',') + '%';
-    },
-
-    getIfrNumStyle(op) {
-      const val = Number(op.ifr14) || 0;
-      if (val >= 70) return 'text-rose-600 font-black';
-      if (val <= 30) return 'text-emerald-600 font-black';
-      return 'text-slate-700';
-    },
-
-    getMeanComparisonStyle(op, meanKey) {
-      const spot = Number(op.spotPrice) || 0;
-      const mean = Number(op[meanKey]) || 0;
-      if (spot === 0 || mean === 0) return 'text-slate-500';
-      if (spot > mean) return 'text-emerald-600 font-black';
-      if (spot < mean) return 'text-rose-600 font-black';
-      return 'text-slate-700';
-    },
-
-    // --- FORMATAÇÃO ---
-    _parseNum(v) {
-      if (typeof v === 'number') return v;
-      const clean = String(v || '0').replace(/[R$.%\s]/g, '').replace(',', '.').trim();
-      return parseFloat(clean) || 0;
-    },
-
-    formatMoeda(val) {
-      const n = this._parseNum(val);
-      return consultoriaCurrencyFormatter.format(n);
-    },
-
-    formatPct(val) {
-      const n = Number(val) || 0;
-      // Tradutor entrega percentuais como decimal puro (ex: 0.055 = 5.5%)
-      return (n * 100).toFixed(2).replace('.', ',') + '%';
-    },
-
-    formatIndicador(val) {
-      if (val === undefined || val === null || val === '') return 'N/D';
-      const num = Number(val);
-      if (isNaN(num)) return 'N/D';
-      return num.toFixed(2).replace('.', ',');
-    },
-
-    formatIndicadorMoeda(val) {
-      if (val === undefined || val === null || val === '') return 'N/D';
-      const num = Number(val);
-      if (isNaN(num)) return 'N/D';
-      return consultoriaCurrencyFormatter.format(num);
-    },
-
-    formatField(field, val) {
-      if (val === undefined || val === null || val === '') return '-';
-      if (field.type === 'moeda')  return this.formatMoeda(val);
-      if (field.type === 'pct')    return this.formatPct(val);
-      if (field.type === 'delta')  return Number(val).toFixed(4).replace('.', ',');
-      return val;
-    },
-
-    formatData(val) {
-      if (!val) return '-';
-      const d = val instanceof Date ? val : new Date(val);
-      if (isNaN(d.getTime())) return String(val).split(' ')[0];
-      return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    },
-
-    // --- AUDITORIA IA ---
-    solicitarAuditoriaIA() {
-      if (this.operacoesOrdenadas.length === 0) return;
-      this.loadingIA = true;
-      const payload = JSON.parse(JSON.stringify(this.operacoesOrdenadas));
-
+    ajustarQtd(card, valor) { card.qtd = Math.max(100, card.qtd + valor); this.mostrarResultados = false; },
+    buscarDadosAPI(card) {
+      if (!card.ticker || card.ticker.length < 4) return;
+      card.loading = true; card.error = ''; card.api.isValid = false; this.mostrarResultados = false;
       google.script.run
-        .withSuccessHandler((respostaServidor) => {
-          this.loadingIA = false;
-          if (respostaServidor.success && respostaServidor.data) {
-            const cacheKey = 'cache_auditoria_gemini';
-            let cacheAtual = JSON.parse(localStorage.getItem(cacheKey) || '{}');
-            const novasAnalises = { ...this.analisesIA };
-
-            respostaServidor.data.forEach(item => {
-              const op = this.operacoesOrdenadas[item.id];
-              if (op) {
-                novasAnalises[op.idUnico] = item.analise;
-                cacheAtual[op.idUnico] = { texto: item.analise, timestamp: Date.now() };
-              }
-            });
-
-            this.analisesIA = novasAnalises;
-            localStorage.setItem(cacheKey, JSON.stringify(cacheAtual));
+        .withSuccessHandler((res) => {
+          card.loading = false;
+          if (res && res.success) {
+            card.api = { ...res.data, isValid: true };
+            this.ordenarArena();
+          } else {
+            card.error = (res && res.error) || 'Ativo não encontrado.';
           }
+          this.$nextTick(() => lucide.createIcons());
         })
-        .withFailureHandler(() => {
-          this.loadingIA = false;
-          alert("Erro crítico: O servidor demorou muito a responder ou está indisponível.");
+        .withFailureHandler((err) => {
+          card.loading = false;
+          card.error = String(err.message || err);
+          this.$nextTick(() => lucide.createIcons());
         })
-        .apiAnalisarOperacoesAtivas(payload);
+        .apiIntegracaoOpLab(card.ticker);
+    },
+    calcPremioTotal(c)   { return (c.api.premioAtual || 0) * (c.qtd || 0); },
+    calcNotional(c)      { return (c.api.strike || 0) * (c.qtd || 0); },
+    calcLucroPct(c)      { return c.api.strike ? (c.api.premioAtual / c.api.strike) * 100 : 0; },
+    formatMoney(val)     { return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val || 0); },
+    formatPct(val)       { return (val || 0).toFixed(2).replace('.', ',') + '%'; },
+    getDistanciaNumerica(c) {
+      if (!c.api.strike) return -999;
+      const be = c.api.strike - c.api.premioAtual;
+      return ((c.api.spotPrice - be) / c.api.spotPrice) * 100;
+    },
+    getDistanciaBreakEven(c) {
+      const d = this.getDistanciaNumerica(c);
+      return d === -999 ? '---' : (d > 0 ? `+${d.toFixed(1)}%` : `${d.toFixed(1)}% risco`);
+    },
+    processarComparacao() {
+      const v = this.cards.filter(c => c.api.isValid && c.api.premioAtual > 0);
+      if (v.length < 2) return;
+      const analise = v.map(c => {
+        const premioTotal   = this.calcPremioTotal(c);
+        const notional      = this.calcNotional(c);
+        const rocBruto      = (premioTotal / notional) * 100;
+        const anualizado    = c.api.dte > 0 ? (rocBruto / c.api.dte) * 252 : rocBruto;
+        const breakeven     = c.api.strike - c.api.premioAtual;
+        const premioPorMil  = (premioTotal / notional) * 1000;
+        const margemQueda   = c.api.spotPrice > 0 ? ((c.api.spotPrice - breakeven) / c.api.spotPrice) * 100 : 0;
+        return { id: c.id, ticker: c.ticker.toUpperCase(), rocBruto, anualizado, breakeven, margemQueda, premioPorMil, dte: c.api.dte, spot: c.api.spotPrice };
+      });
+      this.rankingRentabilidade = [...analise].sort((a, b) => b.anualizado - a.anualizado)[0];
+      this.rankingSeguranca     = [...analise].sort((a, b) => b.margemQueda - a.margemQueda)[0];
+      this.mostrarResultados = true;
+      if (this.ordenarPor === 'padrao') { this.ordenarPor = 'lucro'; this.ordenarArena(); }
+      this.$nextTick(() => lucide.createIcons());
     }
-  },
-
-  mounted() {
-    if (window.lucide) setTimeout(() => lucide.createIcons(), 100);
-    this.recuperarCacheIA();
   }
 };
 </script>

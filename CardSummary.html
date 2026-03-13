@@ -1,88 +1,42 @@
 <template id="card-summary-template">
-  <div
-    :class="isMobile ? 'px-0' : 'p-5 md:p-7'"
-    class="w-full rounded-[var(--radius-xl)] transition-all"
-    :style="isMobile ? 'background: transparent; border: none;' :
-            'background: var(--surface-base); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);'"
-  >
+  <div class="premium-card" style="width:100%;overflow:hidden;">
 
     <!-- Cabeçalho -->
-    <div class="flex justify-between items-center mb-6" :class="isMobile ? 'px-5' : ''">
-      <div>
-        <h3 class="t-title" style="color: var(--text-primary);">Sumário</h3>
-        <p class="t-label mt-1" style="color: var(--text-muted);">Portfólio Ativo</p>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid var(--border-subtle);">
+      <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:var(--text-muted);">Resumo do portfólio</span>
+      <span v-if="!isLoading" style="font-size:0.75rem;color:var(--text-muted);">{{ totalActiveOps }} posições ativas</span>
+    </div>
+
+    <!-- Skeleton -->
+    <div v-if="isLoading"
+      style="display:flex;flex-direction:row;overflow-x:scroll;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;background:var(--border-subtle);gap:1px;">
+      <div v-for="n in 4" :key="'sk'+n"
+        style="flex:0 0 160px;width:160px;padding:1.25rem 1rem;background:var(--surface-base);animation:summary-pulse 1.5s ease infinite;">
+        <div style="height:10px;background:var(--surface-overlay);border-radius:4px;width:60%;margin-bottom:10px;"></div>
+        <div style="height:24px;background:var(--surface-overlay);border-radius:4px;width:80%;"></div>
       </div>
+    </div>
+
+    <!-- KPIs -->
+    <div v-else
+      style="display:flex;flex-direction:row;overflow-x:scroll;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;-ms-overflow-style:none;background:var(--border-subtle);gap:1px;">
       <div
-        v-if="!isLoading"
-        class="px-3 py-1 rounded-[var(--radius-full)]"
-        style="background: var(--brand-indigo-light); color: var(--brand-indigo);
-               border: 1px solid var(--brand-indigo-muted);
-               font-size: 8px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;"
-      >
-        {{ totalActiveOps }} Ativos
+        v-for="field in activeFields"
+        :key="field.key"
+        style="flex:0 0 160px;width:160px;padding:1.25rem 1rem;background:var(--surface-base);">
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.625rem;white-space:nowrap;">{{ field.label }}</div>
+        <div class="font-mono-data"
+          :style="getValueColor(field)"
+          style="font-size:1.5rem;font-weight:700;line-height:1;white-space:nowrap;">{{ formatValue(field.value, field.type) }}</div>
       </div>
     </div>
 
-    <!-- Grid de cards / carrossel mobile -->
-    <div
-      :class="isMobile
-        ? 'flex overflow-x-auto gap-4 px-5 pb-6 hide-scrollbar snap-x snap-mandatory'
-        : 'grid gap-3 md:gap-4'"
-      :style="!isMobile ? gridColsStyle : {}"
-    >
-
-      <!-- Skeleton -->
-      <template v-if="isLoading">
-        <div
-          v-for="n in 4"
-          :key="'skel-sum-'+n"
-          class="min-w-[260px] snap-center h-32 rounded-[var(--radius-lg)] border animate-pulse flex flex-col justify-between p-5"
-          style="background: var(--surface-overlay); border-color: var(--border-subtle);"
-        >
-          <div class="h-2.5 rounded-full w-24" style="background: var(--border-default);"></div>
-          <div class="flex flex-col gap-2">
-            <div class="h-9 rounded-[var(--radius-sm)] w-3/4" style="background: var(--border-default);"></div>
-            <div class="h-2 rounded-full w-1/2" style="background: var(--border-subtle);"></div>
-          </div>
-        </div>
-      </template>
-
-      <!-- Cards reais -->
-      <template v-else>
-        <div
-          v-for="field in activeFields"
-          :key="field.key + '-' + field.order"
-          :class="isMobile ? 'min-w-[260px] flex-shrink-0 snap-center py-5 px-6' : 'p-5 hover:scale-[1.01]'"
-          class="rounded-[var(--radius-lg)] border transition-all duration-[var(--duration-std)] h-32 flex flex-col justify-between"
-          :style="getPodStyle(field).style"
-        >
-          <!-- Label -->
-          <span class="t-label" :style="getPodStyle(field).labelStyle">
-            {{ field.label }}
-          </span>
-
-          <!-- Valor + contexto -->
-          <div class="flex flex-col">
-            <span
-              :style="[
-                getPodStyle(field).valueStyle,
-                isMobile ? 'font-size: 26px' : 'font-size: 20px'
-              ]"
-              style="font-family: 'JetBrains Mono', monospace; font-weight: 700;
-                     letter-spacing: -0.03em; line-height: 1; margin-bottom: 4px;"
-            >
-              {{ formatValue(field.value, field.type) }}
-            </span>
-            <span class="t-label-sm" :style="getPodStyle(field).contextStyle">
-              {{ getPodStyle(field).context }}
-            </span>
-          </div>
-        </div>
-      </template>
-
-    </div>
   </div>
 </template>
+
+<style>
+  @keyframes summary-pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }
+</style>
 
 <script>
 const summaryCurrencyFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -98,30 +52,80 @@ window.CardSummary = {
 
   data() {
     return {
-      // ================================================================
-      // PAINEL DE CONTROLE — chaves alinhadas ao resumoGlobal do Agregador
-      // Campos disponíveis no resumoGlobal:
-      //   totalOps, nocional, plTotalValor, plTotalUnitario,
-      //   ganhoMaximo, perdaMaxima, premioMedio, premioAtual,
-      //   delta, gamma, vega, theta, rho, plTotalPct
-      // ================================================================
       configCampos: [
-        // --- Financeiro (ativos por padrão) ---
-        { key: 'premioMedio',      label: 'Prêmio Médio',   type: 'currency',   active: true,  order: 1 },
-        { key: 'premioAtual',      label: 'Prêmio Atual',   type: 'currency',   active: true,  order: 2 },
-        { key: 'ganhoMaximo',      label: 'Ganho Máx.',     type: 'currency',   active: true,  order: 3 },
-        { key: 'nocional',         label: 'Nocional',       type: 'currency',   active: true,  order: 4 },
-        { key: 'plTotalPct',       label: 'Rentabilidade',  type: 'percentage', active: true,  order: 5 },
-        { key: 'plTotalValor',     label: 'P/L Aberto',     type: 'currency',   active: true,  order: 6 },
-        { key: 'perdaMaxima',      label: 'Risco Máx.',     type: 'currency',   active: false, order: 7 },
-        { key: 'plTotalUnitario',  label: 'P/L Unitário',   type: 'currency',   active: false, order: 8 },
 
-        // --- Gregas (chaves corretas: sem sufixo "Total") ---
-        { key: 'delta',            label: 'Delta Net',      type: 'number',     active: false, order: 10 },
-        { key: 'gamma',            label: 'Gamma Net',      type: 'number',     active: false, order: 11 },
-        { key: 'vega',             label: 'Vega Net',       type: 'number',     active: false, order: 12 },
-        { key: 'theta',            label: 'Theta Diário',   type: 'currency',   active: false, order: 13 },
-        { key: 'rho',              label: 'Rho',            type: 'number',     active: false, order: 14 }
+        // --- 0. Core ---
+
+        { key: 'nocional',        label: 'Nocional',      type: 'currency',   active: true,  order: 1 },
+        { key: 'plTotalValor',    label: 'P/L Aberto',    type: 'currency',   active: true,  order: 2 },
+        { key: 'ganhoMaximo',     label: 'Ganho Máx.',    type: 'currency',   active: true,  order: 3 },
+        { key: 'premioMedio',     label: 'Prêmio Médio',  type: 'currency',   active: true,  order: 4 },
+        { key: 'premioAtual',     label: 'Prêmio Atual',  type: 'currency',   active: true,  order: 5 },
+        { key: 'plTotalPct',      label: 'Rentabilidade', type: 'percentage', active: true,  order: 6 },
+        { key: 'perdaMaxima',     label: 'Risco Máx.',    type: 'currency',   active: true,  order: 7 },
+        { key: 'plTotalUnitario', label: 'P/L Unitário',  type: 'currency',   active: false, order: 8 },
+        { key: 'delta',           label: 'Delta Net',     type: 'number',     active: false, order: 10 },
+        { key: 'gamma',           label: 'Gamma Net',     type: 'number',     active: false, order: 11 },
+        { key: 'vega',            label: 'Vega Net',      type: 'number',     active: false, order: 12 },
+        { key: 'theta',           label: 'Theta Diário',  type: 'currency',   active: false, order: 13 },
+        { key: 'rho',             label: 'Rho',           type: 'number',     active: false, order: 14 },
+      
+        // --- 1. Identificação ---
+        { key: 'tradeId',           label: 'ID Trade',       type: 'texto',      active: false, order: 10 },
+        { key: 'estrategiaId',      label: 'Estratégia',     type: 'texto',      active: false, order: 11 },
+        { key: 'status',            label: 'Status',         type: 'texto',      active: false, order: 12 },
+
+        // --- 2. Temporal ---
+        { key: 'dataTrade',         label: 'Data Abertura',  type: 'texto',      active: false, order: 20 },
+        { key: 'mesTrade',          label: 'Mês Ref',        type: 'numero',     active: false, order: 21 },
+        { key: 'dataVencimento',    label: 'Vencimento',     type: 'texto',      active: false, order: 22 },
+        { key: 'mesVencimento',     label: 'Ciclo',          type: 'numero',     active: false, order: 23 },
+        { key: 'dteCorridos',       label: 'DTE Corridos',   type: 'numero',     active: false, order: 24 },
+        { key: 'dteUteis',          label: 'DTE Úteis',      type: 'numero',     active: false, order: 25 },
+
+        // --- 3. Ativo e Contrato ---
+        { key: 'simboloOpcao',      label: 'Ticker Opção',   type: 'texto',      active: false, order: 30 },
+        { key: 'tickerAtivo',       label: 'Ativo',          type: 'texto',      active: false, order: 31 },
+        { key: 'nomeEmpresa',       label: 'Empresa',        type: 'texto',      active: false, order: 32 },
+        { key: 'setor',             label: 'Setor',          type: 'texto',      active: false, order: 33 },
+        { key: 'direcaoTrade',      label: 'Direção',        type: 'texto',      active: false, order: 34 },
+        { key: 'tipoOpcao',         label: 'Tipo',           type: 'texto',      active: false, order: 35 },
+        { key: 'qtdOpcoes',         label: 'Quantidade',     type: 'numero',     active: false, order: 36 },
+        { key: 'strike',            label: 'Strike',         type: 'currency',   active: false, order: 37 },
+        { key: 'spotPrice',         label: 'Preço Spot',     type: 'currency',   active: false, order: 38 },
+
+        // --- 4. Financeiro e Risco ---
+        { key: 'moneynessCode',     label: 'Moneyness Code', type: 'texto',      active: false, order: 40 },
+        { key: 'premioMedio',       label: 'Prêmio Médio',   type: 'currency',   active: false,  order: 41 },
+        { key: 'premioAtual',       label: 'Prêmio Atual',   type: 'currency',   active: false,  order: 42 },
+        { key: 'ganhoMaximo',       label: 'Ganho Máx.',     type: 'currency',   active: false,  order: 43 },
+        { key: 'potencialLucroPct', label: 'Potencial Lucro', type: 'percentage', active: false, order: 44 },
+        { key: 'perdaMaxima',       label: 'Risco Máx.',     type: 'currency',   active: false, order: 45 },
+        { key: 'nocional',          label: 'Nocional',       type: 'currency',   active: false,  order: 46 },
+        { key: 'plTotalPct',        label: 'Rentabilidade',  type: 'percentage', active: false,  order: 47 },
+        { key: 'plTotalValor',      label: 'P/L Aberto',     type: 'currency',   active: false, order: 48 },
+        { key: 'plTotalSessao',     label: 'P/L Sessão',     type: 'currency',   active: false,  order: 49 }, // Note: Alterei a key para diferenciar do P/L Aberto
+        { key: 'breakEven',         label: 'Break-Even',     type: 'currency',   active: false, order: 50 },
+
+        // --- 5. Volatilidade e Probabilidade ---
+        { key: 'ivAtual',           label: 'IV Atual',       type: 'percentage', active: false, order: 60 },
+        { key: 'ivRank1y',          label: 'IV Rank 1Y',     type: 'percentage', active: false, order: 61 },
+        { key: 'variation',         label: 'Variação Ativo', type: 'percentage', active: false, order: 62 },
+        { key: 'moneyness',         label: 'Moneyness',      type: 'percentage', active: false, order: 63 },
+        { key: 'priceOpcao',        label: 'Preço Opção',    type: 'currency',   active: false, order: 64 },
+        { key: 'volatility',        label: 'Volatilidade',   type: 'percentage', active: false, order: 65 },
+        { key: 'probabilidadeSucesso', label: 'Prob. Sucesso', type: 'percentage', active: false, order: 66 },
+
+        // --- 6. Gregas ---
+        { key: 'deltaTotal',        label: 'Delta Net',      type: 'number',     active: false, order: 70 },
+        { key: 'gammaTotal',        label: 'Gamma Net',      type: 'number',     active: false, order: 71 },
+        { key: 'vegaTotal',         label: 'Vega Net',       type: 'number',     active: false, order: 72 },
+        { key: 'thetaTotal',        label: 'Theta Diário',   type: 'currency',   active: false, order: 73 },
+        { key: 'rhoTotal',          label: 'Rho',           type: 'number',     active: false, order: 74 },
+
+        // --- 7. Extras ---
+        { key: 'direcaoBias',       label: 'Bias',           type: 'texto',      active: false, order: 80 },
+        { key: 'obsControle',       label: 'Obs. Controle',  type: 'texto',      active: false, order: 81 }
       ]
     };
   },
@@ -130,83 +134,40 @@ window.CardSummary = {
     totalActiveOps() {
       return this.statsPreCalculados?.resumoGlobal?.totalOps || 0;
     },
-
     activeFields() {
       const stats = this.statsPreCalculados?.resumoGlobal || {};
       return this.configCampos
         .filter(c => c.active)
         .sort((a, b) => a.order - b.order)
         .map(c => ({ ...c, value: stats[c.key] !== undefined ? stats[c.key] : 0 }));
-    },
-
-    gridColsStyle() {
-      const total = this.activeFields.length || 4;
-      const width = window.innerWidth;
-      let cols = 1;
-      if (width >= 640  && width < 1024) cols = 2;
-      if (width >= 1024) cols = Math.min(total, 8);
-      return { gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` };
     }
   },
 
   methods: {
     formatValue(val, type) {
-      if (val === undefined || val === null) return '---';
-      if (type === 'currency')   return summaryCurrencyFmt.format(val);
-      if (type === 'percentage') return (val).toFixed(2).replace('.', ',') + '%';
+      if (val === undefined || val === null) return '—';
+      const n = parseFloat(val);
+      if (isNaN(n)) return '—';
+      if (type === 'currency') {
+        const abs = Math.abs(n);
+        const prefix = n < 0 ? '-R$' : 'R$';
+        if (abs >= 1000000) return prefix + (abs / 1000000).toFixed(1) + 'M';
+        if (abs >= 1000)    return prefix + (abs / 1000).toFixed(1) + 'k';
+        return prefix + abs.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      if (type === 'percentage') return Number(val).toFixed(2).replace('.', ',') + '%';
       return summaryNumberFmt.format(val);
     },
 
-    getPodStyle(field) {
-      const key = field.key.toUpperCase();
+    getValueColor(field) {
       const val = parseFloat(field.value) || 0;
-
-      // Gregas — azul
-      if (['DELTA','GAMMA','VEGA','THETA','RHO'].some(g => key.includes(g))) {
-        return {
-          style:        'background: var(--brand-indigo-light); border-color: var(--brand-indigo-muted);',
-          labelStyle:   'color: var(--brand-indigo); opacity: 0.8;',
-          valueStyle:   'color: var(--brand-indigo);',
-          contextStyle: 'color: var(--brand-indigo); opacity: 0.55;',
-          context:      'Exposição'
-        };
-      }
-
-      // Risco / Perda — vermelho
-      if (key.includes('PERDA') || key.includes('RISCO') ||
-          (key.includes('PL') && val < 0)) {
-        return {
-          style:        'background: var(--brand-rose-light); border-color: var(--brand-rose-muted);',
-          labelStyle:   'color: var(--brand-rose); opacity: 0.8;',
-          valueStyle:   'color: var(--brand-rose);',
-          contextStyle: 'color: var(--brand-rose); opacity: 0.55;',
-          context:      'Risco Ativo'
-        };
-      }
-
-      // Resultado positivo / financeiro — verde
-      if (key.includes('PL') || key.includes('GANHO') || key.includes('NOCIONAL') ||
-          key.includes('PREMIO') || key.includes('RENTABILIDADE')) {
-        const isPositive = val >= 0;
-        return {
-          style:        isPositive
-            ? 'background: var(--brand-emerald-light); border-color: var(--brand-emerald-muted);'
-            : 'background: var(--brand-rose-light); border-color: var(--brand-rose-muted);',
-          labelStyle:   `color: var(--${isPositive ? 'brand-emerald' : 'brand-rose'}); opacity: 0.8;`,
-          valueStyle:   `color: var(--${isPositive ? 'brand-emerald' : 'brand-rose'});`,
-          contextStyle: `color: var(--${isPositive ? 'brand-emerald' : 'brand-rose'}); opacity: 0.55;`,
-          context:      'Resultado'
-        };
-      }
-
-      // Default — neutro
-      return {
-        style:        'background: var(--surface-overlay); border-color: var(--border-subtle);',
-        labelStyle:   'color: var(--text-muted);',
-        valueStyle:   'color: var(--text-primary);',
-        contextStyle: 'color: var(--text-muted);',
-        context:      'Dados'
-      };
+      if (field.key === 'plTotalValor' || field.key === 'plTotalPct')
+        return val >= 0 ? 'color:var(--brand-emerald);' : 'color:var(--brand-rose);';
+      if (field.key === 'perdaMaxima')
+        return 'color:var(--brand-rose);';
+      if (['delta','gamma','vega','theta','rho'].includes(field.key))
+        return 'color:var(--brand-indigo);';
+      return 'color:var(--text-primary);';
     }
   }
 };

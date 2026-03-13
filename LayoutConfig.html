@@ -32,29 +32,16 @@ window.LAYOUT_MAP = {
       props: {}
     },
     {
+      id: 'resumo-portfolio',
+      component: 'card-summary',
+      cols: 'col-span-12',
+      props: {}
+    },
+    {
       id: 'card-alerta',
       component: 'card-alerta',
       cols: 'col-span-12',
-      props: {
-        dteUrgente: 14,
-        configKpis: [
-          { key: 'nocional',     label: 'Notional',     active: true,  order: 1, type: 'currency'   },
-          { key: 'plTotalValor', label: 'P&L atual',    active: true,  order: 2, type: 'currency'   },
-          { key: 'ganhoMaximo',  label: 'Ganho máximo', active: true,  order: 3, type: 'currency'   },
-          { key: 'premioMedio',  label: 'Prêmio médio', active: false, order: 4, type: 'currency'   },
-          { key: 'premioAtual',  label: 'Prêmio atual', active: false, order: 5, type: 'currency'   },
-          { key: 'plTotalPct',   label: 'P&L %',        active: false, order: 6, type: 'percentage' },
-          { key: 'totalOps',     label: 'Operações',    active: false, order: 7, type: 'number'     },
-        ],
-        configDetalhes: [
-          { key: 'strike',     label: 'Strike', active: true,  order: 1 },
-          { key: 'spotPrice',  label: 'Spot',   active: true,  order: 2 },
-          { key: 'dteCorridos',label: 'DTE',    active: true,  order: 3 },
-          { key: 'nocional',   label: 'Noc.',   active: true,  order: 4 },
-          { key: 'premioMedio',label: 'PM',     active: false, order: 5 },
-          { key: 'premioAtual',label: 'PA',     active: false, order: 6 },
-        ]
-      }
+      props: {}
     },
     {
       id: 'carousel',

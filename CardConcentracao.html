@@ -1,516 +1,133 @@
-<template id="card-alerta-template">
-  <div style="display:flex;flex-direction:column;gap:1rem;width:100%;position:relative;z-index:1;">
+<template id="card-concentracao-template">
 
-    <!-- ── KPIs CONFIGURÁVEIS ── -->
-    <div class="premium-card" style="overflow:hidden;width:100%;">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid var(--border-subtle);">
-        <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:var(--text-muted);">Resumo do portfólio</span>
-        <span style="font-size:0.75rem;color:var(--text-muted);">{{ totalAtivas }} posições ativas</span>
-      </div>
+  <!-- MOBILE -->
+  <div v-if="isMobile"
+    class="w-full rounded-[var(--radius-xl)] pt-6 px-6 pb-8 flex flex-col h-full relative overflow-hidden"
+    style="background: var(--surface-base); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);">
 
-      <!-- Skeleton -->
-      <div v-if="isLoading"
-        class="flex overflow-x-auto hide-scrollbar gap-px"
-        style="background:var(--border-subtle);">
-        <div v-for="n in 3" :key="n"
-          style="background:var(--surface-base);padding:1.25rem 1.5rem;min-width:33.333%;flex-shrink:0;animation:alerta-pulse 1.5s ease infinite;">
-          <div style="height:11px;background:var(--surface-overlay);border-radius:4px;width:55%;margin-bottom:10px;"></div>
-          <div style="height:26px;background:var(--surface-overlay);border-radius:4px;width:75%;"></div>
-        </div>
+    <!-- Barra inferior (cores únicas por ticker via hsl) -->
+    <div class="absolute bottom-0 left-0 w-full h-6 flex z-20"
+         style="font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: white;">
+      <div v-for="(item, idx) in barItems" :key="'bar-'+idx"
+           :style="{ width: (item.pct || 0) + '%', backgroundColor: item.uniqueColor }"
+           class="h-full transition-all duration-1000 flex items-center justify-center overflow-hidden"
+           style="border-right: 1px solid rgba(255,255,255,0.15);">
+        <span v-if="item.pct > 4">{{ item.pct }}%</span>
       </div>
-
-      <!-- KPIs — padrão CardSummary: min-w fixo + flex carrossel -->
-      <!-- min-width:120px garante ~3 visíveis no mobile (360px / 120px = 3), resto rola -->
-      <div v-else
-        class="flex overflow-x-auto hide-scrollbar snap-x snap-mandatory"
-        style="background:var(--border-subtle);gap:1px;">
-        <div
-          v-for="kpi in kpisAtivos"
-          :key="kpi.key"
-          class="snap-start flex-shrink-0 flex-grow"
-          style="background:var(--surface-base);padding:1.25rem 1rem;min-width:120px;">
-          <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:0.5rem;white-space:nowrap;">{{ kpi.label }}</div>
-          <div class="font-mono-data"
-            :style="kpi.colorFn ? kpi.colorFn(getKpiValue(kpi.key)) : 'color:var(--text-primary);'"
-            style="font-size:1.4rem;font-weight:700;white-space:nowrap;">
-            {{ formatKpi(kpi.key, getKpiValue(kpi.key)) }}
-          </div>
-        </div>
-      </div>
+      <div v-if="restoPercentual > 0" :style="{ width: restoPercentual + '%' }"
+           class="h-full flex-1 transition-all"
+           style="background: var(--surface-overlay);"></div>
     </div>
 
-    <!-- ── LISTA DE ALERTAS ── -->
-    <div class="premium-card" style="overflow:hidden;width:100%;">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid var(--border-subtle);">
-        <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:var(--text-muted);">Alertas — ordenado por urgência</span>
-        <div style="display:flex;gap:0.5rem;">
-          <span v-if="alertasCriticos > 0"
-            style="font-size:0.85rem;font-weight:700;padding:4px 12px;border-radius:99px;background:var(--brand-rose-light);color:var(--brand-rose);border:1px solid var(--brand-rose-muted);">
-            {{ alertasCriticos }} CRÍTICO
-          </span>
-          <span v-if="alertasAtencao > 0"
-            style="font-size:0.85rem;font-weight:700;padding:4px 12px;border-radius:99px;background:var(--brand-amber-light);color:var(--brand-amber);border:1px solid var(--brand-amber-muted);">
-            {{ alertasAtencao }} ATENÇÃO
-          </span>
+    <div class="flex flex-col h-full relative z-10">
+      <div class="flex flex-col mb-4">
+        <h3 style="font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; text-transform: uppercase;">Concentração</h3>
+        <span style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.16em; margin-top: 6px;">Por Ativo</span>
+      </div>
+
+      <div v-if="isLoading" class="flex-1 space-y-4 animate-pulse mt-2">
+        <div v-for="i in 3" :key="i" class="flex justify-between items-center pb-3" style="border-bottom: 1px solid var(--surface-sunken);">
+          <div class="h-6 rounded w-1/4" style="background: var(--surface-overlay);"></div>
+          <div class="h-8 rounded w-1/4" style="background: var(--surface-overlay);"></div>
         </div>
       </div>
 
-      <div v-if="isLoading" style="padding:0.75rem 1rem;display:flex;flex-direction:column;gap:0.5rem;">
-        <div v-for="n in 4" :key="n"
-          style="height:76px;background:var(--surface-overlay);border-radius:var(--radius-md);animation:alerta-pulse 1.5s ease infinite;"></div>
-      </div>
-
-      <div v-else-if="operacoesOrdenadas.length === 0"
-        style="padding:4rem;text-align:center;color:var(--text-muted);">
-        <div style="font-size:2.5rem;margin-bottom:0.75rem;opacity:0.4;">📭</div>
-        <p style="font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;">Nenhuma posição ativa</p>
-      </div>
-
-      <div v-else style="padding:0.75rem;display:flex;flex-direction:column;gap:0.375rem;">
-        <template v-for="(grupo, gi) in gruposOrdenados" :key="gi">
-          <div style="padding:0.5rem 0.625rem 0.25rem;">
-            <span
-              :style="grupo.urgente ? 'color:var(--brand-rose);' : 'color:var(--text-muted);'"
-              style="font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;">
-              {{ grupo.label }}
-            </span>
-          </div>
-
-          <div v-for="op in grupo.ops" :key="op.simboloOpcao"
-            :style="getSeverityBg(op)"
-            style="display:grid;grid-template-columns:4px 1fr auto;gap:0.875rem;align-items:center;padding:1.25rem;border-radius:var(--radius-md);border:1px solid var(--border-subtle);">
-
-            <div :style="getSeverityBar(op)"
-              style="width:4px;border-radius:2px;align-self:stretch;min-height:60px;"></div>
-
-            <div style="display:flex;flex-direction:column;gap:6px;min-width:0;">
-              <div style="display:flex;align-items:center;gap:0.625rem;flex-wrap:wrap;">
-                <span style="font-size:1.4rem;font-weight:700;color:var(--text-primary);">{{ op.tickerAtivo }}</span>
-                <span class="font-mono-data" style="font-size:1rem;color:var(--text-secondary);">{{ op.simboloOpcao }}</span>
-                <span :style="getMoneynessStyle(op.moneynessCode)"
-                  style="font-size:0.85rem;font-weight:700;padding:3px 10px;border-radius:99px;">
-                  {{ op.moneynessCode || '—' }}
-                </span>
-              </div>
-              <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-                <span v-for="campo in camposDetalhesAtivos" :key="campo.key"
-                  style="font-size:1rem;color:var(--text-muted);">
-                  {{ campo.label }}
-                  <span class="font-mono-data" style="color:var(--text-secondary);font-weight:700;font-size:1.05rem;">{{ formatDetalhe(campo.key, op) }}</span>
-                </span>
-              </div>
+      <template v-else>
+        <div class="flex-1 overflow-y-auto pr-1 space-y-1 mt-0" style="-ms-overflow-style: none; scrollbar-width: none;">
+          <div v-for="(item, idx) in concentracao" :key="idx"
+               class="flex items-center justify-between w-full pb-2 pt-1 last:border-0"
+               style="border-bottom: 1px solid var(--border-subtle);">
+            <div class="w-[35%] flex flex-col">
+              <span style="font-size: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1;"
+                    :style="{ color: item.uniqueColor }">{{ item.ticker }}</span>
+              <span style="font-size: 9px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px;">Ticker</span>
             </div>
-
-            <div style="text-align:right;flex-shrink:0;padding-left:0.5rem;">
-              <div class="font-mono-data"
-                :style="op.lucroPct >= 90 ? 'color:var(--brand-emerald);' : op.lucroPct >= 75 ? 'color:var(--brand-amber);' : op.lucroPct >= 0 ? 'color:var(--text-secondary);' : 'color:var(--brand-rose);'"
-                style="font-size:1.85rem;font-weight:700;">
-                {{ op.lucroPct !== null ? op.lucroPct.toFixed(1) + '%' : '—' }}
-              </div>
-              <div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:3px;">lucro garantido</div>
+            <div class="flex flex-col items-center flex-1">
+              <span style="font-size: 8px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px;">Nocional</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; color: var(--text-primary);">{{ formatMoeda(item.count) }}</span>
             </div>
-
+            <div class="w-[25%] flex flex-col items-end">
+              <span style="font-size: 8px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 2px;">Peso</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700;"
+                    :style="{ color: item.uniqueColor }">{{ item.pct || 0 }}%</span>
+            </div>
           </div>
-        </template>
-      </div>
+        </div>
+      </template>
+    </div>
+  </div>
 
-      <!-- Rodapé -->
-      <div style="padding:0.875rem 1.5rem;border-top:1px solid var(--border-subtle);display:flex;align-items:center;gap:0.625rem;">
-        <div v-if="temLucroAlto" style="display:flex;align-items:center;gap:0.5rem;">
-          <div style="width:7px;height:7px;border-radius:50%;background:var(--brand-emerald);flex-shrink:0;"></div>
-          <span style="font-size:1rem;font-weight:700;color:var(--brand-emerald);">
-            {{ posicoes90pct.length > 0
-              ? posicoes90pct.length + ' posição(ões) acima de 90% — RECOMPRAR AGORA'
-              : posicoes75pct.length + ' posição(ões) acima de 75% — ATENÇÃO' }}
-          </span>
-        </div>
-        <div v-else style="display:flex;align-items:center;gap:0.5rem;">
-          <div style="width:7px;height:7px;border-radius:50%;background:var(--brand-amber);flex-shrink:0;"></div>
-          <span style="font-size:1rem;color:var(--text-muted);">Nenhuma posição atingiu 75% de lucro garantido no momento</span>
-        </div>
+  <!-- DESKTOP -->
+  <div v-else
+    class="w-full rounded-[var(--radius-xl)] p-5 h-full flex flex-col transition-all duration-[var(--duration-std)]"
+    style="background: var(--surface-base); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-sm);"
+    onmouseover="this.style.boxShadow='var(--shadow-md)'"
+    onmouseout="this.style.boxShadow='var(--shadow-sm)'">
+
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h3 class="t-subtitle" style="color: var(--text-primary);">Concentração</h3>
+        <p class="t-label mt-1" style="color: var(--text-muted);">Exposição por Ativo</p>
       </div>
     </div>
 
-    <!-- ── ANÁLISE COM HIGHLIGHTS ── -->
-    <div class="premium-card" style="padding:1.25rem 1.5rem;width:100%;">
-      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.875rem;">
-        <div style="width:7px;height:7px;border-radius:50%;background:var(--brand-indigo);flex-shrink:0;"></div>
-        <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:var(--text-muted);">Análise do portfólio</span>
-      </div>
-      <p style="font-size:1.75rem;line-height:1.9;color:var(--text-secondary);margin:0;" v-html="analiseHtml"></p>
+    <div v-if="isLoading" class="flex-1 space-y-3 animate-pulse">
+      <div v-for="i in 4" :key="i" class="h-14 rounded-[var(--radius-lg)]" style="background: var(--surface-sunken); border: 1px solid var(--border-subtle);"></div>
     </div>
 
+    <div v-else class="flex-1 overflow-y-auto custom-scrollbar pr-1 space-y-2" style="max-height: 300px;">
+      <div v-for="(item, idx) in concentracao" :key="idx"
+           class="p-3 rounded-[var(--radius-lg)] flex flex-col transition-all duration-[var(--duration-fast)]"
+           style="border: 1px solid; background: var(--surface-overlay);"
+           :style="{ borderColor: item.uniqueColor + '33' }"
+           onmouseover="this.style.boxShadow='var(--shadow-sm)'"
+           onmouseout="this.style.boxShadow='none'">
+
+        <div class="flex justify-between items-end mb-2">
+          <div class="flex items-center gap-2">
+            <span style="font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;"
+                  :style="{ color: item.uniqueColor }">{{ item.ticker }}</span>
+            <span style="font-size: 8px; font-weight: 600; color: var(--text-muted);">{{ formatMoeda(item.count) }} Nocional</span>
+          </div>
+          <span style="font-size: 13px; font-weight: 700; font-family: 'JetBrains Mono', monospace;"
+                :style="{ color: item.uniqueColor }">{{ item.pct || 0 }}%</span>
+        </div>
+
+        <div class="w-full h-2 rounded-[var(--radius-full)] overflow-hidden" style="background: var(--surface-base); border: 1px solid rgba(0,0,0,0.05);">
+          <div :style="{ width: (item.pct || 0) + '%', backgroundColor: item.uniqueColor }"
+               class="h-full transition-all duration-1000"></div>
+        </div>
+
+      </div>
+    </div>
   </div>
 </template>
 
-<style>
-  @keyframes alerta-pulse { 0%,100% { opacity:1; } 50% { opacity:0.45; } }
-  .alerta-hl-rose    { color:var(--brand-rose);   font-weight:700; }
-  .alerta-hl-amber   { color:var(--brand-amber);  font-weight:700; }
-  .alerta-hl-emerald { color:var(--brand-emerald);font-weight:700; }
-  .alerta-hl-indigo  { color:var(--brand-indigo); font-weight:700; }
-
-  /* KPI layout: flex carrossel universal — mesmo padrão do CardSummary */
-</style>
-
 <script>
-window.CardAlerta = {
-  template: '#card-alerta-template',
+const concentracaoCurrencyFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
 
-  props: {
-    statsPreCalculados: { type: Object,  default: () => ({}) },
-    isMobile:           { type: Boolean, default: false },
-    isLoading:          { type: Boolean, default: false },
-  },
-
-  // 🎛️ PAINEL DE CONTROLE DO CARD ALERTA
-  // Ajuste 'active' para ligar/desligar campos.
-  // Ajuste 'order' para reordenar (menor = mais à esquerda / mais acima).
-  // Ajuste 'label' para renomear o campo exibido.
-  data() {
-    return {
-
-      dteUrgente: 14, // dias corridos — abaixo disto é grupo "vencimento iminente"
-
-      // ── RESUMO DO PORTFÓLIO (KPIs do topo) ──────────────────────────────
-      // Campos disponíveis para o topo do card.
-      // Desktop: até 10 em grid, excedente em carrossel horizontal.
-      // Mobile: 3 fixos, excedente em carrossel horizontal.
-      configKpis: [
-        // --- Financeiro ---
-        { key: 'nocional',          label: 'Nocional',      active: true,  order: 1,  type: 'currency'   },
-        { key: 'plTotalValor',      label: 'P/L Sessão',    active: true,  order: 2,  type: 'currency'   },
-        { key: 'ganhoMaximo',       label: 'Ganho Máx.',    active: true,  order: 3,  type: 'currency'   },
-        { key: 'premioMedio',       label: 'Prêmio Médio',  active: true, order: 4,  type: 'currency'   },
-        { key: 'premioAtual',       label: 'Prêmio Atual',  active: true, order: 5,  type: 'currency'   },
-        { key: 'plTotalPct',        label: 'Rentabilidade', active: false, order: 6,  type: 'percentage' },
-        { key: 'totalOps',          label: 'Operações',     active: false, order: 7,  type: 'number'     },
-        { key: 'perdaMaxima',       label: 'Risco Máx.',    active: false, order: 8,  type: 'currency'   },
-        { key: 'potencialLucroPct', label: 'Pot. Lucro',    active: false, order: 9,  type: 'percentage' },
-        // --- Gregas agregadas ---
-        { key: 'delta',             label: 'Delta Net',     active: false, order: 10, type: 'number'     },
-        { key: 'gamma',             label: 'Gamma Net',     active: false, order: 11, type: 'number'     },
-        { key: 'vega',              label: 'Vega Net',      active: false, order: 12, type: 'number'     },
-        { key: 'theta',             label: 'Theta Diário',  active: false, order: 13, type: 'currency'   },
-        { key: 'rho',               label: 'Rho',           active: false, order: 14, type: 'number'     },
-      ],
-
-      // ── DETALHE DE CADA LINHA DE ALERTA ─────────────────────────────────
-      // Campos exibidos dentro de cada posição listada.
-      // Moneyness badge e % lucro garantido são sempre visíveis (não configuráveis aqui).
-      configDetalhes: [
-        // --- Ativos por padrão ---
-        { key: 'strike',            label: 'Strike',     active: true,  order: 1,  type: 'currency'   },
-        { key: 'spotPrice',         label: 'Spot',       active: true,  order: 2,  type: 'currency'   },
-        { key: 'dteCorridos',       label: 'DTE',        active: true,  order: 3,  type: 'numero'     },
-        { key: 'nocional',          label: 'Noc.',       active: true,  order: 4,  type: 'currency'   },
-        { key: 'premioMedio',       label: 'PM',         active: true,  order: 5,  type: 'currency'   },
-        { key: 'premioAtual',       label: 'PA',         active: true,  order: 6,  type: 'currency'   },
-        // --- Desligados por padrão ---
-        { key: 'tradeId',           label: 'Trade',      active: false, order: 10, type: 'texto'      },
-        { key: 'estrategiaId',      label: 'Estratégia', active: false, order: 11, type: 'texto'      },
-        { key: 'status',            label: 'Status',     active: false, order: 12, type: 'texto'      },
-        { key: 'dataTrade',         label: 'Abertura',   active: false, order: 20, type: 'texto'      },
-        { key: 'dataVencimento',    label: 'Vencimento', active: false, order: 22, type: 'texto'      },
-        { key: 'dteUteis',          label: 'DTE úteis',  active: false, order: 25, type: 'numero'     },
-        { key: 'simboloOpcao',      label: 'Ticker Op.', active: false, order: 30, type: 'texto'      },
-        { key: 'tickerAtivo',       label: 'Ativo',      active: false, order: 31, type: 'texto'      },
-        { key: 'nomeEmpresa',       label: 'Empresa',    active: false, order: 32, type: 'texto'      },
-        { key: 'setor',             label: 'Setor',      active: false, order: 33, type: 'texto'      },
-        { key: 'direcaoTrade',      label: 'Direção',    active: false, order: 34, type: 'texto'      },
-        { key: 'tipoOpcao',         label: 'Tipo',       active: false, order: 35, type: 'texto'      },
-        { key: 'quantidade',        label: 'Qtd',        active: false, order: 36, type: 'numero'     },
-        { key: 'moneynessCode',     label: 'Moneyness',  active: false, order: 40, type: 'texto'      },
-        { key: 'ganhoMaximo',       label: 'Ganho Máx.', active: false, order: 43, type: 'currency'   },
-        { key: 'potencialLucroPct', label: 'Pot. Lucro', active: false, order: 44, type: 'percentage' },
-        { key: 'perdaMaxima',       label: 'Risco Máx.', active: false, order: 45, type: 'currency'   },
-        { key: 'plTotalPct',        label: 'Rentab.',    active: false, order: 47, type: 'percentage' },
-        { key: 'plTotalValor',      label: 'P/L',        active: false, order: 48, type: 'currency'   },
-        { key: 'breakEven',         label: 'Break-Even', active: false, order: 50, type: 'currency'   },
-        { key: 'ivAtual',           label: 'IV',         active: false, order: 60, type: 'percentage' },
-        { key: 'ivRank',            label: 'IV Rank',    active: false, order: 61, type: 'percentage' },
-        { key: 'variacao',          label: 'Variação',   active: false, order: 62, type: 'percentage' },
-        { key: 'moneynessRatio',    label: 'Moneyness%', active: false, order: 63, type: 'percentage' },
-        { key: 'volatilidadeImpl',  label: 'Vol. Impl.', active: false, order: 65, type: 'percentage' },
-        { key: 'poe',               label: 'POE',        active: false, order: 66, type: 'percentage' },
-        { key: 'delta',             label: 'Delta',      active: false, order: 70, type: 'number'     },
-        { key: 'gamma',             label: 'Gamma',      active: false, order: 71, type: 'number'     },
-        { key: 'vega',              label: 'Vega',       active: false, order: 72, type: 'number'     },
-        { key: 'theta',             label: 'Theta',      active: false, order: 73, type: 'currency'   },
-        { key: 'rho',               label: 'Rho',        active: false, order: 74, type: 'number'     },
-        { key: 'directionFlag',     label: 'Dir. Flag',  active: false, order: 80, type: 'texto'      },
-        { key: 'controlFlag',       label: 'Ctrl. Flag', active: false, order: 81, type: 'texto'      },
-      ],
-    };
-  },
-
+window.CardConcentracao = {
+  props: { isMobile: Boolean, isLoading: Boolean, statsPreCalculados: Object },
+  template: '#card-concentracao-template',
   computed: {
-    operacoes() {
-      const cockpit = this.statsPreCalculados?.cockpit || [];
-      return cockpit.map(op => {
-        const pm = parseFloat(op.premioMedio  || op.ENTRY_PRICE   || 0);
-        const pa = parseFloat(op.premioAtual  || op.LAST_PREMIUM  || 0);
-        const lucroPct = pm > 0 ? parseFloat(((pm - pa) / pm * 100).toFixed(1)) : null;
-        return { ...op, lucroPct, premioMedio: pm, premioAtual: pa };
-      }).filter(op => {
-        const s = String(op.status || op.isAtiva || op.STATUS || '').trim().toUpperCase();
-        return s === 'ATIVO' || s === 'ATIVA' || s === 'TRUE' || s === '1';
+    concentracao() {
+      if (!this.statsPreCalculados?.concentracaoRisco?.length) return [];
+      return this.statsPreCalculados.concentracaoRisco.map(item => {
+        const p = item.pesoPct || 0;
+        // Cor única por ticker — gerada por hash, dark-mode friendly (hsl 70% sat, 45% lum)
+        let hash = 0;
+        for (let i = 0; i < item.ativo.length; i++) hash = item.ativo.charCodeAt(i) + ((hash << 5) - hash);
+        const uniqueColor = `hsl(${Math.abs(hash) % 360}, 65%, 45%)`;
+        return { ticker: item.ativo, count: item.nocional || 0, pct: p, uniqueColor };
       });
     },
-
-    operacoesOrdenadas() {
-      return [...this.operacoes].sort((a, b) => {
-        const dteA = parseFloat(a.dteCorridos || a.DTE_CALENDAR || 999);
-        const dteB = parseFloat(b.dteCorridos || b.DTE_CALENDAR || 999);
-        if (dteA !== dteB) return dteA - dteB;
-        return (a.lucroPct ?? -9999) - (b.lucroPct ?? -9999);
-      });
-    },
-
-    gruposOrdenados() {
-      const urgente = this.operacoesOrdenadas.filter(op =>
-        parseFloat(op.dteCorridos || op.DTE_CALENDAR || 999) <= this.dteUrgente);
-      const normal  = this.operacoesOrdenadas.filter(op =>
-        parseFloat(op.dteCorridos || op.DTE_CALENDAR || 999) > this.dteUrgente);
-      const grupos = [];
-      if (urgente.length) grupos.push({ label: `DTE ≤${this.dteUrgente} dias — vencimento iminente`, urgente: true,  ops: urgente });
-      if (normal.length)  grupos.push({ label: `DTE >${this.dteUrgente} dias — monitoramento`,       urgente: false, ops: normal  });
-      return grupos;
-    },
-
-    totalAtivas()     { return this.operacoes.length; },
-    alertasCriticos() {
-      return this.operacoes.filter(op =>
-        (op.lucroPct ?? 0) < -100 ||
-        (parseFloat(op.dteCorridos || 999) <= this.dteUrgente &&
-         String(op.moneynessCode || '').toUpperCase().includes('ITM'))
-      ).length;
-    },
-    alertasAtencao()  { return this.operacoes.filter(op => (op.lucroPct ?? 0) >= 75 && (op.lucroPct ?? 0) < 90).length; },
-    posicoes90pct()   { return this.operacoes.filter(op => (op.lucroPct ?? 0) >= 90); },
-    posicoes75pct()   { return this.operacoes.filter(op => (op.lucroPct ?? 0) >= 75 && (op.lucroPct ?? 0) < 90); },
-    temLucroAlto()    { return this.posicoes90pct.length > 0 || this.posicoes75pct.length > 0; },
-
-    kpisAtivos() {
-      return [...this.configKpis]
-        .filter(k => k.active)
-        .sort((a, b) => a.order - b.order)
-        .map(k => ({
-          ...k,
-          colorFn: (k.key === 'plTotalValor' || k.key === 'plTotalPct')
-            ? (v) => parseFloat(v) >= 0 ? 'color:var(--brand-emerald);' : 'color:var(--brand-rose);'
-            : null
-        }));
-    },
-
-    camposDetalhesAtivos() {
-      return [...this.configDetalhes].filter(c => c.active).sort((a, b) => a.order - b.order);
-    },
-
-    resumoGlobal() { return this.statsPreCalculados?.resumoGlobal || {}; },
-
-    analiseHtml() {
-      const ops  = this.operacoes;
-      const rg   = this.resumoGlobal;
-      const hl   = (txt, cor) => `<span class="alerta-hl-${cor}">${txt}</span>`;
-
-      if (!ops.length) return 'Nenhuma posição ativa no momento. Atualize os dados para visualizar o portfólio.';
-
-      const total    = ops.length;
-      const pl       = parseFloat(rg.plTotalValor || 0);
-      const negativas= ops.filter(o => (o.lucroPct ?? 0) < 0).length;
-      const itmOps   = ops.filter(o => String(o.moneynessCode || '').toUpperCase().includes('ITM'));
-      const urgentes = ops.filter(o => parseFloat(o.dteCorridos || o.DTE_CALENDAR || 999) <= this.dteUrgente);
-      const alto90   = this.posicoes90pct;
-      const alto75   = this.posicoes75pct;
-
-      const tickersUrgentesItm = [...new Set(
-        urgentes.filter(o => String(o.moneynessCode || '').toUpperCase().includes('ITM'))
-                .map(o => o.tickerAtivo)
-      )];
-
-      let partes = [];
-
-      if (pl < 0) {
-        const pctNeg = Math.round(negativas / total * 100);
-        partes.push(
-          `Portfólio com resultado ${hl('negativo de R$' + Math.abs(pl).toLocaleString('pt-BR', {minimumFractionDigits:2}), 'rose')}. ` +
-          `${hl(negativas + ' de ' + total + ' posições', 'rose')} estão em prejuízo (${pctNeg}%).`
-        );
-      } else {
-        partes.push(`Portfólio com resultado ${hl('positivo de R$' + pl.toLocaleString('pt-BR', {minimumFractionDigits:2}), 'emerald')}.`);
-      }
-
-      if (urgentes.length > 0) {
-        let trecho = `${hl(urgentes.length + ' posição(ões)', 'rose')} vencem em até ${hl(this.dteUrgente + ' dias', 'rose')}`;
-        if (tickersUrgentesItm.length > 0) {
-          const spotEx = urgentes.find(o => String(o.moneynessCode || '').toUpperCase().includes('ITM'));
-          const strikes = urgentes
-            .filter(o => o.tickerAtivo === tickersUrgentesItm[0] && String(o.moneynessCode || '').toUpperCase().includes('ITM'))
-            .map(o => `R$${parseFloat(o.strike || 0).toFixed(2)}`).join(', ');
-          trecho += ` — ${hl(tickersUrgentesItm.join(', '), 'rose')} ${hl('ITM', 'rose')}: risco de exercício iminente`;
-          if (spotEx) {
-            trecho += ` (spot ${hl('R$' + parseFloat(spotEx.spotPrice || spotEx.SPOT || 0).toFixed(2), 'rose')} × strikes ${hl(strikes, 'amber')})`;
-          }
-        }
-        partes.push(trecho + '.');
-      }
-
-      if (alto90.length > 0) {
-        const nomes = alto90.map(o => o.simboloOpcao).join(', ');
-        partes.push(
-          `${hl(alto90.length + ' posição(ões)', 'emerald')} acima de ${hl('90% de lucro garantido', 'emerald')} (${hl(nomes, 'emerald')}) — ` +
-          `${hl('considere recomprar agora', 'emerald')} para garantir o resultado.`
-        );
-      } else if (alto75.length > 0) {
-        const nomes = alto75.map(o => o.simboloOpcao).join(', ');
-        partes.push(
-          `${hl(alto75.length + ' posição(ões)', 'amber')} entre ${hl('75% e 90% de lucro', 'amber')} (${hl(nomes, 'amber')}) — mantenha em alerta para recompra.`
-        );
-      } else {
-        partes.push(`Nenhuma posição atingiu o limiar de lucro para recompra ${hl('(75%)', 'amber')}.`);
-      }
-
-      const itmNaoUrgentes = itmOps.filter(o => parseFloat(o.dteCorridos || o.DTE_CALENDAR || 999) > this.dteUrgente);
-      if (itmNaoUrgentes.length > 0) {
-        const tickers = [...new Set(itmNaoUrgentes.map(o => o.tickerAtivo))].join(', ');
-        partes.push(
-          `${hl(itmNaoUrgentes.length + ' posição(ões) ITM', 'amber')} com vencimento mais longo (${hl(tickers, 'amber')}) — monitore a evolução do spot antes de agir.`
-        );
-      }
-
-      return partes.join(' ');
-    }
+    barItems()       { return this.concentracao.filter(i => i.pct >= 5); },
+    restoPercentual(){ return Math.max(0, 100 - this.barItems.reduce((a, i) => a + i.pct, 0)); }
   },
-
   methods: {
-    getKpiValue(key) {
-      const rg = this.resumoGlobal;
-      if (key === 'nocional')     return rg.nocional     ?? this.operacoes.reduce((s, o) => s + parseFloat(o.nocional || 0), 0);
-      if (key === 'plTotalValor') return rg.plTotalValor ?? this.operacoes.reduce((s, o) => s + parseFloat(o.plTotalValor || o.PL_VALUE || 0), 0);
-      if (key === 'ganhoMaximo')  return rg.ganhoMaximo  ?? this.operacoes.reduce((s, o) => s + parseFloat(o.ganhoMaximo || o.MAX_GAIN || 0), 0);
-      if (key === 'premioMedio')  return rg.premioMedio  ?? null;
-      if (key === 'premioAtual')  return rg.premioAtual  ?? null;
-      if (key === 'plTotalPct')   return rg.plTotalPct   ?? null;
-      if (key === 'totalOps')     return this.totalAtivas;
-      return rg[key] ?? null;
-    },
-
-    formatKpi(key, val) {
-      if (val === null || val === undefined) return '—';
-      const n = parseFloat(val);
-      if (isNaN(n)) return '—';
-      const tipo = this.configKpis.find(k => k.key === key)?.type || 'number';
-      if (tipo === 'currency') {
-        const abs = Math.abs(n);
-        const prefix = n < 0 ? '-R$' : 'R$';
-        if (abs >= 1000000) return prefix + (abs / 1000000).toFixed(1) + 'M';
-        if (abs >= 1000)    return prefix + (abs / 1000).toFixed(1) + 'k';
-        return prefix + abs.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      }
-      if (tipo === 'percentage') return (n * (Math.abs(n) <= 1 ? 100 : 1)).toFixed(1) + '%';
-      return n.toLocaleString('pt-BR');
-    },
-
-    formatDetalhe(key, op) {
-      // Resolve valor — tenta chave semântica, depois uppercase, depois aliases conhecidos
-      const aliases = {
-        quantidade:       ['quantidade', 'qtdOpcoes', 'QUANTITY'],
-        ivAtual:          ['ivAtual', 'IV'],
-        ivRank:           ['ivRank', 'ivRank1y', 'IV_RANK'],
-        variacao:         ['variacao', 'variation', 'VARIATION'],
-        moneynessRatio:   ['moneynessRatio', 'moneyness', 'MONEYNESS_RATIO'],
-        volatilidadeImpl: ['volatilidadeImpl', 'ivCalc', 'IV_CALC'],
-        poe:              ['poe', 'POE'],
-        directionFlag:    ['directionFlag', 'DIRECTION_FLAG'],
-        controlFlag:      ['controlFlag', 'CONTROL_FLAG'],
-        potencialLucroPct:['potencialLucroPct', 'maxProfitPct', 'MAX_PROFIT_PCT'],
-        perdaMaxima:      ['perdaMaxima', 'maxLoss', 'MAX_LOSS'],
-        breakEven:        ['breakEven', 'BREAK_EVEN'],
-        plTotalValor:     ['plTotalValor', 'plValue', 'PL_VALUE'],
-        plTotalPct:       ['plTotalPct', 'plPct', 'PL_PCT'],
-        ganhoMaximo:      ['ganhoMaximo', 'maxGain', 'MAX_GAIN'],
-        dteUteis:         ['dteUteis', 'DTE'],
-        dataVencimento:   ['dataVencimento', 'expiry', 'EXPIRY'],
-        dataTrade:        ['dataTrade', 'tradeDate', 'TRADE_DATE'],
-        nomeEmpresa:      ['nomeEmpresa', 'COMPANY_NAME'],
-        estrategiaId:     ['estrategiaId', 'ID_STRATEGY'],
-        tradeId:          ['tradeId', 'ID_TRADE'],
-        direcaoTrade:     ['direcaoTrade', 'SIDE'],
-        tipoOpcao:        ['tipoOpcao', 'OPTION_TYPE'],
-      };
-
-      let raw = op[key];
-      if ((raw === null || raw === undefined) && aliases[key]) {
-        for (const a of aliases[key]) {
-          if (op[a] !== undefined && op[a] !== null) { raw = op[a]; break; }
-        }
-      }
-      if (raw === null || raw === undefined) raw = op[key.toUpperCase()];
-      if (raw === null || raw === undefined) return '—';
-
-      // Determina tipo a partir do configDetalhes
-      const cfg = this.configDetalhes.find(c => c.key === key);
-      const tipo = cfg?.type || 'texto';
-
-      // Campos texto — retorna direto
-      if (tipo === 'texto') return String(raw) || '—';
-
-      const n = parseFloat(raw);
-      if (isNaN(n)) return String(raw);
-
-      if (tipo === 'currency') {
-        const abs = Math.abs(n);
-        const prefix = n < 0 ? '-R$' : 'R$';
-        if (key === 'nocional' || key === 'perdaMaxima' || key === 'ganhoMaximo') {
-          if (abs >= 1000) return prefix + (abs / 1000).toFixed(1) + 'k';
-          return prefix + Math.round(abs).toLocaleString('pt-BR');
-        }
-        return prefix + n.toFixed(2);
-      }
-
-      if (tipo === 'percentage') {
-        // Valores já em % (ex: 75.3) ou decimal (ex: 0.753)
-        const pct = Math.abs(n) <= 1 ? n * 100 : n;
-        return pct.toFixed(1) + '%';
-      }
-
-      if (tipo === 'numero') {
-        if (key === 'dteCorridos' || key === 'dteUteis') return Math.round(n) + 'd';
-        return n.toLocaleString('pt-BR');
-      }
-
-      // number (gregas) — 4 casas decimais
-      return n.toFixed(4);
-    },
-
-    getSeverityBar(op) {
-      const lp  = op.lucroPct ?? 0;
-      const dte = parseFloat(op.dteCorridos || op.DTE_CALENDAR || 999);
-      const itm = String(op.moneynessCode || '').toUpperCase().includes('ITM');
-      if (lp >= 90) return 'background:var(--brand-emerald);';
-      if (lp >= 75) return 'background:var(--brand-amber);';
-      if (dte <= this.dteUrgente && itm) return 'background:var(--brand-rose);';
-      if (lp < -100) return 'background:var(--brand-rose);';
-      return 'background:var(--border-strong);';
-    },
-
-    getSeverityBg(op) {
-      const lp  = op.lucroPct ?? 0;
-      const dte = parseFloat(op.dteCorridos || op.DTE_CALENDAR || 999);
-      const itm = String(op.moneynessCode || '').toUpperCase().includes('ITM');
-      if (lp >= 90) return 'background:var(--brand-emerald-light);';
-      if (lp >= 75) return 'background:var(--brand-amber-light);';
-      if (dte <= this.dteUrgente && itm) return 'background:var(--brand-rose-light);';
-      return 'background:var(--surface-base);';
-    },
-
-    getMoneynessStyle(code) {
-      const c = String(code || '').toUpperCase();
-      if (c.includes('ITM')) return 'background:var(--brand-rose-light);color:var(--brand-rose);border:1px solid var(--brand-rose-muted);';
-      if (c.includes('ATM')) return 'background:var(--brand-amber-light);color:var(--brand-amber);border:1px solid var(--brand-amber-muted);';
-      if (c.includes('OTM')) return 'background:var(--brand-emerald-light);color:var(--brand-emerald);border:1px solid var(--brand-emerald-muted);';
-      return 'background:var(--surface-overlay);color:var(--text-muted);border:1px solid var(--border-default);';
+    formatMoeda(valor) {
+      if (!valor && valor !== 0) return 'R$ 0';
+      return concentracaoCurrencyFmt.format(valor);
     }
   }
 };
