@@ -1,105 +1,173 @@
 <template id="card-alerta-template">
-  <div style="display:flex;flex-direction:column;gap:1rem;width:100%;position:relative;z-index:1;">
+  <div style="display:flex;flex-direction:column;gap:0;width:100%;border-radius:var(--radius-xl);overflow:hidden;border:1px solid var(--border-subtle);box-shadow:var(--shadow-sm);background:var(--surface-base);">
 
-    <!-- ── LISTA DE ALERTAS ── -->
-    <div class="premium-card" style="overflow:hidden;width:100%;">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid var(--border-subtle);">
-        <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:var(--text-muted);">Alertas — ordenado por urgência</span>
-        <div style="display:flex;gap:0.5rem;">
-          <span v-if="alertasCriticos > 0"
-            style="font-size:0.85rem;font-weight:700;padding:4px 12px;border-radius:99px;background:var(--brand-rose-light);color:var(--brand-rose);border:1px solid var(--brand-rose-muted);">
-            {{ alertasCriticos }} CRÍTICO
-          </span>
-          <span v-if="alertasAtencao > 0"
-            style="font-size:0.85rem;font-weight:700;padding:4px 12px;border-radius:99px;background:var(--brand-amber-light);color:var(--brand-amber);border:1px solid var(--brand-amber-muted);">
-            {{ alertasAtencao }} ATENÇÃO
-          </span>
-        </div>
-      </div>
-
-      <div v-if="isLoading" style="padding:0.75rem 1rem;display:flex;flex-direction:column;gap:0.5rem;">
-        <div v-for="n in 4" :key="n"
-          style="height:76px;background:var(--surface-overlay);border-radius:var(--radius-md);animation:alerta-pulse 1.5s ease infinite;"></div>
-      </div>
-
-      <div v-else-if="operacoesOrdenadas.length === 0"
-        style="padding:4rem;text-align:center;color:var(--text-muted);">
-        <div style="font-size:2.5rem;margin-bottom:0.75rem;opacity:0.4;">📭</div>
-        <p style="font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;">Nenhuma posição ativa</p>
-      </div>
-
-      <div v-else style="padding:0.75rem;display:flex;flex-direction:column;gap:0.375rem;">
-        <template v-for="(grupo, gi) in gruposOrdenados" :key="gi">
-          <div style="padding:0.5rem 0.625rem 0.25rem;">
-            <span
-              :style="grupo.urgente ? 'color:var(--brand-rose);' : 'color:var(--text-muted);'"
-              style="font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;">
-              {{ grupo.label }}
-            </span>
-          </div>
-
-          <div v-for="op in grupo.ops" :key="op.simboloOpcao"
-            :style="getSeverityBg(op)"
-            style="display:grid;grid-template-columns:4px 1fr auto;gap:0.875rem;align-items:center;padding:1.25rem;border-radius:var(--radius-md);border:1px solid var(--border-subtle);">
-
-            <div :style="getSeverityBar(op)"
-              style="width:4px;border-radius:2px;align-self:stretch;min-height:60px;"></div>
-
-            <div style="display:flex;flex-direction:column;gap:6px;min-width:0;">
-              <div style="display:flex;align-items:center;gap:0.625rem;flex-wrap:wrap;">
-                <span style="font-size:1.4rem;font-weight:700;color:var(--text-primary);">{{ op.tickerAtivo }}</span>
-                <span class="font-mono-data" style="font-size:1rem;color:var(--text-secondary);">{{ op.simboloOpcao }}</span>
-                <span :style="getMoneynessStyle(op.moneynessCode)"
-                  style="font-size:0.85rem;font-weight:700;padding:3px 10px;border-radius:99px;">
-                  {{ op.moneynessCode || '—' }}
-                </span>
-              </div>
-              <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-                <span v-for="campo in camposDetalhesAtivos" :key="campo.key"
-                  style="font-size:1rem;color:var(--text-muted);">
-                  {{ campo.label }}
-                  <span class="font-mono-data" style="color:var(--text-secondary);font-weight:700;font-size:1.05rem;">{{ formatDetalhe(campo.key, op) }}</span>
-                </span>
-              </div>
-            </div>
-
-            <div style="text-align:right;flex-shrink:0;padding-left:0.5rem;">
-              <div class="font-mono-data"
-                :style="op.lucroPct >= 90 ? 'color:var(--brand-emerald);' : op.lucroPct >= 75 ? 'color:var(--brand-amber);' : op.lucroPct >= 0 ? 'color:var(--text-secondary);' : 'color:var(--brand-rose);'"
-                style="font-size:1.85rem;font-weight:700;">
-                {{ op.lucroPct !== null ? op.lucroPct.toFixed(1) + '%' : '—' }}
-              </div>
-              <div style="font-size:0.8rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:3px;">lucro garantido</div>
-            </div>
-
-          </div>
-        </template>
-      </div>
-
-      <!-- Rodapé -->
-      <div style="padding:0.875rem 1.5rem;border-top:1px solid var(--border-subtle);display:flex;align-items:center;gap:0.625rem;">
-        <div v-if="temLucroAlto" style="display:flex;align-items:center;gap:0.5rem;">
-          <div style="width:7px;height:7px;border-radius:50%;background:var(--brand-emerald);flex-shrink:0;"></div>
-          <span style="font-size:1rem;font-weight:700;color:var(--brand-emerald);">
-            {{ posicoes90pct.length > 0
-              ? posicoes90pct.length + ' posição(ões) acima de 90% — RECOMPRAR AGORA'
-              : posicoes75pct.length + ' posição(ões) acima de 75% — ATENÇÃO' }}
-          </span>
-        </div>
-        <div v-else style="display:flex;align-items:center;gap:0.5rem;">
-          <div style="width:7px;height:7px;border-radius:50%;background:var(--brand-amber);flex-shrink:0;"></div>
-          <span style="font-size:1rem;color:var(--text-muted);">Nenhuma posição atingiu 75% de lucro garantido no momento</span>
-        </div>
+    <!-- ── CABEÇALHO ── -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;border-bottom:1px solid var(--border-subtle);background:var(--surface-base);">
+      <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:var(--text-muted);">Alertas</span>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <span v-if="alertasCriticos > 0"
+          style="font-size:0.8rem;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--brand-rose-light);color:var(--brand-rose);border:1px solid var(--brand-rose-muted);">
+          {{ alertasCriticos }} CRÍTICO
+        </span>
+        <span v-if="alertasAtencao > 0"
+          style="font-size:0.8rem;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--brand-amber-light);color:var(--brand-amber);border:1px solid var(--brand-amber-muted);">
+          {{ alertasAtencao }} ATENÇÃO
+        </span>
       </div>
     </div>
 
-    <!-- ── ANÁLISE COM HIGHLIGHTS ── -->
-    <div class="premium-card" style="padding:1.25rem 1.5rem;width:100%;">
+    <!-- ── SKELETON ── -->
+    <div v-if="isLoading" style="padding:1rem;display:flex;flex-direction:column;gap:0.75rem;">
+      <div v-for="n in 3" :key="n"
+        style="height:120px;background:var(--surface-overlay);border-radius:var(--radius-xl);animation:alerta-pulse 1.5s ease infinite;"></div>
+    </div>
+
+    <!-- ── VAZIO ── -->
+    <div v-else-if="operacoesOrdenadas.length === 0"
+      style="padding:4rem;text-align:center;color:var(--text-muted);">
+      <div style="font-size:2.5rem;margin-bottom:0.75rem;opacity:0.4;">📭</div>
+      <p style="font-size:0.85rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;">Nenhuma posição ativa</p>
+    </div>
+
+    <!-- ── GRUPOS COLAPSÁVEIS ── -->
+    <div v-else style="display:flex;flex-direction:column;">
+      <div v-for="(grupo, gi) in gruposOrdenados" :key="gi">
+
+        <!-- Header do grupo — colapsável -->
+        <div
+          @click="toggleGrupo(gi)"
+          style="display:flex;justify-content:space-between;align-items:center;padding:1.25rem 1.5rem;cursor:pointer;position:sticky;top:0;z-index:10;backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);"
+          :style="grupo.urgente ? 'background:var(--brand-rose-light);' : 'background:var(--surface-base);'"
+        >
+          <!-- Esquerda: seta + label + contagem -->
+          <div style="display:flex;align-items:center;gap:0.875rem;">
+            <span
+              style="font-size:0.75rem;transition:transform 0.2s;"
+              :style="[gruposAbertos[gi] !== false ? 'transform:rotate(90deg);' : '', grupo.urgente ? 'color:var(--brand-rose);' : 'color:var(--brand-indigo);']">▶</span>
+            <div style="display:flex;flex-direction:column;gap:3px;">
+              <span style="font-size:1rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;"
+                :style="grupo.urgente ? 'color:var(--brand-rose);' : 'color:var(--text-primary);'">
+                {{ grupo.label }}
+              </span>
+              <span style="font-size:0.8rem;font-weight:600;padding:2px 8px;border-radius:var(--radius-sm);background:var(--surface-overlay);color:var(--text-muted);width:fit-content;">
+                {{ grupo.ops.length }} posições
+              </span>
+            </div>
+          </div>
+
+          <!-- Direita: subtotal P/L + nocional -->
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+            <span class="font-mono-data" style="font-size:1.25rem;font-weight:700;letter-spacing:-0.03em;"
+              :style="subtotalPL(grupo.ops) >= 0 ? 'color:var(--brand-emerald);' : 'color:var(--brand-rose);'">
+              {{ fmtCurrency(subtotalPL(grupo.ops)) }}
+            </span>
+            <span class="font-mono-data" style="font-size:0.85rem;font-weight:600;color:var(--text-muted);">
+              Noc. {{ fmtCurrencyK(subtotalNocional(grupo.ops)) }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Cards das posições -->
+        <div v-if="gruposAbertos[gi] !== false"
+          style="background:var(--surface-sunken);padding:0.75rem 1rem 1rem;display:flex;flex-direction:column;gap:0.75rem;">
+
+          <div v-for="op in grupo.ops" :key="op.simboloOpcao"
+            :style="getSeverityBg(op)"
+            style="border-radius:var(--radius-xl);border:1px solid var(--border-subtle);box-shadow:var(--shadow-sm);overflow:hidden;">
+
+            <!-- Barra lateral colorida + conteúdo -->
+            <div style="display:grid;grid-template-columns:5px 1fr;height:100%;">
+              <div :style="getSeverityBar(op)" style="width:5px;min-height:100%;"></div>
+
+              <div style="padding:1.25rem 1.125rem;display:flex;flex-direction:column;gap:0.875rem;">
+
+                <!-- Topo: ticker + % lucro garantido -->
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                  <!-- Esquerda: ticker, badge, símbolo + DTE/Venc/Qtd -->
+                  <div style="display:flex;flex-direction:column;gap:6px;">
+                    <div style="display:flex;align-items:center;gap:0.625rem;flex-wrap:wrap;">
+                      <span style="font-size:1.75rem;font-weight:800;color:var(--text-primary);letter-spacing:-0.04em;">{{ op.tickerAtivo }}</span>
+                      <span :style="getMoneynessStyle(op.moneynessCode)"
+                        style="font-size:0.9rem;font-weight:700;padding:3px 10px;border-radius:99px;border:1.5px solid;">
+                        {{ op.moneynessCode || '—' }}
+                      </span>
+                    </div>
+                    <!-- Símbolo da opção -->
+                    <span class="font-mono-data" style="font-size:0.9rem;font-weight:700;color:var(--text-muted);letter-spacing:0.06em;text-transform:uppercase;">
+                      {{ op.simboloOpcao }}
+                    </span>
+                    <!-- Linha de metadados configurável -->
+                    <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;margin-top:2px;">
+                      <template v-for="(meta, mi) in configMetaAtivos" :key="meta.key">
+                        <span v-if="mi > 0" style="color:var(--border-strong);font-size:0.75rem;">·</span>
+                        <span class="font-mono-data" style="font-size:0.9rem;font-weight:600;color:var(--text-muted);">
+                          <span v-if="meta.prefix" style="color:var(--text-muted);">{{ meta.prefix }} </span>{{ formatDetalhe(meta.key, op) }}<span v-if="meta.suffix"> {{ meta.suffix }}</span>
+                        </span>
+                      </template>
+                    </div>
+                  </div>
+
+                  <!-- Direita: % lucro garantido + PL_VALUE -->
+                  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                    <span class="font-mono-data"
+                      :style="op.lucroPct >= 90 ? 'color:var(--brand-emerald);' : op.lucroPct >= 75 ? 'color:var(--brand-amber);' : op.lucroPct >= 0 ? 'color:var(--text-secondary);' : 'color:var(--brand-rose);'"
+                      style="font-size:2.25rem;font-weight:700;line-height:1;letter-spacing:-0.04em;">
+                      {{ op.lucroPct !== null ? op.lucroPct.toFixed(1) + '%' : '—' }}
+                    </span>
+                    <span style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;">lucro garantido</span>
+                    <div style="display:flex;align-items:baseline;gap:0.375rem;margin-top:2px;">
+                      <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);">PL atual</span>
+                      <span class="font-mono-data"
+                        :style="parseFloat(op.plTotalValor || op.PL_VALUE || 0) >= 0 ? 'color:var(--brand-emerald);' : 'color:var(--brand-rose);'"
+                        style="font-size:1.1rem;font-weight:700;">
+                        {{ fmtCurrency(parseFloat(op.plTotalValor || op.PL_VALUE || 0)) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Grade de métricas configuráveis -->
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.625rem;padding-top:0.75rem;border-top:2px solid var(--surface-sunken);">
+                  <div v-for="campo in camposDetalhesAtivos" :key="campo.key"
+                    style="display:flex;flex-direction:column;gap:3px;">
+                    <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);">{{ campo.label }}</span>
+                    <span class="font-mono-data" style="font-size:1rem;font-weight:700;color:var(--text-secondary);">{{ formatDetalhe(campo.key, op) }}</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── RODAPÉ STATUS ── -->
+    <div v-if="!isLoading && operacoesOrdenadas.length > 0"
+      style="padding:0.875rem 1.5rem;border-top:2px solid var(--border-default);display:flex;align-items:center;gap:0.625rem;background:var(--surface-base);">
+      <div v-if="temLucroAlto" style="display:flex;align-items:center;gap:0.5rem;">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--brand-emerald);flex-shrink:0;"></div>
+        <span style="font-size:1rem;font-weight:700;color:var(--brand-emerald);">
+          {{ posicoes90pct.length > 0
+            ? posicoes90pct.length + ' posição(ões) acima de 90% — RECOMPRAR AGORA'
+            : posicoes75pct.length + ' posição(ões) acima de 75% — ATENÇÃO' }}
+        </span>
+      </div>
+      <div v-else style="display:flex;align-items:center;gap:0.5rem;">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--brand-amber);flex-shrink:0;"></div>
+        <span style="font-size:1rem;color:var(--text-muted);">Nenhuma posição atingiu 75% de lucro garantido</span>
+      </div>
+    </div>
+
+    <!-- ── ANÁLISE ── -->
+    <div style="padding:1.25rem 1.5rem;border-top:1px solid var(--border-subtle);background:var(--surface-base);">
       <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.875rem;">
         <div style="width:7px;height:7px;border-radius:50%;background:var(--brand-indigo);flex-shrink:0;"></div>
         <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:var(--text-muted);">Análise do portfólio</span>
       </div>
-      <p style="font-size:1.75rem;line-height:1.9;color:var(--text-secondary);margin:0;" v-html="analiseHtml"></p>
+      <p style="font-size:1rem;line-height:1.9;color:var(--text-secondary);margin:0;" v-html="analiseHtml"></p>
     </div>
 
   </div>
@@ -145,12 +213,24 @@ window.CardAlerta = {
     configDetalhes: {
       type: Array,
       default: () => [
+
+        // --- 1. Primeira Linha ---
         { key: 'strike',            label: 'Strike',     active: true,  order: 1,  type: 'currency'   },
         { key: 'spotPrice',         label: 'Spot',       active: true,  order: 2,  type: 'currency'   },
-        { key: 'dteCorridos',       label: 'DTE',        active: false, order: 3,  type: 'numero'     },
-        { key: 'nocional',          label: 'Noc.',       active: true,  order: 4,  type: 'currency'   },
+        { key: 'distanciaR$',       label: 'Dist. R$',   active: true,  order: 3,  type: 'distancia_r'   },
+        { key: 'distanciaPct',      label: 'Dist. %',    active: true,  order: 4,  type: 'distancia_pct' },
+
+        // --- 2. Segunda Linha ---
         { key: 'premioMedio',       label: 'PM',         active: true,  order: 5,  type: 'currency'   },
         { key: 'premioAtual',       label: 'PA',         active: true,  order: 6,  type: 'currency'   },
+        { key: 'ganhoMaximo',       label: 'Ganho Máx.', active: true,  order: 7,  type: 'currency'   },
+        { key: 'potencialLucroPct', label: 'Pot. Lucro', active: true,  order: 8,  type: 'percentage' },
+
+        // --- 3. Backlog ---
+        { key: 'plTotalPct',        label: 'Rentab.',    active: false, order: 7,  type: 'percentage' },
+        { key: 'breakEven',         label: 'Break-Even', active: false, order: 7,  type: 'currency'   },
+        { key: 'dteCorridos',       label: 'DTE',        active: false, order: 3,  type: 'numero'     },
+        { key: 'nocional',          label: 'Noc.',       active: false, order: 4,  type: 'currency'   },
         { key: 'tradeId',           label: 'Trade',      active: false, order: 10, type: 'texto'      },
         { key: 'estrategiaId',      label: 'Estratégia', active: false, order: 11, type: 'texto'      },
         { key: 'status',            label: 'Status',     active: false, order: 12, type: 'texto'      },
@@ -165,12 +245,8 @@ window.CardAlerta = {
         { key: 'tipoOpcao',         label: 'Tipo',       active: false, order: 35, type: 'texto'      },
         { key: 'quantidade',        label: 'Qtd',        active: false, order: 36, type: 'numero'     },
         { key: 'moneynessCode',     label: 'Moneyness',  active: false, order: 40, type: 'texto'      },
-        { key: 'ganhoMaximo',       label: 'Ganho Máx.', active: false, order: 43, type: 'currency'   },
-        { key: 'potencialLucroPct', label: 'Pot. Lucro', active: false, order: 44, type: 'percentage' },
         { key: 'perdaMaxima',       label: 'Risco Máx.', active: false, order: 45, type: 'currency'   },
-        { key: 'plTotalPct',        label: 'Rentab.',    active: false, order: 47, type: 'percentage' },
         { key: 'plTotalValor',      label: 'P/L',        active: false, order: 48, type: 'currency'   },
-        { key: 'breakEven',         label: 'Break-Even', active: false, order: 50, type: 'currency'   },
         { key: 'ivAtual',           label: 'IV',         active: false, order: 60, type: 'percentage' },
         { key: 'ivRank',            label: 'IV Rank',    active: false, order: 61, type: 'percentage' },
         { key: 'variacao',          label: 'Variação',   active: false, order: 62, type: 'percentage' },
@@ -187,21 +263,64 @@ window.CardAlerta = {
       ]
     },
 
+    configMeta: {
+      type: Array,
+      default: () => [
+        // --- Ativos por padrão ---
+        { key: 'dteCorridos',       label: 'DTE',        active: true,  order: 1,  suffix: null,  prefix: null    },
+        { key: 'dataVencimento',    label: 'Vencimento', active: true,  order: 2,  suffix: null,  prefix: null    },
+        { key: 'quantidade',        label: 'Qtd',        active: true,  order: 3,  suffix: ' qtd', prefix: null    },
+        { key: 'nocional',          label: 'Noc.',       active: true,  order: 4,  suffix: null,  prefix: 'Noc. '  },
+        { key: 'breakEven',         label: 'Break-Even', active: true,  order: 5,  suffix: null,  prefix: 'Break-Even '    },
+
+        // --- Backlog ---
+        { key: 'strike',            label: 'Strike',     active: false, order: 5,  suffix: null,  prefix: 'K'     },
+        { key: 'spotPrice',         label: 'Spot',       active: false, order: 6,  suffix: null,  prefix: 'Spot'  },
+        { key: 'dteUteis',          label: 'DTE úteis',  active: false, order: 7,  suffix: 'du',  prefix: null    },
+        { key: 'premioMedio',       label: 'PM',         active: false, order: 8,  suffix: null,  prefix: 'PM'    },
+        { key: 'premioAtual',       label: 'PA',         active: false, order: 9,  suffix: null,  prefix: 'PA'    },
+        { key: 'ganhoMaximo',       label: 'Ganho Máx.', active: false, order: 10, suffix: null,  prefix: 'Máx.'  },
+        { key: 'potencialLucroPct', label: 'Pot. Lucro', active: false, order: 11, suffix: null,  prefix: 'Pot.'  },
+        { key: 'distanciaR$',       label: 'Dist. R$',   active: false, order: 12, suffix: null,  prefix: 'Dist.' },
+        { key: 'distanciaPct',      label: 'Dist. %',    active: false, order: 13, suffix: null,  prefix: 'Dist.' },
+        { key: 'plTotalPct',        label: 'Rentab.',    active: false, order: 14, suffix: null,  prefix: 'P/L'   },
+        { key: 'plTotalValor',      label: 'P/L R$',     active: false, order: 15, suffix: null,  prefix: 'P/L'   },
+        { key: 'perdaMaxima',       label: 'Risco Máx.', active: false, order: 17, suffix: null,  prefix: 'Risco' },
+        { key: 'moneynessCode',     label: 'Moneyness',  active: false, order: 18, suffix: null,  prefix: null    },
+        { key: 'moneynessRatio',    label: 'Moneyness%', active: false, order: 19, suffix: null,  prefix: null    },
+        { key: 'poe',               label: 'POE',        active: false, order: 20, suffix: null,  prefix: 'POE'   },
+        { key: 'volatilidadeImpl',  label: 'Vol. Impl.', active: false, order: 21, suffix: null,  prefix: 'IV'    },
+        { key: 'ivAtual',           label: 'IV',         active: false, order: 22, suffix: null,  prefix: 'IV'    },
+        { key: 'ivRank',            label: 'IV Rank',    active: false, order: 23, suffix: null,  prefix: 'IVR'   },
+        { key: 'variacao',          label: 'Variação',   active: false, order: 24, suffix: null,  prefix: 'Var.'  },
+        { key: 'delta',             label: 'Delta',      active: false, order: 25, suffix: null,  prefix: 'Δ'     },
+        { key: 'gamma',             label: 'Gamma',      active: false, order: 26, suffix: null,  prefix: 'Γ'     },
+        { key: 'vega',              label: 'Vega',       active: false, order: 27, suffix: null,  prefix: 'V'     },
+        { key: 'theta',             label: 'Theta',      active: false, order: 28, suffix: null,  prefix: 'Θ'     },
+        { key: 'rho',               label: 'Rho',        active: false, order: 29, suffix: null,  prefix: 'ρ'     },
+        { key: 'dataTrade',         label: 'Abertura',   active: false, order: 30, suffix: null,  prefix: null    },
+        { key: 'estrategiaId',      label: 'Estratégia', active: false, order: 31, suffix: null,  prefix: null    },
+        { key: 'tradeId',           label: 'Trade ID',   active: false, order: 32, suffix: null,  prefix: '#'     },
+        { key: 'direcaoTrade',      label: 'Direção',    active: false, order: 33, suffix: null,  prefix: null    },
+        { key: 'tipoOpcao',         label: 'Tipo',       active: false, order: 34, suffix: null,  prefix: null    },
+        { key: 'nomeEmpresa',       label: 'Empresa',    active: false, order: 35, suffix: null,  prefix: null    },
+        { key: 'setor',             label: 'Setor',      active: false, order: 36, suffix: null,  prefix: null    },
+        { key: 'directionFlag',     label: 'Dir. Flag',  active: false, order: 37, suffix: null,  prefix: null    },
+        { key: 'controlFlag',       label: 'Ctrl. Flag', active: false, order: 38, suffix: null,  prefix: null    },
+      ]
+    },
+
     dteUrgente: { type: Number, default: 14 },
+  },
+
+  data() {
+    return { gruposAbertos: {} };
   },
 
   computed: {
     operacoes() {
-      const cockpit = this.statsPreCalculados?.cockpit || [];
-      return cockpit.map(op => {
-        const pm = parseFloat(op.premioMedio  || op.ENTRY_PRICE   || 0);
-        const pa = parseFloat(op.premioAtual  || op.LAST_PREMIUM  || 0);
-        const lucroPct = pm > 0 ? parseFloat(((pm - pa) / pm * 100).toFixed(1)) : null;
-        return { ...op, lucroPct, premioMedio: pm, premioAtual: pa };
-      }).filter(op => {
-        const s = String(op.status || op.isAtiva || op.STATUS || '').trim().toUpperCase();
-        return s === 'ATIVO' || s === 'ATIVA' || s === 'TRUE' || s === '1';
-      });
+      // lucroPct, distanciaR$ e distanciaPct já vêm calculados pelo Agregador._enriquecerDados
+      return (this.statsPreCalculados?.listaAtivas || []);
     },
 
     operacoesOrdenadas() {
@@ -219,8 +338,8 @@ window.CardAlerta = {
       const normal  = this.operacoesOrdenadas.filter(op =>
         parseFloat(op.dteCorridos || op.DTE_CALENDAR || 999) > this.dteUrgente);
       const grupos = [];
-      if (urgente.length) grupos.push({ label: `DTE ≤${this.dteUrgente} dias — vencimento iminente`, urgente: true,  ops: urgente });
-      if (normal.length)  grupos.push({ label: `DTE >${this.dteUrgente} dias — monitoramento`,       urgente: false, ops: normal  });
+      if (urgente.length) grupos.push({ label: `Vencimento ≤${this.dteUrgente}d — Iminente`, urgente: true,  ops: urgente });
+      if (normal.length)  grupos.push({ label: `Monitorando`,                                  urgente: false, ops: normal  });
       return grupos;
     },
 
@@ -251,6 +370,10 @@ window.CardAlerta = {
 
     camposDetalhesAtivos() {
       return [...this.configDetalhes].filter(c => c.active).sort((a, b) => a.order - b.order);
+    },
+
+    configMetaAtivos() {
+      return [...this.configMeta].filter(c => c.active).sort((a, b) => a.order - b.order);
     },
 
     resumoGlobal() { return this.statsPreCalculados?.resumoGlobal || {}; },
@@ -330,6 +453,36 @@ window.CardAlerta = {
   },
 
   methods: {
+    toggleGrupo(gi) {
+      this.gruposAbertos[gi] = this.gruposAbertos[gi] === false ? true : false;
+    },
+
+    subtotalPL(ops) {
+      return ops.reduce((s, o) => s + parseFloat(o.plTotalValor || o.PL_VALUE || 0), 0);
+    },
+
+    subtotalNocional(ops) {
+      return ops.reduce((s, o) => s + parseFloat(o.nocional || 0), 0);
+    },
+
+    fmtCurrency(n) {
+      if (n === null || n === undefined) return '—';
+      const abs = Math.abs(n);
+      const prefix = n < 0 ? '-R$' : 'R$';
+      if (abs >= 1000000) return prefix + (abs / 1000000).toFixed(1) + 'M';
+      if (abs >= 1000)    return prefix + (abs / 1000).toFixed(1) + 'k';
+      return prefix + abs.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    },
+
+    fmtCurrencyK(n) {
+      if (!n) return '—';
+      const abs = Math.abs(n);
+      const prefix = n < 0 ? '-R$' : 'R$';
+      if (abs >= 1000000) return prefix + (abs / 1000000).toFixed(1) + 'M';
+      if (abs >= 1000)    return prefix + (abs / 1000).toFixed(1) + 'k';
+      return prefix + Math.round(abs).toLocaleString('pt-BR');
+    },
+
     getKpiValue(key) {
       const rg = this.resumoGlobal;
       if (key === 'nocional')     return rg.nocional     ?? this.operacoes.reduce((s, o) => s + parseFloat(o.nocional || 0), 0);
@@ -397,7 +550,15 @@ window.CardAlerta = {
       const cfg = this.configDetalhes.find(c => c.key === key);
       const tipo = cfg?.type || 'texto';
 
-      if (tipo === 'texto') return String(raw) || '—';
+      if (tipo === 'texto') {
+        const s = String(raw);
+        const dm = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (dm) return `${dm[3]}/${dm[2]}/${dm[1]}`;
+        // Date object stringificado (ex: "Fri Mar 20 2026...")
+        const d = new Date(raw);
+        if (!isNaN(d.getTime())) return d.toLocaleDateString('pt-BR');
+        return s || '—';
+      }
 
       const n = parseFloat(raw);
       if (isNaN(n)) return String(raw);
@@ -420,6 +581,16 @@ window.CardAlerta = {
       if (tipo === 'numero') {
         if (key === 'dteCorridos' || key === 'dteUteis') return Math.round(n) + 'd';
         return n.toLocaleString('pt-BR');
+      }
+
+      if (tipo === 'distancia_r') {
+        if (raw === null) return '—';
+        return (raw >= 0 ? '+R$' : '-R$') + Math.abs(raw).toFixed(2);
+      }
+
+      if (tipo === 'distancia_pct') {
+        if (raw === null) return '—';
+        return (raw >= 0 ? '+' : '') + raw.toFixed(1) + '%';
       }
 
       return n.toFixed(4);
@@ -448,10 +619,10 @@ window.CardAlerta = {
 
     getMoneynessStyle(code) {
       const c = String(code || '').toUpperCase();
-      if (c.includes('ITM')) return 'background:var(--brand-rose-light);color:var(--brand-rose);border:1px solid var(--brand-rose-muted);';
-      if (c.includes('ATM')) return 'background:var(--brand-amber-light);color:var(--brand-amber);border:1px solid var(--brand-amber-muted);';
-      if (c.includes('OTM')) return 'background:var(--brand-emerald-light);color:var(--brand-emerald);border:1px solid var(--brand-emerald-muted);';
-      return 'background:var(--surface-overlay);color:var(--text-muted);border:1px solid var(--border-default);';
+      if (c.includes('ITM')) return 'background:var(--brand-rose-light);color:var(--brand-rose);border-color:var(--brand-rose-muted);';
+      if (c.includes('ATM')) return 'background:var(--brand-amber-light);color:var(--brand-amber);border-color:var(--brand-amber-muted);';
+      if (c.includes('OTM')) return 'background:var(--brand-emerald-light);color:var(--brand-emerald);border-color:var(--brand-emerald-muted);';
+      return 'background:var(--surface-overlay);color:var(--text-muted);border-color:var(--border-default);';
     }
   }
 };

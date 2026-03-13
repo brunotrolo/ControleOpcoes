@@ -1,10 +1,12 @@
 <template id="comparativo-view-template">
-  <div style="max-width: 95%; margin: 1.5rem auto 4rem; display: flex; flex-direction: column; gap: 2rem;">
+  <div style="max-width: 95%; margin: 1.5rem auto 4rem; display: flex; flex-direction: column; gap: 1.25rem;"
+       :style="isMobile ? 'max-width: 100%; margin: 0.75rem auto 4rem; gap: 1rem; padding: 0 0.5rem;' : ''">
 
     <!-- ══ HEADER ══ -->
     <div class="premium-card"
-         style="padding: 1.5rem 2rem; display: flex; flex-wrap: wrap; justify-content: space-between;
-                align-items: center; gap: 1.5rem; position: relative; z-index: 30;">
+         style="display: flex; flex-wrap: wrap; justify-content: space-between;
+                align-items: center; position: relative; z-index: 30;"
+         :style="isMobile ? 'padding: 1rem; gap: 1rem;' : 'padding: 1.5rem 2rem; gap: 1.5rem;'">
       <div style="display: flex; align-items: center; gap: 1.25rem;">
         <div style="padding: 0.75rem; background: var(--brand-indigo-light); color: var(--brand-indigo);
                     border-radius: var(--radius-lg); border: 1px solid var(--brand-indigo-muted);">
@@ -17,7 +19,7 @@
                          background: var(--brand-emerald); display: inline-block;
                          animation: comp-pulse 2s ease-in-out infinite;"></span>
             <p class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.25em;">
-              Simulação de Estresse e Payoff
+              Simulação de Payoff
             </p>
           </div>
         </div>
@@ -25,33 +27,19 @@
 
       <!-- Controles -->
       <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
-                  background: var(--surface-overlay); padding: 0.375rem 0.75rem;
-                  border-radius: var(--radius-xl); border: 1px solid var(--border-subtle);">
-        <label class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase;
-                                         letter-spacing: 0.16em; margin-left: 0.25rem;">Cenário:</label>
-        <select v-model.number="simulacaoQueda" @change="processarComparacao"
-                style="background: var(--surface-base); color: var(--text-primary); font-size: 12px;
-                       font-weight: 700; border: 1px solid var(--border-default); border-radius: var(--radius-md);
-                       padding: 0.5rem 1rem; outline: none; min-width: 160px; cursor: pointer;
-                       font-family: 'DM Sans', sans-serif; appearance: none;"
-                onfocus="this.style.borderColor='var(--brand-indigo)'"
-                onblur="this.style.borderColor='var(--border-default)'">
-          <option :value="0">0% - Realista</option>
-          <option :value="5">-5% - Queda Técnica</option>
-          <option :value="10">-10% - Estresse Forte</option>
-          <option :value="20">-20% - Cenário Crash</option>
-        </select>
-
-        <div style="width: 1px; height: 1.5rem; background: var(--border-subtle);"></div>
+                  background: var(--surface-overlay); border-radius: var(--radius-xl);
+                  border: 1px solid var(--border-subtle);"
+           :style="isMobile ? 'padding: 0.375rem 0.5rem; width: 100%; justify-content: space-between;' : 'padding: 0.375rem 0.75rem;'">
 
         <div style="display: flex; align-items: center; background: var(--surface-base);
                     border: 1px solid var(--border-default); border-radius: var(--radius-md);
                     padding: 0.5rem 0.75rem; gap: 0.5rem;">
           <i data-lucide="arrow-down-up" style="width: 0.875rem; height: 0.875rem; color: var(--text-muted);"></i>
           <select v-model="ordenarPor" @change="ordenarArena"
-                  style="font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;
+                  style="font-weight: 700; color: var(--text-secondary); text-transform: uppercase;
                          letter-spacing: 0.1em; outline: none; background: transparent; cursor: pointer;
-                         appearance: none; min-width: 140px; font-family: 'DM Sans', sans-serif;">
+                         appearance: none; min-width: 140px; font-family: 'DM Sans', sans-serif;"
+                  :style="isMobile ? 'font-size: 18px;' : 'font-size: 10px;'">
             <option value="padrao">Ordem Padrão</option>
             <option value="lucro">💰 Maior Lucro %</option>
             <option value="seguranca">🛡️ Maior Segurança</option>
@@ -73,50 +61,57 @@
         <button @click="adicionarCard" class="btn-action btn-action-primary"
                 style="padding: 0.5rem 1.25rem; border-radius: var(--radius-md);">
           <i data-lucide="plus" style="width: 1rem; height: 1rem;"></i>
-          <span style="margin-left: 0.25rem; font-size: 10px; font-weight: 700;
-                       text-transform: uppercase; letter-spacing: 0.12em;">Adicionar</span>
+          <span style="margin-left: 0.25rem; font-weight: 700;
+                       text-transform: uppercase; letter-spacing: 0.12em;"
+                :style="isMobile ? 'font-size: 18px;' : 'font-size: 10px;'">Adicionar</span>
         </button>
       </div>
     </div>
 
     <!-- ══ ARENA ══ -->
     <div style="display: flex; flex-direction: column;">
-      <div style="display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 1.5rem;
-                  align-items: flex-start; padding: 0.5rem 0.5rem 1.5rem; margin: 0 -0.5rem;
-                  position: relative; z-index: 10;" class="log-scrollbar">
+      <div style="display: flex; align-items: flex-start; position: relative; z-index: 10;"
+           :style="isMobile
+             ? 'flex-direction: column; gap: 1rem; padding: 0.25rem 0 1rem;'
+             : 'flex-wrap: nowrap; overflow-x: auto; gap: 1.5rem; padding: 0.5rem 0.5rem 1.5rem; margin: 0 -0.5rem;'"
+           class="log-scrollbar">
 
         <!-- Skeleton -->
         <template v-if="isLoading && cards.length === 0">
           <div v-for="n in 3" :key="'skel-comp-'+n"
-               style="width: 320px; height: 500px; border-radius: var(--radius-xl); flex-shrink: 0;
+               style="height: 500px; border-radius: var(--radius-xl);
                       background: var(--surface-base); border: 1px solid var(--border-subtle);
-                      animation: comp-pulse 1.5s ease-in-out infinite;"></div>
+                      animation: comp-pulse 1.5s ease-in-out infinite;"
+               :style="isMobile ? 'width: 100%;' : 'width: 320px; flex-shrink: 0;'"></div>
         </template>
 
         <!-- Cards de opção -->
         <div v-for="(card, index) in cards" :key="card.id"
-             style="width: 320px; flex-shrink: 0; border-radius: var(--radius-xl); box-shadow: var(--shadow-sm);
+             style="border-radius: var(--radius-xl); box-shadow: var(--shadow-sm);
                     display: flex; flex-direction: column; overflow: hidden; position: relative;
                     transition: box-shadow 0.3s, border-color 0.3s;"
-             :style="getCardBorderStyle(card)"
+             :style="(isMobile ? 'width: 100%; ' : 'width: 320px; flex-shrink: 0; ') + getCardBorderStyle(card)"
              onmouseover="this.style.boxShadow='var(--shadow-md)'"
              onmouseout="this.style.boxShadow='var(--shadow-sm)'">
 
           <!-- Badge de destaque -->
           <div v-if="mostrarResultados && rankingRentabilidade.id === card.id && rankingSeguranca.id === card.id"
                style="background: linear-gradient(to right, var(--brand-emerald), var(--brand-indigo));
-                      color: #fff; font-size: 9px; font-weight: 700; text-transform: uppercase;
-                      padding: 0.375rem; text-align: center; letter-spacing: 0.12em;">
+                      color: #fff; font-weight: 700; text-transform: uppercase;
+                      padding: 0.375rem; text-align: center; letter-spacing: 0.12em;"
+               :style="isMobile ? 'font-size: 18px; padding: 0.5rem;' : 'font-size: 9px;'">
             🏆 MAIOR LUCRO E 🛡️ MAIS SEGURA
           </div>
           <div v-else-if="mostrarResultados && rankingRentabilidade.id === card.id"
-               style="background: var(--brand-emerald); color: #fff; font-size: 9px; font-weight: 700;
-                      text-transform: uppercase; padding: 0.375rem; text-align: center; letter-spacing: 0.12em;">
+               style="background: var(--brand-emerald); color: #fff; font-weight: 700;
+                      text-transform: uppercase; padding: 0.375rem; text-align: center; letter-spacing: 0.12em;"
+               :style="isMobile ? 'font-size: 18px; padding: 0.5rem;' : 'font-size: 9px;'">
             🏆 OPÇÃO MAIS RENTÁVEL
           </div>
           <div v-else-if="mostrarResultados && rankingSeguranca.id === card.id"
-               style="background: var(--brand-indigo); color: #fff; font-size: 9px; font-weight: 700;
-                      text-transform: uppercase; padding: 0.375rem; text-align: center; letter-spacing: 0.12em;">
+               style="background: var(--brand-indigo); color: #fff; font-weight: 700;
+                      text-transform: uppercase; padding: 0.375rem; text-align: center; letter-spacing: 0.12em;"
+               :style="isMobile ? 'font-size: 18px; padding: 0.5rem;' : 'font-size: 9px;'">
             🛡️ OPÇÃO MAIS SEGURA
           </div>
 
@@ -140,11 +135,12 @@
                                                letter-spacing: 0.16em; margin-left: 0.25rem;">Código do Ativo</label>
               <div style="position: relative;">
                 <input v-model="card.ticker" @change="buscarDadosAPI(card)" @keyup.enter="buscarDadosAPI(card)" type="text"
-                       placeholder="EX: PETRP280"
+                       placeholder="EX: PETRP280" inputmode="text" autocapitalize="characters"
                        style="width: 100%; background: var(--surface-base); border: 1px solid var(--border-default);
-                              font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; font-weight: 700;
+                              font-family: 'JetBrains Mono', monospace; font-weight: 700;
                               border-radius: var(--radius-md); padding: 0.5rem 0.75rem; text-transform: uppercase;
                               color: var(--text-primary); outline: none; transition: border-color 0.2s;"
+                       :style="isMobile ? 'font-size: 3rem;' : 'font-size: 1.5rem;'"
                        onfocus="this.style.borderColor='var(--brand-indigo)'"
                        onblur="this.style.borderColor='var(--border-default)'">
                 <div v-if="card.loading"
@@ -158,7 +154,8 @@
                         padding: 0.375rem 0.625rem; background: var(--surface-base);
                         border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);">
               <span class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase;">Vencimento</span>
-              <span class="font-mono-data" style="font-size: 1rem; font-weight: 700; color: var(--brand-indigo);">
+              <span class="font-mono-data" style="font-weight: 700; color: var(--brand-indigo);"
+                    :style="isMobile ? 'font-size: 2rem;' : 'font-size: 1rem;'">
                 {{ card.api.isValid ? card.api.dte + ' d' : '---' }}
               </span>
             </div>
@@ -174,7 +171,8 @@
               <template v-if="card.error">
                 <i data-lucide="alert-circle" style="width: 1.75rem; height: 1.75rem; color: var(--brand-rose); margin-bottom: 0.25rem;"></i>
                 <p class="t-label-sm" style="color: var(--brand-rose); text-transform: uppercase;
-                                             text-align: center; line-height: 1.5; font-size: 9px;">{{ card.error }}</p>
+                                             text-align: center; line-height: 1.5;"
+                   :style="isMobile ? 'font-size: 20px;' : 'font-size: 9px;'">{{ card.error }}</p>
               </template>
               <template v-else>
                 <i data-lucide="search" style="width: 2rem; height: 2rem; color: var(--text-muted); opacity: 0.4; margin-bottom: 0.25rem;"></i>
@@ -190,8 +188,8 @@
                              border: 1px solid var(--border-subtle); text-align: center;">
                   <span class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase;
                                                    display: block; margin-bottom: 0.25rem;">Spot</span>
-                  <span class="font-mono-data" style="font-size: 15px; font-weight: 700; line-height: 1;"
-                        :style="simulacaoQueda > 0 ? 'color: var(--text-muted); text-decoration: line-through;' : 'color: var(--text-primary);'">
+                  <span class="font-mono-data" style="font-weight: 700; line-height: 1; color: var(--text-primary);"
+                        :style="isMobile ? 'font-size: 32px;' : 'font-size: 15px;'">
                     {{ formatMoney(card.api.spotPrice) }}
                   </span>
                 </div>
@@ -199,7 +197,8 @@
                              border: 1px solid var(--border-subtle); text-align: center;">
                   <span class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase;
                                                    display: block; margin-bottom: 0.25rem;">Strike</span>
-                  <span class="font-mono-data" style="font-size: 15px; font-weight: 700; color: var(--text-primary); line-height: 1;">
+                  <span class="font-mono-data" style="font-weight: 700; color: var(--text-primary); line-height: 1;"
+                        :style="isMobile ? 'font-size: 32px;' : 'font-size: 15px;'">
                     {{ formatMoney(card.api.strike) }}
                   </span>
                 </div>
@@ -211,7 +210,8 @@
                 <span class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">
                   Margem de Segurança
                 </span>
-                <span class="font-mono-data" style="font-size: 13px; font-weight: 700; color: var(--brand-indigo);">
+                <span class="font-mono-data" style="font-weight: 700; color: var(--brand-indigo);"
+                      :style="isMobile ? 'font-size: 30px;' : 'font-size: 13px;'">
                   {{ getDistanciaBreakEven(card) }}
                 </span>
               </div>
@@ -224,18 +224,21 @@
                                                  letter-spacing: 0.1em; text-align: center;">Prêmio</span>
                 <div style="display: flex; align-items: center; justify-content: space-between;">
                   <button @click="ajustarPremio(card, -0.01)"
-                          style="width: 1.75rem; height: 1.75rem; display: flex; align-items: center;
+                          style="display: flex; align-items: center;
                                  justify-content: center; border-radius: var(--radius-sm);
                                  background: var(--surface-base); border: 1px solid var(--brand-indigo-muted);
-                                 color: var(--brand-indigo); cursor: pointer; font-size: 1rem; font-weight: 700;">−</button>
-                  <span class="font-mono-data" style="font-size: 1.5rem; font-weight: 700; color: var(--brand-indigo);">
+                                 color: var(--brand-indigo); cursor: pointer; font-size: 1rem; font-weight: 700;"
+                          :style="isMobile ? 'width: 3rem; height: 3rem; font-size: 1.5rem;' : 'width: 1.75rem; height: 1.75rem;'">−</button>
+                  <span class="font-mono-data" style="font-weight: 700; color: var(--brand-indigo);"
+                        :style="isMobile ? 'font-size: 3rem;' : 'font-size: 1.5rem;'">
                     {{ formatMoney(card.api.premioAtual).replace('R$', '') }}
                   </span>
                   <button @click="ajustarPremio(card, 0.01)"
-                          style="width: 1.75rem; height: 1.75rem; display: flex; align-items: center;
+                          style="display: flex; align-items: center;
                                  justify-content: center; border-radius: var(--radius-sm);
                                  background: var(--surface-base); border: 1px solid var(--brand-indigo-muted);
-                                 color: var(--brand-indigo); cursor: pointer; font-size: 1rem; font-weight: 700;">+</button>
+                                 color: var(--brand-indigo); cursor: pointer; font-size: 1rem; font-weight: 700;"
+                          :style="isMobile ? 'width: 3rem; height: 3rem; font-size: 1.5rem;' : 'width: 1.75rem; height: 1.75rem;'">+</button>
                 </div>
               </div>
 
@@ -244,7 +247,8 @@
                            padding: 0.625rem 0.75rem; background: var(--brand-emerald-light);
                            border: 1px solid var(--brand-emerald-muted); border-radius: var(--radius-md);">
                 <span class="t-label-sm" style="color: var(--brand-emerald); text-transform: uppercase; font-weight: 700;">Lucro %</span>
-                <span class="font-mono-data" style="font-size: 1.125rem; font-weight: 700; color: var(--brand-emerald); line-height: 1;">
+                <span class="font-mono-data" style="font-weight: 700; color: var(--brand-emerald); line-height: 1;"
+                      :style="isMobile ? 'font-size: 2.5rem;' : 'font-size: 1.125rem;'">
                   {{ formatPct(calcLucroPct(card)) }}
                 </span>
               </div>
@@ -260,19 +264,22 @@
                            border-radius: var(--radius-md); border: 1px solid var(--border-default);
                            padding: 0.25rem; box-shadow: var(--shadow-sm);">
                 <button @click="ajustarQtd(card, -100)"
-                        style="width: 1.75rem; height: 1.75rem; display: flex; align-items: center; justify-content: center;
+                        style="display: flex; align-items: center; justify-content: center;
                                color: var(--text-muted); cursor: pointer; border: none; background: transparent;
                                font-size: 1.25rem; font-weight: 700; border-radius: var(--radius-sm);"
+                        :style="isMobile ? 'width: 3rem; height: 3rem; font-size: 1.5rem;' : 'width: 1.75rem; height: 1.75rem;'"
                         onmouseover="this.style.color='var(--brand-indigo)'"
                         onmouseout="this.style.color='var(--text-muted)'">−</button>
-                <input v-model.number="card.qtd" type="number"
+                <input v-model.number="card.qtd" type="number" inputmode="numeric"
                        style="width: 4rem; text-align: center; font-family: 'JetBrains Mono', monospace;
-                              font-size: 14px; font-weight: 700; color: var(--text-primary); outline: none;
-                              background: transparent; border: none; line-height: 1;">
+                              font-weight: 700; color: var(--text-primary); outline: none;
+                              background: transparent; border: none; line-height: 1;"
+                       :style="isMobile ? 'font-size: 32px; width: 5.5rem;' : 'font-size: 16px;'">
                 <button @click="ajustarQtd(card, 100)"
-                        style="width: 1.75rem; height: 1.75rem; display: flex; align-items: center; justify-content: center;
+                        style="display: flex; align-items: center; justify-content: center;
                                color: var(--text-muted); cursor: pointer; border: none; background: transparent;
                                font-size: 1.25rem; font-weight: 700; border-radius: var(--radius-sm);"
+                        :style="isMobile ? 'width: 3rem; height: 3rem; font-size: 1.5rem;' : 'width: 1.75rem; height: 1.75rem;'"
                         onmouseover="this.style.color='var(--brand-indigo)'"
                         onmouseout="this.style.color='var(--text-muted)'">+</button>
               </div>
@@ -282,14 +289,16 @@
                          border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="t-label-sm" style="color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Notional</span>
-                <span class="font-mono-data" style="font-size: 14px; font-weight: 700; color: var(--text-secondary);">
+                <span class="font-mono-data" style="font-weight: 700; color: var(--text-secondary);"
+                      :style="isMobile ? 'font-size: 30px;' : 'font-size: 14px;'">
                   {{ card.api.isValid ? formatMoney(calcNotional(card)) : 'R$ 0,00' }}
                 </span>
               </div>
               <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="t-label-sm" style="color: var(--brand-emerald); text-transform: uppercase;
                                                  letter-spacing: 0.1em; font-weight: 700;">Crédito</span>
-                <span class="font-mono-data" style="font-size: 1.5rem; font-weight: 700; color: var(--brand-emerald); line-height: 1;">
+                <span class="font-mono-data" style="font-weight: 700; color: var(--brand-emerald); line-height: 1;"
+                      :style="isMobile ? 'font-size: 3rem;' : 'font-size: 1.5rem;'">
                   {{ card.api.isValid ? formatMoney(calcPremioTotal(card)) : 'R$ 0,00' }}
                 </span>
               </div>
@@ -302,56 +311,78 @@
       <!-- ══ BASKET AGREGADO ══ -->
       <div v-if="agregadoBasket"
            class="premium-card"
-           style="padding: 1rem 1.5rem; display: flex; flex-wrap: wrap; align-items: center;
-                  justify-content: space-between; gap: 1.5rem; margin-top: -0.5rem;
-                  position: relative; overflow: hidden; z-index: 20;">
+           style="display: flex; flex-wrap: wrap; align-items: center;
+                  justify-content: space-between; margin-top: -0.5rem;
+                  position: relative; overflow: hidden; z-index: 20;"
+           :style="isMobile ? 'padding: 1rem; gap: 1rem; flex-direction: column; align-items: stretch;' : 'padding: 1rem 1.5rem; gap: 1.5rem;'">
         <div style="position: absolute; left: -2.5rem; top: -2.5rem; width: 8rem; height: 8rem;
                     background: var(--brand-indigo-light); border-radius: 50%; filter: blur(30px);
                     opacity: 0.6; pointer-events: none;"></div>
 
-        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem; position: relative; z-index: 1;">
-          <div style="display: flex; align-items: center; gap: 0.5rem; padding-right: 0.5rem;">
-            <div style="width: 2rem; height: 2rem; background: var(--brand-indigo-light); border-radius: var(--radius-md);
-                         display: flex; align-items: center; justify-content: center; border: 1px solid var(--brand-indigo-muted);">
-              <i data-lucide="calculator" style="width: 1rem; height: 1rem; color: var(--brand-indigo);"></i>
-            </div>
-            <div>
-              <span class="t-label-sm" style="color: var(--text-primary); text-transform: uppercase;
-                                               letter-spacing: 0.12em; display: block;">Cesta</span>
-              <span style="font-size: 8px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
-                {{ agregadoBasket.qtdCards }} opções
-              </span>
-            </div>
+        <!-- Header Cesta -->
+        <div style="display: flex; align-items: center; gap: 0.75rem; position: relative; z-index: 1;">
+          <div :style="isMobile ? 'width: 2.5rem; height: 2.5rem;' : 'width: 2rem; height: 2rem;'"
+               style="background: var(--brand-indigo-light); border-radius: var(--radius-md);
+                       display: flex; align-items: center; justify-content: center; border: 1px solid var(--brand-indigo-muted);">
+            <i data-lucide="calculator" :style="isMobile ? 'width: 1.25rem; height: 1.25rem;' : 'width: 1rem; height: 1rem;'"
+               style="color: var(--brand-indigo);"></i>
           </div>
-
-          <div style="width: 1px; height: 2rem; background: var(--border-subtle);"></div>
-
-          <div v-for="(item, i) in basketItems" :key="i" style="display: flex; align-items: center; gap: 1.5rem;">
-            <div>
-              <span style="display: block; font-size: 8px; font-weight: 700; color: var(--text-muted);
-                            text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.125rem;">
-                {{ item.label }}
-              </span>
-              <div style="display: flex; align-items: baseline; gap: 0.375rem;">
-                <span class="font-mono-data" style="font-size: 14px; font-weight: 700; color: var(--text-primary);"
-                      :style="item.color ? `color: ${item.color}` : ''">
-                  {{ item.value }}
-                </span>
-                <span v-if="item.sub" class="font-mono-data"
-                      style="font-size: 12px; font-weight: 600; color: var(--text-muted);">{{ item.sub }}</span>
-              </div>
-            </div>
-            <div style="width: 1px; height: 2rem; background: var(--border-subtle);"></div>
+          <div>
+            <span class="t-label-sm" style="color: var(--text-primary); text-transform: uppercase;
+                                             letter-spacing: 0.12em; display: block;"
+                  :style="isMobile ? 'font-size: 20px;' : ''">Cesta</span>
+            <span style="font-weight: 700; color: var(--text-muted); text-transform: uppercase;"
+                  :style="isMobile ? 'font-size: 18px;' : 'font-size: 8px;'">
+              {{ agregadoBasket.qtdCards }} opções
+            </span>
           </div>
         </div>
 
-        <div style="position: relative; z-index: 1; flex-shrink: 0;">
+        <!-- Items da cesta -->
+        <div style="position: relative; z-index: 1;"
+             :style="isMobile
+               ? 'display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; width: 100%;'
+               : 'display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem;'">
+
+          <template v-if="!isMobile">
+            <div style="width: 1px; height: 2rem; background: var(--border-subtle);"></div>
+          </template>
+
+          <div v-for="(item, i) in basketItems" :key="i"
+               :style="isMobile
+                 ? 'padding: 0.75rem; background: var(--surface-overlay); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);'
+                 : 'display: flex; align-items: center; gap: 1.5rem;'">
+            <div>
+              <span style="display: block; font-weight: 700; color: var(--text-muted);
+                            text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.25rem;"
+                    :style="isMobile ? 'font-size: 16px;' : 'font-size: 8px;'">
+                {{ item.label }}
+              </span>
+              <div style="display: flex; align-items: baseline; gap: 0.375rem; flex-wrap: wrap;">
+                <span class="font-mono-data" style="font-weight: 700; color: var(--text-primary);"
+                      :style="(isMobile ? 'font-size: 28px; ' : 'font-size: 14px; ') + (item.color ? `color: ${item.color}` : '')">
+                  {{ item.value }}
+                </span>
+                <span v-if="item.sub" class="font-mono-data"
+                      style="font-weight: 600; color: var(--text-muted);"
+                      :style="isMobile ? 'font-size: 18px; display: block; width: 100%;' : 'font-size: 12px;'">{{ item.sub }}</span>
+              </div>
+            </div>
+            <template v-if="!isMobile">
+              <div style="width: 1px; height: 2rem; background: var(--border-subtle);"></div>
+            </template>
+          </div>
+        </div>
+
+        <div style="position: relative; z-index: 1;"
+             :style="isMobile ? 'width: 100%;' : 'flex-shrink: 0;'">
           <button @click="processarComparacao"
-                  style="padding: 0.875rem 2rem; background: var(--surface-base); color: var(--text-secondary);
+                  style="background: var(--surface-base); color: var(--text-secondary);
                          border: 1px solid var(--border-default); border-radius: var(--radius-lg);
-                         font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.25em;
-                         cursor: pointer; display: flex; align-items: center; gap: 0.75rem;
+                         font-weight: 700; text-transform: uppercase; letter-spacing: 0.25em;
+                         cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem;
                          transition: all 0.3s; box-shadow: var(--shadow-sm);"
+                  :style="isMobile ? 'padding: 1rem 1.5rem; width: 100%; font-size: 20px;' : 'padding: 0.875rem 2rem; font-size: 10px;'"
                   onmouseover="this.style.color='var(--brand-indigo)'; this.style.borderColor='var(--brand-indigo-muted)'; this.style.background='var(--brand-indigo-light)'; this.style.boxShadow='var(--shadow-md)'"
                   onmouseout="this.style.color='var(--text-secondary)'; this.style.borderColor='var(--border-default)'; this.style.background='var(--surface-base)'; this.style.boxShadow='var(--shadow-sm)'">
             Iniciar Batalha
@@ -362,27 +393,32 @@
 
     <!-- ══ RESULTADOS ══ -->
     <div v-if="mostrarResultados"
-         style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 2rem; padding-bottom: 8rem; margin-top: 1rem;">
+         style="display: grid; gap: 1.5rem; margin-top: 1rem;"
+         :style="isMobile ? 'grid-template-columns: 1fr; padding-bottom: 6rem;' : 'grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); padding-bottom: 8rem;'">
 
       <!-- Rentabilidade -->
-      <div class="premium-card"
-           style="padding: 2.5rem; border-color: var(--brand-emerald-muted);
-                  background: var(--surface-base); position: relative; overflow: hidden;">
+      <div class="premium-card comp-resultado-card"
+           style="border-color: var(--brand-emerald-muted);
+                  background: var(--surface-base); position: relative; overflow: hidden;"
+           :style="isMobile ? 'padding: 1.25rem;' : 'padding: 2.5rem;'">
         <div style="position: absolute; right: -1.5rem; top: -1.5rem; font-size: 6rem; font-weight: 800;
                     font-style: italic; color: var(--brand-emerald); opacity: 0.06;
                     pointer-events: none; font-family: 'Syne', sans-serif; line-height: 1;">ROC</div>
         <span style="padding: 0.375rem 1rem; background: var(--brand-emerald-light); color: var(--brand-emerald);
-                      border-radius: var(--radius-md); font-size: 9px; font-weight: 700; text-transform: uppercase;
+                      border-radius: var(--radius-md); font-weight: 700; text-transform: uppercase;
                       letter-spacing: 0.12em; margin-bottom: 1.5rem; display: inline-block;
-                      border: 1px solid var(--brand-emerald-muted);">
+                      border: 1px solid var(--brand-emerald-muted);"
+              :style="isMobile ? 'font-size: 18px;' : 'font-size: 9px;'">
           Eficiência Financeira
         </span>
-        <div style="display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.5rem;">
-          <h3 class="font-mono-data" style="font-size: 3rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.04em;">
+        <div style="display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+          <h3 class="font-mono-data comp-resultado-ticker"
+              style="font-weight: 700; color: var(--text-primary); letter-spacing: -0.04em;"
+              :style="isMobile ? 'font-size: 3rem;' : 'font-size: 3rem;'">
             {{ rankingRentabilidade.ticker }}
           </h3>
-          <span class="font-mono-data" style="font-size: 1.25rem; font-weight: 700; color: var(--brand-emerald);">
+          <span class="font-mono-data" style="font-weight: 700; color: var(--brand-emerald);"
+                :style="isMobile ? 'font-size: 1.75rem;' : 'font-size: 1.25rem;'">
             {{ formatPct(rankingRentabilidade.anualizado) }} a.a.
           </span>
         </div>
@@ -390,8 +426,10 @@
                                      letter-spacing: 0.25em; margin-bottom: 2rem;">
           Onde seu dinheiro rende mais por dia
         </p>
-        <div style="background: var(--surface-overlay); border-radius: var(--radius-lg); padding: 2rem;
-                     border: 1px solid var(--brand-emerald-muted);">
+        <div class="comp-resultado-veredito"
+             style="background: var(--surface-overlay); border-radius: var(--radius-lg);
+                     border: 1px solid var(--brand-emerald-muted);"
+             :style="isMobile ? 'padding: 1.25rem;' : 'padding: 2rem;'">
           <h4 class="t-label" style="color: var(--text-primary); text-transform: uppercase; margin-bottom: 1rem;
                                      text-decoration: underline; text-underline-offset: 4px;">Veredito de Alocação</h4>
           <p class="t-body" style="color: var(--text-secondary); line-height: 1.7;">
@@ -403,23 +441,28 @@
       </div>
 
       <!-- Segurança -->
-      <div class="premium-card"
-           style="padding: 2.5rem; border-color: var(--brand-indigo-muted);
-                  background: var(--surface-base); position: relative; overflow: hidden;">
+      <div class="premium-card comp-resultado-card"
+           style="border-color: var(--brand-indigo-muted);
+                  background: var(--surface-base); position: relative; overflow: hidden;"
+           :style="isMobile ? 'padding: 1.25rem;' : 'padding: 2.5rem;'">
         <div style="position: absolute; right: -1.5rem; top: -1.5rem; font-size: 6rem; font-weight: 800;
                     font-style: italic; color: var(--brand-indigo); opacity: 0.06;
                     pointer-events: none; font-family: 'Syne', sans-serif; line-height: 1;">SAFE</div>
         <span style="padding: 0.375rem 1rem; background: var(--brand-indigo-light); color: var(--brand-indigo);
-                      border-radius: var(--radius-md); font-size: 9px; font-weight: 700; text-transform: uppercase;
+                      border-radius: var(--radius-md); font-weight: 700; text-transform: uppercase;
                       letter-spacing: 0.12em; margin-bottom: 1.5rem; display: inline-block;
-                      border: 1px solid var(--brand-indigo-muted);">
+                      border: 1px solid var(--brand-indigo-muted);"
+              :style="isMobile ? 'font-size: 18px;' : 'font-size: 9px;'">
           Proteção Patrimonial
         </span>
-        <div style="display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.5rem;">
-          <h3 class="font-mono-data" style="font-size: 3rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.04em;">
+        <div style="display: flex; align-items: baseline; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+          <h3 class="font-mono-data comp-resultado-ticker"
+              style="font-weight: 700; color: var(--text-primary); letter-spacing: -0.04em;"
+              :style="isMobile ? 'font-size: 3rem;' : 'font-size: 3rem;'">
             {{ rankingSeguranca.ticker }}
           </h3>
-          <span class="font-mono-data" style="font-size: 1.25rem; font-weight: 700; color: var(--brand-indigo);">
+          <span class="font-mono-data" style="font-weight: 700; color: var(--brand-indigo);"
+                :style="isMobile ? 'font-size: 1.75rem;' : 'font-size: 1.25rem;'">
             {{ formatPct(rankingSeguranca.margemQueda) }} de folga
           </span>
         </div>
@@ -427,15 +470,16 @@
                                      letter-spacing: 0.25em; margin-bottom: 2rem;">
           Menor risco de ser exercido
         </p>
-        <div style="background: var(--surface-overlay); border-radius: var(--radius-lg); padding: 2rem;
-                     border: 1px solid var(--brand-indigo-muted);">
+        <div class="comp-resultado-veredito"
+             style="background: var(--surface-overlay); border-radius: var(--radius-lg);
+                     border: 1px solid var(--brand-indigo-muted);"
+             :style="isMobile ? 'padding: 1.25rem;' : 'padding: 2rem;'">
           <h4 class="t-label" style="color: var(--text-primary); text-transform: uppercase; margin-bottom: 1rem;
                                      text-decoration: underline; text-underline-offset: 4px;">Veredito de Risco</h4>
           <p class="t-body" style="color: var(--text-secondary); line-height: 1.7;">
-            No cenário simulado de <strong style="color: var(--text-primary);">{{ simulacaoQueda }}% de queda</strong>,
-            esta PUT provou ser a mais resiliente. O ativo precisaria cair mais do que
+            Esta PUT provou ser a mais resiliente. O ativo precisaria cair mais do que
             <strong style="color: var(--text-primary);">{{ formatPct(rankingSeguranca.margemQueda) }}</strong>
-            <em>além</em> do cenário simulado para o exercício ocorrer. Break-even em
+            para o exercício ocorrer. Break-even em
             <strong style="color: var(--text-primary);">{{ formatMoney(rankingSeguranca.breakeven) }}</strong>.
           </p>
         </div>
@@ -447,11 +491,24 @@
 
 <style>
   .comp-card:hover .comp-delete-btn { opacity: 1 !important; }
-  /* hover via JS onmouseover nos cards individuais */
   div:hover > .comp-delete-btn { opacity: 1 !important; }
 
   @keyframes comp-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
   @keyframes comp-spin  { to { transform: rotate(360deg); } }
+
+  /* ── Mobile S22 Ultra (~412px) — escala global 2x ── */
+  @media (max-width: 480px) {
+    .comp-delete-btn { opacity: 1 !important; }
+
+    /* Classes tipográficas globais */
+    .t-label-sm { font-size: 16px !important; }
+    .t-label    { font-size: 20px !important; }
+    .t-body     { font-size: 18px !important; line-height: 1.65 !important; }
+    .t-title    { font-size: 1.75rem !important; }
+
+    /* Mono data base */
+    .font-mono-data { font-size: 20px; }
+  }
 </style>
 
 <script>
@@ -462,7 +519,6 @@ window.ComparativoView = {
     return {
       cardCounter: 2,
       cards: [],
-      simulacaoQueda: 0,
       ordenarPor: 'padrao',
       mostrarResultados: false,
       rankingRentabilidade: {},
@@ -487,7 +543,6 @@ window.ComparativoView = {
                mediaLucroPct: somaLucro / n, somaLotes, somaNotional, somaCredito, mediaCredito: somaCredito / n };
     },
 
-    // Items do basket para v-for no template (evita repetição de HTML)
     basketItems() {
       if (!this.agregadoBasket) return [];
       const b = this.agregadoBasket;
@@ -516,7 +571,6 @@ window.ComparativoView = {
   },
 
   methods: {
-    // Border style como função — sem classes Tailwind hardcoded com cores
     getCardBorderStyle(card) {
       if (!this.mostrarResultados)
         return 'background: var(--surface-base); border: 1px solid var(--border-default);';
@@ -532,19 +586,19 @@ window.ComparativoView = {
       localStorage.removeItem('arena_put_cache');
       this.cards = [this.criarCardVazio(1), this.criarCardVazio(2)];
       this.cardCounter = 2; this.mostrarResultados = false;
-      this.simulacaoQueda = 0; this.ordenarPor = 'padrao';
+      this.ordenarPor = 'padrao';
       this.$nextTick(() => lucide.createIcons());
     },
     salvarCache() {
       localStorage.setItem('arena_put_cache', JSON.stringify(
-        { cards: this.cards, cardCounter: this.cardCounter, simulacaoQueda: this.simulacaoQueda }
+        { cards: this.cards, cardCounter: this.cardCounter }
       ));
     },
     carregarCache() {
       const cache = localStorage.getItem('arena_put_cache');
       if (cache) {
         const p = JSON.parse(cache);
-        this.cards = p.cards; this.cardCounter = p.cardCounter; this.simulacaoQueda = p.simulacaoQueda || 0;
+        this.cards = p.cards; this.cardCounter = p.cardCounter;
         if (this.cards.some(c => c.api.isValid)) this.processarComparacao();
       } else {
         this.cards = [this.criarCardVazio(1), this.criarCardVazio(2)];
@@ -561,8 +615,13 @@ window.ComparativoView = {
       this.mostrarResultados = false; this.ordenarPor = 'padrao';
       this.$nextTick(() => {
         lucide.createIcons();
-        const c = this.$el.querySelector('[style*="overflow-x: auto"]');
-        if (c) c.scrollTo({ left: c.scrollWidth, behavior: 'smooth' });
+        if (this.isMobile) {
+          const lastCard = this.$el.querySelector('[style*="border-radius: var(--radius-xl)"]:last-child');
+          if (lastCard) lastCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          const c = this.$el.querySelector('[style*="overflow-x: auto"]');
+          if (c) c.scrollTo({ left: c.scrollWidth, behavior: 'smooth' });
+        }
       });
     },
     removerCard(id) {
@@ -633,9 +692,8 @@ window.ComparativoView = {
         const anualizado    = c.api.dte > 0 ? (rocBruto / c.api.dte) * 252 : rocBruto;
         const breakeven     = c.api.strike - c.api.premioAtual;
         const premioPorMil  = (premioTotal / notional) * 1000;
-        const spotSimulado  = c.api.spotPrice * (1 - this.simulacaoQueda / 100);
-        const margemQueda   = spotSimulado > 0 ? ((spotSimulado - breakeven) / spotSimulado) * 100 : 0;
-        return { id: c.id, ticker: c.ticker.toUpperCase(), rocBruto, anualizado, breakeven, margemQueda, premioPorMil, dte: c.api.dte, spot: spotSimulado };
+        const margemQueda   = c.api.spotPrice > 0 ? ((c.api.spotPrice - breakeven) / c.api.spotPrice) * 100 : 0;
+        return { id: c.id, ticker: c.ticker.toUpperCase(), rocBruto, anualizado, breakeven, margemQueda, premioPorMil, dte: c.api.dte, spot: c.api.spotPrice };
       });
       this.rankingRentabilidade = [...analise].sort((a, b) => b.anualizado - a.anualizado)[0];
       this.rankingSeguranca     = [...analise].sort((a, b) => b.margemQueda - a.margemQueda)[0];
